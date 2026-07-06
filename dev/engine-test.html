@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ENGINE PLAYGROUND</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      background: #ecebe7; color: #161616;
+      font: 12px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      display: flex; flex-direction: column; height: 100dvh;
+    }
+    .bar {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      padding: 8px 12px; border-bottom: 1px solid #161616;
+    }
+    .bar label { display: inline-flex; gap: 4px; align-items: center; }
+    input, select, button {
+      font: inherit; color: inherit; background: #ecebe7;
+      border: 1px solid #161616; padding: 2px 6px;
+    }
+    button { cursor: pointer; }
+    button:hover { background: #161616; color: #ecebe7; }
+    #host { flex: 1; min-height: 0; }
+    #host.card-size { flex: none; width: 400px; height: 300px; margin: 24px; border: 1px solid #161616; }
+    #host.strip-size { flex: none; height: 40px; border-bottom: 1px solid #161616; }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <label>SEED <input id="seed" type="number" value="20260706" style="width:110px"></label>
+    <label>MODE
+      <select id="mode">
+        <option value="landing">landing</option>
+        <option value="strip">strip</option>
+        <option value="card">card</option>
+      </select>
+    </label>
+    <label>VARIANT
+      <select id="variant">
+        <option value="quadtree">quadtree</option>
+        <option value="dither">dither</option>
+        <option value="flow">flow</option>
+        <option value="field">field</option>
+        <option value="blocks">blocks</option>
+      </select>
+    </label>
+    <button id="regen">REGENERATE</button>
+    <label><input id="drift" type="checkbox"> DRIFT x10 (flicker stress test)</label>
+    <label><input id="hud" type="checkbox" checked> HUD</label>
+    <label><input id="fieldview" type="checkbox"> RAW FIELD</label>
+    <span id="note"></span>
+  </div>
+  <div id="host"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script src="../js/grid-engine.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var host = document.getElementById('host');
+      var seedEl = document.getElementById('seed');
+      var modeEl = document.getElementById('mode');
+      var variantEl = document.getElementById('variant');
+      var driftEl = document.getElementById('drift');
+      var hudEl = document.getElementById('hud');
+      var fieldEl = document.getElementById('fieldview');
+      var sketch = null;
+
+      function boot() {
+        if (sketch) { sketch.destroy(); sketch = null; }
+        var mode = modeEl.value;
+        host.className = mode === 'card' ? 'card-size' : mode === 'strip' ? 'strip-size' : '';
+        sketch = createGridSketch(host, {
+          mode: mode,
+          seed: Number(seedEl.value) || 1,
+          variant: variantEl.value,
+          animate: mode === 'card' ? 'hover' : true,
+          tiles: mode === 'landing' ? [{ id: 'work' }, { id: 'art' }, { id: 'about' }] : [],
+          insets: { top: 60, right: 24, bottom: 24, left: 24 },
+          debug: hudEl.checked
+        });
+        sketch.setDrift(driftEl.checked ? 10 : 1);
+        sketch.setFieldView(fieldEl.checked);
+        window.__pg = sketch; // console access
+        if (mode === 'card') {
+          host.onpointerenter = function () { sketch.setHover(true); };
+          host.onpointerleave = function () { sketch.setHover(false); };
+          document.getElementById('note').textContent = 'hover the card to animate';
+        } else {
+          host.onpointerenter = host.onpointerleave = null;
+          document.getElementById('note').textContent = '';
+        }
+      }
+
+      document.getElementById('regen').onclick = boot;
+      seedEl.onchange = boot;
+      modeEl.onchange = boot;
+      variantEl.onchange = boot;
+      driftEl.onchange = function () { sketch.setDrift(driftEl.checked ? 10 : 1); };
+      hudEl.onchange = function () { sketch.setDebug(hudEl.checked); };
+      fieldEl.onchange = function () { sketch.setFieldView(fieldEl.checked); };
+
+      boot();
+    })();
+  </script>
+</body>
+</html>

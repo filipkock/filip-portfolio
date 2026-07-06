@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FILIP KOCKENDAL · PRODUCT DESIGNER + CREATIVE CODER</title>
+  <meta name="description" content="Portfolio of Filip Kockendal, product designer and creative coder. Parametric grids, generative systems, black and white plotter art.">
+  <meta name="theme-color" content="#ecebe7">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.className += ' js';</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="js/grid-engine.js"></script>
+  <script defer src="js/site.js"></script>
+  <script defer src="js/landing.js"></script>
+</head>
+<body class="page-index">
+  <main class="stage">
+    <div id="grid-host" class="grid-host" aria-hidden="true"></div>
+
+    <header class="corner corner--tl">
+      <h1 class="wordmark"><a href="index.html" aria-current="page">FILIP KOCKENDAL</a></h1>
+      <p class="tagline label">PRODUCT DESIGNER + CREATIVE CODER</p>
+    </header>
+
+    <nav class="tile-nav" aria-label="Primary">
+      <a class="tile-link" href="work.html" data-tile="work">
+        <span class="idx">01</span>
+        <span class="tile-label">WORK</span>
+      </a>
+      <a class="tile-link" href="art.html" data-tile="art">
+        <span class="idx">02</span>
+        <span class="tile-label">ART</span>
+      </a>
+      <a class="tile-link" href="about.html" data-tile="about">
+        <span class="idx">03</span>
+        <span class="tile-label">ABOUT</span>
+      </a>
+    </nav>
+
+    <footer class="corner corner--bl">
+      <nav aria-label="Contact">
+        <a href="mailto:hello@example.com">EMAIL</a>
+        <a href="https://github.com/" rel="me">GITHUB</a>
+        <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
+      </nav>
+    </footer>
+
+    <p class="corner corner--br label" aria-hidden="true">GRID V1 · SEED 20260706</p>
+  </main>
+</body>
+</html>

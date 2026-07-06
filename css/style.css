@@ -1,0 +1,690 @@
+/* ==========================================================================
+   style.css - single shared stylesheet
+   Principle: HTML chrome never eases; only the canvas breathes.
+   Palette is paper + ink + three grays. No border-radius, no box-shadow,
+   no color, anywhere.
+   Layers (source order matters, later layers only narrow earlier ones):
+   1 tokens / 2 reset+base / 3 utilities / 4 chrome / 5 hairline grid
+   6 page sections / 7 media + preferences + fallbacks (always last)
+   ========================================================================== */
+
+/* 1. tokens ------------------------------------------------------------- */
+:root {
+  --paper: #ecebe7;
+  --ink: #161616;
+  --gray-1: #dedcd6;
+  --gray-2: #b8b6b0;
+  --gray-3: #6f6d68; /* darkest gray allowed for text: >= 4.5:1 on paper */
+
+  --hair: 1px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+  --head-h: 3rem;
+  --strip-h: 2.5rem;
+
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --text-xs: 0.625rem;
+  --text-s: 0.75rem;
+  --text-m: 0.875rem;
+  --text-l: 1.25rem;
+  --text-xl: clamp(1.5rem, 3vw, 2.25rem);
+  --track: 0.08em;
+  --track-wide: 0.18em;
+}
+
+/* 2. reset + base ------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+img,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-m);
+  line-height: 1.55;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 500;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: var(--hair) solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* 3. utilities ----------------------------------------------------------- */
+.label {
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+
+.idx {
+  color: var(--gray-3);
+  letter-spacing: var(--track);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.wrap {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/* 4. chrome (subpages) --------------------------------------------------- */
+.site-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  min-height: var(--head-h);
+  border-bottom: var(--hair) solid var(--ink);
+  padding-inline: var(--space-4);
+}
+
+.site-head .wordmark {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-s);
+  letter-spacing: var(--track-wide);
+  text-decoration: none;
+}
+
+.site-head .wordmark:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.site-head nav {
+  display: flex;
+}
+
+.site-head nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-s);
+  letter-spacing: var(--track);
+  text-decoration: none;
+}
+
+.site-head nav a:hover,
+.site-head nav a[aria-current="page"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.site-head nav a:hover .idx,
+.site-head nav a[aria-current="page"] .idx {
+  color: var(--gray-2);
+}
+
+.head-strip {
+  height: var(--strip-h);
+  border-bottom: var(--hair) solid var(--ink);
+  overflow: hidden;
+}
+
+.head-strip > div {
+  width: 100%;
+  height: 100%;
+}
+
+.site-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  border-top: var(--hair) solid var(--ink);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+
+.site-foot nav {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.site-foot a {
+  text-decoration: none;
+}
+
+.site-foot a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* 5. hairline grid --------------------------------------------------------
+   Shared 1px borders without doubling: ink background bleeds through 1px
+   gaps. Column counts are explicit per breakpoint; content counts (6, 12)
+   divide evenly, because auto-fill with a partial row exposes an ink block. */
+.hairline-grid {
+  display: grid;
+  gap: var(--hair);
+  background: var(--ink);
+  border: var(--hair) solid var(--ink);
+}
+
+.hairline-grid > * {
+  background: var(--paper);
+}
+
+/* 6. page sections -------------------------------------------------------- */
+
+/* 6a. landing */
+.page-index {
+  overflow: hidden;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+}
+
+.grid-host {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.tile-nav {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tile-link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-3);
+  pointer-events: auto;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+/* engine-positioned: hidden until the first onTiles callback lands */
+html.js .tile-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+}
+
+html.js body.tiles-ready .tile-link {
+  visibility: visible;
+}
+
+.tile-link .idx {
+  font-size: var(--text-s);
+}
+
+.tile-link .tile-label {
+  font-size: var(--text-l);
+  letter-spacing: var(--track-wide);
+}
+
+.tile-link:hover,
+.tile-link:focus-visible {
+  color: var(--paper);
+}
+
+.tile-link:hover .idx,
+.tile-link:focus-visible .idx {
+  color: var(--gray-2);
+}
+
+/* focus ring that survives inversion: inner dashed paper hairline */
+.tile-link::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: var(--hair) dashed transparent;
+  pointer-events: none;
+}
+
+.tile-link:focus-visible {
+  outline: none;
+}
+
+.tile-link:focus-visible::after {
+  border-color: var(--paper);
+}
+
+.corner {
+  position: absolute;
+  z-index: 3;
+  background: var(--paper);
+  border: var(--hair) solid var(--ink);
+  padding: var(--space-2) var(--space-3);
+}
+
+.corner--tl {
+  top: var(--space-4);
+  left: var(--space-4);
+}
+
+.corner--tl .wordmark {
+  font-size: var(--text-m);
+  letter-spacing: var(--track-wide);
+}
+
+.corner--tl .wordmark a {
+  text-decoration: none;
+}
+
+.corner--tl .tagline {
+  margin-top: var(--space-1);
+  color: var(--gray-3);
+}
+
+.corner--bl {
+  bottom: var(--space-4);
+  left: var(--space-4);
+}
+
+.corner--bl nav {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.corner--bl a {
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-decoration: none;
+}
+
+.corner--bl a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.corner--br {
+  bottom: var(--space-4);
+  right: var(--space-4);
+  color: var(--gray-3);
+}
+
+/* 6b. shared subpage title row */
+.title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-block: var(--space-5) var(--space-4);
+}
+
+.title-row h1 {
+  font-size: var(--text-xl);
+}
+
+.title-row .count {
+  color: var(--gray-3);
+}
+
+/* 6c. work cards */
+.card-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.card .thumb {
+  aspect-ratio: 4 / 3;
+  border-bottom: var(--hair) solid var(--ink);
+  overflow: hidden;
+}
+
+.card-meta {
+  padding: var(--space-3);
+}
+
+.card-meta .idx {
+  font-size: var(--text-xs);
+}
+
+.card-meta h2 {
+  margin-top: var(--space-1);
+  font-size: var(--text-m);
+}
+
+.card-tags {
+  margin-top: var(--space-2);
+  color: var(--gray-3);
+}
+
+/* 6d. art gallery */
+.tag-row {
+  display: none; /* filter is a JS feature; shown under html.js below */
+}
+
+html.js .tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hair);
+  background: var(--ink);
+  border: var(--hair) solid var(--ink);
+}
+
+.tag-row button {
+  background: var(--paper);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+
+.tag-row button:hover,
+.tag-row button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.art-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.art-cell .thumb {
+  aspect-ratio: 1;
+  border-bottom: var(--hair) solid var(--ink);
+  overflow: hidden;
+}
+
+.art-cell figcaption {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--gray-3);
+}
+
+/* 6e. about */
+.about-grid {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas:
+    "bio      bio      portrait"
+    "approach tools    now"
+    "contact  contact  contact"
+    "colophon colophon colophon";
+  margin-block: var(--space-5);
+}
+
+.cell {
+  padding: var(--space-4);
+}
+
+.cell h1 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-3);
+}
+
+.cell h2 {
+  color: var(--gray-3);
+  margin-bottom: var(--space-2);
+}
+
+.cell p + p {
+  margin-top: var(--space-3);
+}
+
+.cell li {
+  padding-block: var(--space-1);
+}
+
+.cell-bio {
+  grid-area: bio;
+}
+
+.cell-portrait {
+  grid-area: portrait;
+  padding: 0;
+}
+
+.cell-portrait .thumb {
+  height: 100%;
+  min-height: 240px;
+}
+
+.cell-approach {
+  grid-area: approach;
+}
+
+.cell-tools {
+  grid-area: tools;
+}
+
+.cell-now {
+  grid-area: now;
+}
+
+.cell-contact {
+  grid-area: contact;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.cell-contact a {
+  font-size: var(--text-l);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.cell-contact a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.cell-colophon {
+  grid-area: colophon;
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--gray-3);
+}
+
+/* 6f. page-enter: a mechanical dither-in, not a fade. Hidden state lives
+   ONLY inside the keyframes so `animation: none` yields visible content. */
+@keyframes boot {
+  from {
+    opacity: 0;
+  }
+}
+
+html.js body:not(.page-index) main > *,
+html.js body:not(.page-index) .head-strip {
+  animation: boot 200ms steps(2, end) both;
+}
+
+/* cross-document transition: progressive enhancement, Chromium only */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+/* 7. media + preferences + fallbacks (keep last) -------------------------- */
+@media (max-width: 900px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .art-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .about-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "bio      bio"
+      "portrait approach"
+      "tools    now"
+      "contact  contact"
+      "colophon colophon";
+  }
+}
+
+@media (max-width: 600px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .art-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "bio"
+      "portrait"
+      "approach"
+      "tools"
+      "now"
+      "contact"
+      "colophon";
+  }
+
+  .corner--tl {
+    top: var(--space-3);
+    left: var(--space-3);
+  }
+
+  .corner--bl {
+    bottom: var(--space-3);
+    left: var(--space-3);
+  }
+
+  .corner--br {
+    display: none;
+  }
+
+  .site-head {
+    padding-inline: var(--space-3);
+  }
+
+  .site-head .wordmark {
+    font-size: var(--text-xs);
+  }
+
+  .site-head nav a {
+    padding: 0 var(--space-2);
+  }
+}
+
+/* short landscape phones: allow the landing to scroll rather than crush */
+@media (max-height: 420px) {
+  .page-index {
+    overflow: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* no-JS / engine-failed: static tile column, fully usable, intentional */
+html:not(.js) .grid-host,
+html.engine-failed .grid-host {
+  display: none;
+}
+
+html:not(.js) .tile-nav,
+html.engine-failed .tile-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  pointer-events: auto;
+}
+
+html:not(.js) .tile-link,
+html.engine-failed .tile-link {
+  position: static;
+  visibility: visible;
+  width: min(420px, 84vw);
+  min-height: 96px;
+  border: var(--hair) solid var(--ink);
+  background: var(--paper);
+}
+
+html:not(.js) .tile-link:hover,
+html.engine-failed .tile-link:hover,
+html:not(.js) .tile-link:focus-visible,
+html.engine-failed .tile-link:focus-visible {
+  background: var(--ink);
+}
+
+html:not(.js) .thumb,
+html.engine-failed .thumb {
+  background: var(--paper);
+}

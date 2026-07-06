@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>02 ART · FILIP KOCKENDAL</title>
+  <meta name="description" content="Generative art by Filip Kockendal: parametric grids, quadtree subdivision, dither fields. Black and white, plotter-friendly.">
+  <meta name="theme-color" content="#ecebe7">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.className += ' js';</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="js/grid-engine.js"></script>
+  <script defer src="js/site.js"></script>
+</head>
+<body class="page-art">
+  <header class="site-head">
+    <a class="wordmark" href="index.html">FILIP KOCKENDAL</a>
+    <nav aria-label="Primary">
+      <a href="work.html"><span class="idx">01</span> WORK</a>
+      <a href="art.html" aria-current="page"><span class="idx">02</span> ART</a>
+      <a href="about.html"><span class="idx">03</span> ABOUT</a>
+    </nav>
+  </header>
+
+  <div class="head-strip" aria-hidden="true">
+    <div data-sketch="strip" data-seed="403"></div>
+  </div>
+
+  <main class="wrap">
+    <div class="title-row">
+      <h1>02 ART</h1>
+      <div class="tag-row" role="group" aria-label="Filter by tag">
+        <button data-tag="all" aria-pressed="true">ALL</button>
+        <button data-tag="quadtree" aria-pressed="false">QUADTREE</button>
+        <button data-tag="dither" aria-pressed="false">DITHER</button>
+        <button data-tag="flow" aria-pressed="false">FLOW</button>
+        <button data-tag="field" aria-pressed="false">FIELD</button>
+      </div>
+    </div>
+
+    <div class="hairline-grid art-grid">
+      <figure class="art-cell" data-tags="quadtree field">
+        <div class="thumb" data-sketch="card" data-seed="7301" data-variant="quadtree" role="img" aria-label="Generative study: recursive quadtree cascade along a noise boundary, black ink on paper"></div>
+        <figcaption>A-01 · EDGE CASCADE · SEED 7301</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="dither">
+        <div class="thumb" data-sketch="card" data-seed="7302" data-variant="dither" role="img" aria-label="Generative study: checkerboard dither field, black ink on paper"></div>
+        <figcaption>A-02 · DITHER FIELD I · SEED 7302</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="flow">
+        <div class="thumb" data-sketch="card" data-seed="7303" data-variant="flow" role="img" aria-label="Generative study: diagonally sheared grid flow, black ink on paper"></div>
+        <figcaption>A-03 · SHEAR STUDY · SEED 7303</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="quadtree">
+        <div class="thumb" data-sketch="card" data-seed="7304" data-variant="quadtree" role="img" aria-label="Generative study: nested square subdivision, black ink on paper"></div>
+        <figcaption>A-04 · QUADTREE NO. 4 · SEED 7304</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="field flow">
+        <div class="thumb" data-sketch="card" data-seed="7305" data-variant="field" role="img" aria-label="Generative study: smoke-like lattice of filled cells, black ink on paper"></div>
+        <figcaption>A-05 · SMOKE LATTICE · SEED 7305</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="dither field">
+        <div class="thumb" data-sketch="card" data-seed="7306" data-variant="dither" role="img" aria-label="Generative study: drifting checker dither bands, black ink on paper"></div>
+        <figcaption>A-06 · CHECKER DRIFT · SEED 7306</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="quadtree">
+        <div class="thumb" data-sketch="card" data-seed="7307" data-variant="blocks" role="img" aria-label="Generative study: coarse solid block islands on a fine grid, black ink on paper"></div>
+        <figcaption>A-07 · BLOCK ISLANDS · SEED 7307</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="flow">
+        <div class="thumb" data-sketch="card" data-seed="7308" data-variant="flow" role="img" aria-label="Generative study: elongated diagonal flow field, black ink on paper"></div>
+        <figcaption>A-08 · MERIDIAN · SEED 7308</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="dither">
+        <div class="thumb" data-sketch="card" data-seed="7309" data-variant="dither" role="img" aria-label="Generative study: dense dither field with solid cores, black ink on paper"></div>
+        <figcaption>A-09 · DITHER FIELD II · SEED 7309</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="field">
+        <div class="thumb" data-sketch="card" data-seed="7310" data-variant="field" role="img" aria-label="Generative study: terrain-like slice of banded cells, black ink on paper"></div>
+        <figcaption>A-10 · TERRAIN SLICE · SEED 7310</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="quadtree">
+        <div class="thumb" data-sketch="card" data-seed="7311" data-variant="quadtree" role="img" aria-label="Generative study: nested squares at five depths, black ink on paper"></div>
+        <figcaption>A-11 · NESTED SQUARES · SEED 7311</figcaption>
+      </figure>
+
+      <figure class="art-cell" data-tags="field dither">
+        <div class="thumb" data-sketch="card" data-seed="7312" data-variant="blocks" role="img" aria-label="Generative study: decaying signal blocks fading into empty grid, black ink on paper"></div>
+        <figcaption>A-12 · SIGNAL DECAY · SEED 7312</figcaption>
+      </figure>
+    </div>
+  </main>
+
+  <footer class="site-foot">
+    <p>© 2026 FILIP KOCKENDAL</p>
+    <nav aria-label="Contact">
+      <a href="mailto:hello@example.com">EMAIL</a>
+      <a href="https://github.com/" rel="me">GITHUB</a>
+      <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
+    </nav>
+  </footer>
+</body>
+</html>
