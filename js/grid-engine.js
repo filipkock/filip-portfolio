@@ -937,33 +937,38 @@
 
     var instance = new window.p5(sketchFn, container);
 
+    function scheduleRebuildIfResized() {
+      if (S.dead || !S.p) return;
+      var w = container.clientWidth, h = container.clientHeight;
+      if (!w || !h) return;
+      if (w === S.p.width && h === S.p.height) return;
+      clearTimeout(S.resizeTimer);
+      S.resizeTimer = setTimeout(function () {
+        if (S.dead || !S.p) return;
+        var w2 = Math.max(2, container.clientWidth), h2 = Math.max(2, container.clientHeight);
+        S.p.resizeCanvas(w2, h2, true);
+        build(S.p);
+        if (!S.looping) S.p.redraw();
+      }, tune.RESIZE_DEBOUNCE_MS);
+    }
+
     function onVisibility() {
       if (S.dead) return;
       S.hidden = document.hidden;
       if (S.hidden) {
         if (S.p) S.p.noLoop();
-      } else if (S.loopWanted || S.looping) {
-        if (S.p) S.p.loop();
+      } else {
+        if (S.p && (S.loopWanted || S.looping)) S.p.loop();
+        // ResizeObserver does not deliver while a tab is not rendering, so a
+        // resize that happened in the background is caught here instead
+        scheduleRebuildIfResized();
       }
     }
     document.addEventListener('visibilitychange', onVisibility);
 
     var ro = null;
     if (typeof ResizeObserver === 'function') {
-      ro = new ResizeObserver(function () {
-        if (S.dead || !S.p) return;
-        var w = container.clientWidth, h = container.clientHeight;
-        if (!w || !h) return;
-        if (w === S.p.width && h === S.p.height) return;
-        clearTimeout(S.resizeTimer);
-        S.resizeTimer = setTimeout(function () {
-          if (S.dead || !S.p) return;
-          var w2 = Math.max(2, container.clientWidth), h2 = Math.max(2, container.clientHeight);
-          S.p.resizeCanvas(w2, h2, true);
-          build(S.p);
-          if (!S.looping) S.p.redraw();
-        }, tune.RESIZE_DEBOUNCE_MS);
-      });
+      ro = new ResizeObserver(scheduleRebuildIfResized);
       ro.observe(container);
     }
 
