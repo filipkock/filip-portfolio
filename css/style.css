@@ -8,13 +8,22 @@
    6 page sections / 7 media + preferences + fallbacks (always last)
    ========================================================================== */
 
+/* 0. fonts -------------------------------------------------------------- */
+@font-face {
+  font-family: "Saira Stencil One";
+  src: url("../assets/fonts/saira-stencil-one.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 1. tokens ------------------------------------------------------------- */
 :root {
-  --paper: #ecebe7;
-  --ink: #161616;
-  --gray-1: #dedcd6;
-  --gray-2: #b8b6b0;
-  --gray-3: #6f6d68; /* darkest gray allowed for text: >= 4.5:1 on paper */
+  --paper: #fafafa;
+  --ink: #111111;
+  --gray-1: #e4e4e4;
+  --gray-2: #9c9c9c;
+  --gray-3: #5c5c5c; /* darkest gray allowed for text: >= 4.5:1 on paper */
 
   --hair: 1px;
   --space-1: 0.25rem;
@@ -27,6 +36,7 @@
   --strip-h: 2.5rem;
 
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-stencil: "Saira Stencil One", ui-monospace, "SF Mono", Menlo, monospace;
   --text-xs: 0.625rem;
   --text-s: 0.75rem;
   --text-m: 0.875rem;
@@ -254,16 +264,23 @@ h3 {
   pointer-events: none;
 }
 
+/* nav tiles are lattice cells: the canvas paints the black fill (or the
+   dense hatch on hover); the anchor carries only crisp white type */
 .tile-link {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: var(--space-3);
+  padding: clamp(12px, 7%, 28px);
   pointer-events: auto;
   cursor: pointer;
   text-decoration: none;
-  color: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-stencil);
+  font-size: clamp(1.05rem, 2.1vw, 1.7rem);
+  letter-spacing: 0.12em;
+  line-height: 1.15;
+  text-transform: uppercase;
 }
 
 /* engine-positioned: hidden until the first onTiles callback lands */
@@ -278,30 +295,20 @@ html.js body.tiles-ready .tile-link {
   visibility: visible;
 }
 
-.tile-link .idx {
-  font-size: var(--text-s);
-}
+/* label corner choreography, per the mock */
+.tile-link[data-tile="about"] .tl-a { align-self: flex-start; }
+.tile-link[data-tile="about"] .tl-b { align-self: flex-end; }
+.tile-link[data-tile="art"] .tl-a { align-self: flex-end; }
+.tile-link[data-tile="art"] .tl-b { align-self: flex-start; }
+.tile-link[data-tile="work"] { justify-content: flex-start; gap: 0.15em; }
+.tile-link[data-tile="work"] .tl-a { align-self: flex-start; }
+.tile-link[data-tile="work"] .tl-b { align-self: flex-end; }
 
-.tile-link .tile-label {
-  font-size: var(--text-l);
-  letter-spacing: var(--track-wide);
-}
-
-.tile-link:hover,
-.tile-link:focus-visible {
-  color: var(--paper);
-}
-
-.tile-link:hover .idx,
-.tile-link:focus-visible .idx {
-  color: var(--gray-2);
-}
-
-/* focus ring that survives inversion: inner dashed paper hairline */
+/* focus ring: inner dashed paper hairline (reads on black and on hatch) */
 .tile-link::after {
   content: "";
   position: absolute;
-  inset: 8px;
+  inset: 6px;
   border: var(--hair) dashed transparent;
   pointer-events: none;
 }
@@ -314,58 +321,84 @@ html.js body.tiles-ready .tile-link {
   border-color: var(--paper);
 }
 
-.corner {
+/* wordmark + contact live in reserved lattice cells (kind: 'text') */
+.grid-cell-overlay {
   position: absolute;
-  z-index: 3;
-  background: var(--paper);
-  border: var(--hair) solid var(--ink);
-  padding: var(--space-2) var(--space-3);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  pointer-events: none;
 }
 
-.corner--tl {
-  top: var(--space-4);
-  left: var(--space-4);
+.grid-cell-overlay a {
+  pointer-events: auto;
 }
 
-.corner--tl .wordmark {
+html.js .grid-cell-overlay {
+  top: 0;
+  left: 0;
+  visibility: hidden;
+}
+
+html.js body.tiles-ready .grid-cell-overlay {
+  visibility: visible;
+}
+
+.grid-cell-overlay .wordmark {
   font-size: var(--text-m);
   letter-spacing: var(--track-wide);
 }
 
-.corner--tl .wordmark a {
+.grid-cell-overlay .wordmark a {
   text-decoration: none;
 }
 
-.corner--tl .tagline {
+.grid-cell-overlay .wordmark a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.grid-cell-overlay .tagline {
   margin-top: var(--space-1);
   color: var(--gray-3);
 }
 
-.corner--bl {
-  bottom: var(--space-4);
-  left: var(--space-4);
+[data-cell="contact"] {
+  justify-content: flex-end;
 }
 
-.corner--bl nav {
+[data-cell="contact"] nav {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
 }
 
-.corner--bl a {
+[data-cell="contact"] a {
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-decoration: none;
 }
 
-.corner--bl a:hover {
+[data-cell="contact"] a:hover {
   background: var(--ink);
   color: var(--paper);
 }
 
-.corner--br {
-  bottom: var(--space-4);
-  right: var(--space-4);
-  color: var(--gray-3);
+/* hover-images easter egg host (enabled by listing images in landing.js) */
+.hover-img {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  display: none;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+}
+
+.hover-img.is-visible {
+  display: block;
 }
 
 /* 6b. shared subpage title row */
@@ -608,18 +641,16 @@ html.js body:not(.page-index) .head-strip {
       "colophon";
   }
 
-  .corner--tl {
-    top: var(--space-3);
-    left: var(--space-3);
+  .grid-cell-overlay {
+    padding: var(--space-2);
   }
 
-  .corner--bl {
-    bottom: var(--space-3);
-    left: var(--space-3);
+  .grid-cell-overlay .wordmark {
+    font-size: var(--text-s);
   }
 
-  .corner--br {
-    display: none;
+  .tile-link {
+    font-size: 1rem;
   }
 
   .site-head {
@@ -651,18 +682,37 @@ html.js body:not(.page-index) .head-strip {
   }
 }
 
-/* no-JS / engine-failed: static tile column, fully usable, intentional */
+/* no-JS / engine-failed: static column, fully usable, intentional */
 html:not(.js) .grid-host,
-html.engine-failed .grid-host {
+html.engine-failed .grid-host,
+html:not(.js) .hover-img,
+html.engine-failed .hover-img {
   display: none;
+}
+
+html:not(.js) .stage,
+html.engine-failed .stage {
+  position: static;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+html:not(.js) .grid-cell-overlay,
+html.engine-failed .grid-cell-overlay {
+  position: static;
+  visibility: visible;
+  padding: 0;
 }
 
 html:not(.js) .tile-nav,
 html.engine-failed .tile-nav {
+  position: static;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
   gap: var(--space-3);
   pointer-events: auto;
 }
@@ -673,15 +723,16 @@ html.engine-failed .tile-link {
   visibility: visible;
   width: min(420px, 84vw);
   min-height: 96px;
-  border: var(--hair) solid var(--ink);
-  background: var(--paper);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 html:not(.js) .tile-link:hover,
 html.engine-failed .tile-link:hover,
 html:not(.js) .tile-link:focus-visible,
 html.engine-failed .tile-link:focus-visible {
-  background: var(--ink);
+  outline: var(--hair) solid var(--ink);
+  outline-offset: 2px;
 }
 
 html:not(.js) .thumb,

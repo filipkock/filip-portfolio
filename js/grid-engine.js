@@ -1,5 +1,5 @@
 /* ==========================================================================
- * grid-engine.js - parametric quadtree grid engine (p5 instance mode)
+ * grid-engine.js - parametric lattice grid engine (p5 instance mode)
  *
  * Contract:
  *   window.createGridSketch(container, opts) -> handle
@@ -8,24 +8,31 @@
  *     seed: Number (required, deterministic output per seed),
  *     mode: 'landing' | 'strip' | 'card',
  *     animate: true | false | 'hover',
- *     tiles: [{id}], insets: {top,right,bottom,left} | () => insets,  (landing)
- *     reducedMotion, touch: Boolean,      (env detected by the page layer)
+ *     tiles: [{id, kind?}],           (landing; kind 'nav' (default) | 'text')
+ *     reducedMotion, touch: Boolean,  (env detected by the page layer)
  *     density: 'default' | 'low',
- *     buildIn: Boolean, variant: String,  (variant = card flavor preset)
+ *     buildIn: Boolean, variant: String (card flavor preset),
  *     interactive: Boolean (default true),
- *     onTiles(rects): fired on build + resize ONLY, CSS px, container-relative,
+ *     onTiles(rects): fired on build + resize ONLY; CSS px, container-relative,
+ *                     rects include {id, kind, x, y, w, h},
  *     debug: Boolean, tune: {overrides}
  *   }
  *
- *   handle: { getTiles, setTileHover(id|null), setHover(bool), regenerate(seed?),
- *             setDrift(mult), setDebug(bool), setFieldView(bool), destroy, p }
+ *   handle: { getTiles, setTileHover(id|null), setHover(bool), cellAt(x,y),
+ *             regenerate(seed?), setDrift(mult), setDebug(bool),
+ *             setFieldView(bool), destroy, p }
  *
- * Hard rules the pages rely on:
- *   - tile base rects never move after build (hover grow is paint-only)
- *   - pointer is read from p5's window-level mouse tracking, so HTML overlay
- *     anchors do not break the ambient hover ripple
- *   - the engine observes its container size itself (debounced rebuild)
- *   - setTileHover triggers a redraw even under reducedMotion/noLoop
+ * Design notes:
+ *   - The composition is a uniform lattice with seeded merges; nav/text tiles
+ *     ARE lattice spans, so chrome sits inside the artwork, never on top.
+ *   - All textures are pure black line-work at fixed pitches, aligned to the
+ *     global canvas origin, so splits/merges never make a texture jump.
+ *   - Style changes crossfade through a centered window tween instead of
+ *     popping between bands.
+ *   - Tile base rects never move after build; hover swaps fill only.
+ *   - Pointer is read from p5's window-level mouse tracking, so HTML overlay
+ *     anchors do not break the ambient hover ripple.
+ *   - The engine observes its container size itself (debounced rebuild).
  * ========================================================================== */
 (function () {
   'use strict';
@@ -34,84 +41,76 @@
    * 1. TUNE - every constant that shapes the composition.               *
    * ------------------------------------------------------------------ */
   var TUNE = {
-    // palette
-    PAPER: '#ecebe7',
-    INK: '#161616',
-    GRAY_DARK: '#4c4a45',   // DOT cell fill
-    GRAY_MID: '#8a8984',    // hatch lines, tiny-checker fallback fill
-    GRAY_LIGHT: '#c9c8c2',  // faint tile grid, tiny-hatch fallback fill
-    LINE: '#55534e',        // empty-cell grid strokes (thin pen on paper)
+    // palette: cold, high contrast; textures do the shading
+    PAPER: '#fafafa',
+    INK: '#111111',
     STROKE_PX: 1,
 
+    // lattice
+    CELL_TARGET_PX: 190,      // super-cell size the lattice aims for
+    MERGE_P: 0.28,            // chance a lattice cell tries to merge a block
+    NAV_SPAN: 2,              // nav tiles span NxN lattice cells (desktop)
+
     // field (values are post-remap 0..1)
-    FIELD_FEATURE_FRAC: 0.25, // blob size as a fraction of min(w,h)
+    FIELD_FEATURE_FRAC: 0.35, // blob size as a fraction of min(w,h)
     FIELD_FEATURE_PX: 0,      // when > 0, overrides the fraction (strips)
     FBM_OCTAVES: 4,
     FBM_GAIN: 0.5,
     DIAG_SHEAR: 0.35,         // elongates features along the main diagonal
-    DIAG_BIAS: 0.10,          // intensity flows corner to corner
-    NOISE_REMAP_LO: 0.42,     // contrast stretch: fBm output is center-biased,
-    NOISE_REMAP_HI: 0.74,     // asymmetric on purpose: ~half the canvas stays calm
-    DRIFT_PER_SEC: 0.008,     // feature-scale change every ~60-90s
+    DIAG_BIAS: 0.08,          // intensity flows corner to corner
+    NOISE_REMAP_LO: 0.44,     // contrast stretch: fBm output is center-biased,
+    NOISE_REMAP_HI: 0.74,     // asymmetric on purpose: most of the canvas stays calm
+    DRIFT_PER_SEC: 0.012,     // visible but unhurried evolution
 
-    // style thresholds: EMPTY < HATCH < DOT < CHECKER < SOLID
-    T_HATCH: 0.55,
-    T_DOT: 0.66,
-    T_CHECKER: 0.76,
-    T_SOLID: 0.86,
-    REFINE_THRESHOLDS: [0.55, 0.86], // subdivide on silhouette + solid core edge
+    // style bands: 0 EMPTY < 1 < 2 < 3 < 4, textures come from STYLE_LADDER
+    T_B1: 0.50,
+    T_B2: 0.62,
+    T_B3: 0.74,
+    T_B4: 0.86,
+    REFINE_THRESHOLDS: [0.50, 0.74], // subdivide on silhouette + dense-core edge
+    STYLE_LADDER: ['empty', 'lines', 'grid_m', 'grid_f', 'grid_x'],
 
-    // hysteresis (the anti-flicker core)
+    // texture pitches (px, aligned to the canvas origin)
+    LINES_PITCH: 7,
+    GRID_M_PITCH: 9,
+    GRID_F_PITCH: 4.5,
+    GRID_X_PITCH: 2.5,
+    CHECKER_PITCH: 8,
+    TILE_HATCH_PITCH: 3.2,    // nav tile hover fill
+    MAX_LINES_PER_CELL: 240,  // density cap: pitch doubles until under this
+
+    // motion smoothing
+    STYLE_TWEEN_MS: 280,      // crossfade window for band changes
     H_SPLIT_ENTER: 0.012,
     H_SPLIT_EXIT: 0.03,       // exit needs more margin than enter (Schmitt)
-    SPLIT_MIN_DWELL_MS: 400,  // collapses are dwell-guarded; splits immediate
+    SPLIT_MIN_DWELL_MS: 450,
     H_STYLE: 0.012,
-    STYLE_MIN_DWELL_MS: 250,
+    STYLE_MIN_DWELL_MS: 300,
 
     // structural caps
-    MAX_DEPTH: 6,
+    MAX_DEPTH: 5,
     MIN_CELL_PX: 6,
     MAX_LEAVES_SOFT: 4500,
     MAX_LEAVES_HARD: 6000,
-    ROOT_BUDGET_FRAC: 0.7,    // base grids may use at most this share of soft cap
     DEGRADE_STEP_MS: 1000,
     DEGRADE_MAX: 3,
     DEGRADE_RECOVER_FRAC: 0.7,
     DEGRADE_RECOVER_CHECKS: 3,
 
-    // hover energy
+    // hover energy: gentle attack, slow relax
     HOVER_RADIUS_PX: 170,
     HOVER_MAX_EXTRA_DEPTH: 2,
-    ENERGY_ATTACK_TAU_MS: 80,
-    ENERGY_DECAY_TAU_MS: 300,
-    POP_MAX_PX: 2.5,
-
-    // tiles
-    TILE_GROW_PX: 5,
-    TILE_HOVER_EASE_MS: 140,
-    TILE_GRID_CELL_PX: 28,
-    TILE_W_FRAC: 0.26, TILE_W_MIN: 200, TILE_W_MAX: 420,
-    TILE_H_FRAC: 0.30, TILE_H_MIN: 120, TILE_H_MAX: 320,
-    TILE_STAGGER_FRAC: 0.18,  // vertical stagger between tile slots
-    TILE_BAND_MIN_H: 96, TILE_BAND_MAX_H: 140, TILE_BAND_GAP: 12,
-
-    // macro-region partition
-    REGION_COUNT_RANGE: [8, 14],
-    CELL_FINE: [14, 22],
-    CELL_MED: [30, 50],
-    CELL_COARSE: [200, 600],
-    FORCED_COARSE: 2,         // the largest N regions stay calm
+    ENERGY_ATTACK_TAU_MS: 120,
+    ENERGY_DECAY_TAU_MS: 500,
 
     // environment
     MOBILE_MAX_W: 700,
-    MOBILE_CELL_SCALE: 1.4,
+    MOBILE_CELL_SCALE: 1.2,
     MOBILE_MAX_LEAVES: 2500,
-    MOBILE_MAX_DEPTH: 5,
+    MOBILE_MAX_DEPTH: 4,
     RESIZE_DEBOUNCE_MS: 200,
     PIXEL_DENSITY_CAP: 2,
-    CHECKER_MIN_PX: 12,       // below this, checker renders as a flat gray
-    HATCH_MIN_PX: 8,          // below this, hatch renders as a flat light gray
-    DT_CLAMP_MS: 100,         // kills the tab-restore time jump
+    DT_CLAMP_MS: 100,
     BUILD_IN_MS: 500,
 
     // card mode extras
@@ -122,18 +121,17 @@
   var MODES = {
     landing: {},
     strip: {
-      REGION_COUNT_RANGE: [6, 10],
-      CELL_FINE: [7, 10], CELL_MED: [12, 18], CELL_COARSE: [20, 36],
-      FORCED_COARSE: 0,
+      CELL_TARGET_PX: 46,
+      MERGE_P: 0.35,
       MAX_DEPTH: 3, MAX_LEAVES_SOFT: 1400, MAX_LEAVES_HARD: 2000,
       FIELD_FEATURE_PX: 220,  // strip height is too small for fractional sizing
       NOISE_REMAP_LO: 0.40, NOISE_REMAP_HI: 0.68, DIAG_BIAS: 0,
       HOVER_RADIUS_PX: 70,
-      DRIFT_PER_SEC: 0.012
+      DRIFT_PER_SEC: 0.014
     },
     card: {
-      REGION_COUNT_RANGE: [4, 8],
-      FORCED_COARSE: 1,
+      CELL_TARGET_PX: 90,
+      MERGE_P: 0.30,
       MAX_DEPTH: 5, MAX_LEAVES_SOFT: 800, MAX_LEAVES_HARD: 1200,
       FIELD_FEATURE_FRAC: 0.45,
       HOVER_RADIUS_PX: 90,
@@ -143,23 +141,28 @@
 
   // Variants: per-piece flavors, mostly for card thumbnails.
   var VARIANTS = {
-    quadtree: {},
+    quadtree: {
+      STYLE_LADDER: ['empty', 'grid_m', 'grid_f', 'checker', 'solid']
+    },
     dither: {
-      T_HATCH: 0.50, T_DOT: 0.58, T_CHECKER: 0.62, T_SOLID: 0.90,
+      STYLE_LADDER: ['empty', 'grid_f', 'checker', 'checker', 'solid'],
+      T_B1: 0.50, T_B2: 0.58, T_B3: 0.62, T_B4: 0.90,
       REFINE_THRESHOLDS: [0.50, 0.62]
     },
     flow: {
+      STYLE_LADDER: ['empty', 'lines', 'grid_m', 'grid_f', 'solid'],
       DIAG_SHEAR: 0.85, FIELD_FEATURE_FRAC: 0.32, FBM_OCTAVES: 3
     },
     field: {
+      STYLE_LADDER: ['empty', 'lines', 'grid_m', 'grid_x', 'solid'],
       FBM_OCTAVES: 3,
-      T_HATCH: 0.50, T_DOT: 0.60, T_CHECKER: 0.70, T_SOLID: 0.78,
+      T_B1: 0.50, T_B2: 0.60, T_B3: 0.70, T_B4: 0.78,
       REFINE_THRESHOLDS: [0.78]
     },
     blocks: {
-      CELL_FINE: [26, 36], CELL_MED: [48, 72],
-      MAX_DEPTH: 3,
-      T_HATCH: 0.52, T_DOT: 0.62, T_CHECKER: 0.70, T_SOLID: 0.78,
+      STYLE_LADDER: ['empty', 'grid_m', 'grid_f', 'solid', 'solid'],
+      CELL_TARGET_PX: 120, MAX_DEPTH: 3,
+      T_B1: 0.52, T_B2: 0.62, T_B3: 0.70, T_B4: 0.78,
       REFINE_THRESHOLDS: [0.52, 0.78]
     }
   };
@@ -178,7 +181,6 @@
   }
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
-  function lerp(a, b, t) { return a + (b - a) * t; }
   function easeOutCubic(t) { var u = 1 - t; return 1 - u * u * u; }
 
   function merge() {
@@ -259,175 +261,100 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * 5. partition - seeded BSP into macro-regions with tiered densities. *
+   * 5. lattice - uniform grid + seeded merges; tiles claim spans first. *
+   *    Tile spans get no roots at all: the chrome IS those cells.       *
    * ------------------------------------------------------------------ */
-  function makeRegions(w, h, rng, T, cellScale, softCap) {
-    var rects = [{ x: 0, y: 0, w: w, h: h, ok: true }];
-    var target = Math.round(lerp(T.REGION_COUNT_RANGE[0], T.REGION_COUNT_RANGE[1], rng()));
-    var minSide = T.CELL_MED[1] * cellScale * 2;
-    var guard = 0;
-
-    while (rects.length < target && guard++ < 64) {
-      var candidates = [], weights = [], total = 0;
-      for (var i = 0; i < rects.length; i++) {
-        var r = rects[i];
-        if (r.ok && Math.min(r.w, r.h) >= 2 * minSide) {
-          var a = Math.pow(r.w * r.h, 1.5); // prefer big rects, keep variety
-          candidates.push(r); weights.push(a); total += a;
-        } else {
-          r.ok = false;
-        }
-      }
-      if (!candidates.length) break;
-
-      var pick = rng() * total, idx = 0;
-      for (; idx < candidates.length - 1; idx++) { pick -= weights[idx]; if (pick <= 0) break; }
-      var c = candidates[idx];
-      var vertical = c.w > 1.15 * c.h ? true : c.h > 1.15 * c.w ? false : rng() < 0.5;
-      var cut = Math.round(lerp(0.33, 0.67, rng()) * (vertical ? c.w : c.h));
-      var at = rects.indexOf(c), a1, b1;
-      if (vertical) {
-        a1 = { x: c.x, y: c.y, w: cut, h: c.h, ok: true };
-        b1 = { x: c.x + cut, y: c.y, w: c.w - cut, h: c.h, ok: true };
-      } else {
-        a1 = { x: c.x, y: c.y, w: c.w, h: cut, ok: true };
-        b1 = { x: c.x, y: c.y + cut, w: c.w, h: c.h - cut, ok: true };
-      }
-      rects.splice(at, 1, a1, b1);
-    }
-
-    // tier assignment: biggest regions stay coarse/calm; the rest come from
-    // a shuffled deck of ~40% fine / 40% medium / 20% coarse, min 2 fine
-    rects.sort(function (r1, r2) { return r2.w * r2.h - r1.w * r1.h; });
-    var forced = Math.min(T.FORCED_COARSE, rects.length);
-    var remaining = rects.length - forced;
-    var deck = [];
-    var nFine = Math.max(Math.min(2, remaining), Math.round(remaining * 0.4));
-    var nMed = Math.round(remaining * 0.4);
-    for (var d = 0; d < remaining; d++) deck.push(d < nFine ? 'fine' : d < nFine + nMed ? 'medium' : 'coarse');
-    for (var s = deck.length - 1; s > 0; s--) {
-      var j = Math.floor(rng() * (s + 1));
-      var tmp = deck[s]; deck[s] = deck[j]; deck[j] = tmp;
-    }
-
-    var regions = [];
-    for (var q = 0; q < rects.length; q++) {
-      var rect = rects[q];
-      var tier = q < forced ? 'coarse' : deck[q - forced];
-      var range = tier === 'fine' ? T.CELL_FINE : tier === 'medium' ? T.CELL_MED : T.CELL_COARSE;
-      regions.push({
-        x: rect.x, y: rect.y, w: rect.w, h: rect.h,
-        tier: tier,
-        targetCell: lerp(range[0], range[1], rng()) * cellScale,
-        roots: null, cols: 0, rows: 0
-      });
-    }
-
-    // base grids; a bounded guard keeps root count inside the leaf budget
-    // (roots are the floor of leafCount - degrade cannot remove them)
-    var rootBudget = Math.max(64, Math.floor(softCap * T.ROOT_BUDGET_FRAC));
-    for (var attempt = 0; attempt < 2; attempt++) {
-      var totalRoots = 0;
-      for (var g = 0; g < regions.length; g++) {
-        var reg = regions[g];
-        reg.cols = Math.max(1, Math.round(reg.w / reg.targetCell));
-        reg.rows = Math.max(1, Math.round(reg.h / reg.targetCell));
-        totalRoots += reg.cols * reg.rows;
-      }
-      if (totalRoots <= rootBudget) break;
-      var scale = Math.sqrt(totalRoots / rootBudget);
-      for (var g2 = 0; g2 < regions.length; g2++) regions[g2].targetCell *= scale;
-    }
-    return regions;
-  }
-
-  /* ------------------------------------------------------------------ *
-   * 6. tiles - navigation rectangles the field flows around.            *
-   * ------------------------------------------------------------------ */
-  function makeTile(id, x, y, w, h) {
+  function makeTile(def, c0, r0, cs, rs, cw, ch) {
     return {
-      id: id,
-      rect: { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) },
-      hovered: false,
-      hoverT: 0
+      id: def.id,
+      kind: def.kind === 'text' ? 'text' : 'nav',
+      rect: {
+        x: Math.round(c0 * cw), y: Math.round(r0 * ch),
+        w: Math.round(cs * cw), h: Math.round(rs * ch)
+      },
+      span: { c0: c0, r0: r0, cs: cs, rs: rs },
+      hovered: false
     };
   }
 
-  function resolveTiles(w, h, defs, insets, rng, T, stacked) {
-    var ax = insets.left, ay = insets.top;
-    var aw = Math.max(40, w - insets.left - insets.right);
-    var ah = Math.max(40, h - insets.top - insets.bottom);
-    var n = defs.length, i;
+  // Nav tiles get one horizontal bin each (never overlapping); text cells pin
+  // to the top-left (wordmark) and bottom-left (contact) lattice corners.
+  function placeTiles(defs, cols, rows, rng, T, stacked, cw, ch) {
     var tiles = [];
-
-    if (stacked) {
-      var bh = clamp((ah - (n - 1) * T.TILE_BAND_GAP) / (n + 1), T.TILE_BAND_MIN_H, T.TILE_BAND_MAX_H);
-      var totalH = n * bh + (n - 1) * T.TILE_BAND_GAP;
-      var y0 = ay + Math.max(0, (ah - totalH) / 2);
-      for (i = 0; i < n; i++) tiles.push(makeTile(defs[i].id, ax, y0 + i * (bh + T.TILE_BAND_GAP), aw, bh));
-      return tiles;
+    var navDefs = [], textDefs = [];
+    for (var i = 0; i < defs.length; i++) {
+      (defs[i].kind === 'text' ? textDefs : navDefs).push(defs[i]);
     }
 
-    var slotW = aw / n;
-    for (i = 0; i < n; i++) {
-      var tw = clamp(T.TILE_W_FRAC * aw, T.TILE_W_MIN, Math.min(T.TILE_W_MAX, slotW - 24));
-      var th = clamp(T.TILE_H_FRAC * ah, T.TILE_H_MIN, Math.min(T.TILE_H_MAX, ah - 24));
-      var jx = (rng() * 2 - 1) * 0.05 * slotW;
-      var jy = (rng() * 2 - 1) * T.TILE_STAGGER_FRAC * ah;
-      var cx = ax + (i + 0.5) * slotW + jx;
-      var cy = ay + ah * 0.55 + jy;
-      var x = clamp(cx - tw / 2, ax + i * slotW + 8, ax + (i + 1) * slotW - tw - 8);
-      var y = clamp(cy - th / 2, ay, ay + ah - th);
-      tiles.push(makeTile(defs[i].id, x, y, tw, th));
+    if (stacked) {
+      // full-width bands with an empty lattice row between each
+      var firstRow = 2;
+      for (var s = 0; s < navDefs.length; s++) {
+        var r = Math.min(firstRow + s * 2, rows - 2);
+        tiles.push(makeTile(navDefs[s], 0, r, cols, 1, cw, ch));
+      }
+    } else {
+      var n = navDefs.length;
+      var cs = cols >= 6 ? Math.min(T.NAV_SPAN, Math.floor(cols / n)) : 1;
+      var rs = rows >= 6 ? T.NAV_SPAN : 1;
+      var minR = 1;
+      var maxR = Math.max(minR, rows - 1 - rs); // keep top + bottom rows clear
+      for (var j = 0; j < n; j++) {
+        var binLo = Math.floor(j * cols / n);
+        var binHi = Math.floor((j + 1) * cols / n) - cs;
+        var c0 = clamp(binLo + Math.floor(rng() * Math.max(1, binHi - binLo + 1)), 0, cols - cs);
+        var r0 = clamp(minR + Math.floor(rng() * Math.max(1, maxR - minR + 1)), minR, maxR);
+        tiles.push(makeTile(navDefs[j], c0, r0, cs, rs, cw, ch));
+      }
+    }
+
+    for (var t = 0; t < textDefs.length; t++) {
+      var def = textDefs[t];
+      var span = Math.min(2, cols);
+      if (def.id === 'contact') tiles.push(makeTile(def, 0, rows - 1, span, 1, cw, ch));
+      else tiles.push(makeTile(def, 0, 0, span, 1, cw, ch));
     }
     return tiles;
   }
 
-  function rectInTiles(n, tiles) {
-    for (var i = 0; i < tiles.length; i++) {
-      var r = tiles[i].rect;
-      if (n.x >= r.x && n.y >= r.y && n.x + n.w <= r.x + r.w && n.y + n.h <= r.y + r.h) return true;
-    }
-    return false;
-  }
-
   /* ------------------------------------------------------------------ *
-   * 7. quadtree - persistent nodes, reclassified every frame.           *
-   *    Hysteresis state and hover energy live on the nodes; that is     *
-   *    what keeps the piece breathing instead of strobing.              *
+   * 6. quadtree - persistent nodes, reclassified every frame.           *
+   *    Hysteresis + hover energy live on the nodes; style changes       *
+   *    crossfade through a centered-window tween.                       *
    * ------------------------------------------------------------------ */
-  var STYLE_EMPTY = 0, STYLE_HATCH = 1, STYLE_DOT = 2, STYLE_CHECKER = 3, STYLE_SOLID = 4;
-
   function makeNode(x, y, w, h, depth) {
     return {
       x: x, y: y, w: w, h: h, depth: depth,
       children: null,
-      style: STYLE_EMPTY,
+      style: 0,
+      prevStyle: 0,
+      styleT: 1,
       lastStyleChangeMs: 0,
       lastSplitChangeMs: 0,
-      energy: 0,
-      occluded: false
+      energy: 0
     };
   }
 
-  function styleFor(v, T) {
-    if (v >= T.T_SOLID) return STYLE_SOLID;
-    if (v >= T.T_CHECKER) return STYLE_CHECKER;
-    if (v >= T.T_DOT) return STYLE_DOT;
-    if (v >= T.T_HATCH) return STYLE_HATCH;
-    return STYLE_EMPTY;
+  function bandFor(v, T) {
+    if (v >= T.T_B4) return 4;
+    if (v >= T.T_B3) return 3;
+    if (v >= T.T_B2) return 2;
+    if (v >= T.T_B1) return 1;
+    return 0;
   }
 
-  // move ONE band per change, gated by margin + dwell: ramps, never pops
+  // move ONE band per change, gated by margin + dwell; the renderer tweens it
   function classifyLeafStyle(n, v, S) {
     var T = S.tune;
-    var target = styleFor(v, T);
-    if (S.initialPass) { n.style = target; return; }
+    var target = bandFor(v, T);
+    if (S.initialPass) { n.style = target; n.prevStyle = target; n.styleT = 1; return; }
     if (target === n.style) return;
     var up = target > n.style;
     var boundary = S.bounds[up ? n.style : n.style - 1];
     if (Math.abs(v - boundary) > T.H_STYLE && S.nowMs - n.lastStyleChangeMs > T.STYLE_MIN_DWELL_MS) {
+      n.prevStyle = n.style;
       n.style += up ? 1 : -1;
+      n.styleT = 0;
       n.lastStyleChangeMs = S.nowMs;
     }
   }
@@ -454,9 +381,10 @@
       var k = kids[i];
       k.energy = n.energy;
       k.style = n.style;
+      k.prevStyle = n.prevStyle;
+      k.styleT = n.styleT;       // a mid-tween split keeps morphing seamlessly
       k.lastStyleChangeMs = n.lastStyleChangeMs;
       k.lastSplitChangeMs = S.nowMs;
-      k.occluded = S.tiles.length ? rectInTiles(k, S.tiles) : false;
     }
     n.children = kids;
     n.lastSplitChangeMs = S.nowMs;
@@ -465,7 +393,6 @@
   // corners (c00,c10,c01,c11) are passed down so each node samples only its
   // center (leaf) or center + 4 edge midpoints (internal): ~2.4x fewer samples
   function updateNode(n, S, c00, c10, c01, c11) {
-    if (n.occluded) return;
     var T = S.tune;
 
     // hover energy: gaussian target, eased attack/decay, relaxes in place
@@ -537,14 +464,10 @@
     S.anyEnergy = false;
     S.leafCount = 0;
     var f = S.field.sample;
-    for (var r = 0; r < S.regions.length; r++) {
-      var reg = S.regions[r];
-      var roots = reg.roots;
-      for (var i = 0; i < roots.length; i++) {
-        var n = roots[i];
-        if (n.occluded) continue;
-        updateNode(n, S, f(n.x, n.y), f(n.x + n.w, n.y), f(n.x, n.y + n.h), f(n.x + n.w, n.y + n.h));
-      }
+    var roots = S.roots;
+    for (var i = 0; i < roots.length; i++) {
+      var n = roots[i];
+      updateNode(n, S, f(n.x, n.y), f(n.x + n.w, n.y), f(n.x, n.y + n.h), f(n.x + n.w, n.y + n.h));
     }
   }
 
@@ -565,77 +488,111 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * 8. render                                                           *
+   * 7. render - pure black line-work at global-aligned pitches.         *
    * ------------------------------------------------------------------ */
-  function drawLeaf(p, n, S) {
-    var T = S.tune, C = S.col;
-    var pop = n.energy > 0.02 ? n.energy * T.POP_MAX_PX : 0;
-    var x = n.x - pop, y = n.y - pop, w = n.w + pop * 2, h = n.h + pop * 2;
-    var i;
 
-    switch (n.style) {
-      case STYLE_EMPTY:
-        p.stroke(C.line);
-        p.noFill();
-        p.rect(x, y, w, h);
+  // vertical/horizontal rules at a fixed pitch, aligned to the canvas origin
+  // so parent and child cells share the exact same lines
+  function gridLines(p, S, x, y, w, h, pitch, vertical, horizontal) {
+    var est = (vertical ? w / pitch : 0) + (horizontal ? h / pitch : 0);
+    var guard = 0;
+    while (est > S.tune.MAX_LINES_PER_CELL && guard++ < 3) { pitch *= 2; est /= 2; }
+    p.stroke(S.col.ink);
+    var g;
+    if (vertical) {
+      for (g = Math.ceil(x / pitch) * pitch; g < x + w; g += pitch) p.line(g, y, g, y + h);
+    }
+    if (horizontal) {
+      for (g = Math.ceil(y / pitch) * pitch; g < y + h; g += pitch) p.line(x, g, x + w, g);
+    }
+  }
+
+  // 'lines' orientation is stable per lattice cell across all depths
+  function lineOrientation(n, S) {
+    var c = Math.floor((n.x + 1) / S.latCW), r = Math.floor((n.y + 1) / S.latCH);
+    return hash3(c, r, 7, S.seed) < 0.5;
+  }
+
+  function drawBandTexture(p, S, n, band, x, y, w, h) {
+    if (w < 2 || h < 2) return;
+    var T = S.tune, C = S.col;
+    switch (S.ladder[band]) {
+      case 'empty':
         break;
-      case STYLE_HATCH:
-        if (w < T.HATCH_MIN_PX) {
-          p.stroke(C.line);
-          p.fill(C.grayLight);
-          p.rect(x, y, w, h);
-        } else {
-          p.stroke(C.line);
-          p.noFill();
-          p.rect(x, y, w, h);
-          p.stroke(C.grayMid);
-          var qx = w / 4, qy = h / 4;
-          for (i = 1; i < 4; i++) {
-            p.line(x + qx * i, y, x + qx * i, y + h);
-            p.line(x, y + qy * i, x + w, y + qy * i);
+      case 'lines':
+        if (lineOrientation(n, S)) gridLines(p, S, x, y, w, h, T.LINES_PITCH, true, false);
+        else gridLines(p, S, x, y, w, h, T.LINES_PITCH, false, true);
+        break;
+      case 'grid_m':
+        gridLines(p, S, x, y, w, h, T.GRID_M_PITCH, true, true);
+        break;
+      case 'grid_f':
+        gridLines(p, S, x, y, w, h, T.GRID_F_PITCH, true, true);
+        break;
+      case 'grid_x':
+        gridLines(p, S, x, y, w, h, T.GRID_X_PITCH, true, true);
+        break;
+      case 'checker': {
+        var k = T.CHECKER_PITCH;
+        var est = (w / k) * (h / k), guard = 0;
+        while (est > T.MAX_LINES_PER_CELL && guard++ < 3) { k *= 2; est /= 4; }
+        p.noStroke();
+        p.fill(C.ink);
+        var gy0 = Math.floor(y / k), gy1 = Math.floor((y + h) / k);
+        var gx0 = Math.floor(x / k), gx1 = Math.floor((x + w) / k);
+        for (var gy = gy0; gy <= gy1; gy++) {
+          for (var gx = gx0; gx <= gx1; gx++) {
+            if (((gx + gy) & 1) !== 0) continue;
+            var sx = Math.max(x, gx * k), sy = Math.max(y, gy * k);
+            var ex = Math.min(x + w, gx * k + k), ey = Math.min(y + h, gy * k + k);
+            if (ex > sx && ey > sy) p.rect(sx, sy, ex - sx, ey - sy);
           }
         }
         break;
-      case STYLE_DOT:
-        p.stroke(C.ink);
-        p.fill(C.grayDark);
+      }
+      case 'dot':
+        p.noStroke();
+        p.fill(C.ink);
         p.rect(x, y, w, h);
         if (w >= 9) {
-          p.noStroke();
           p.fill(C.paper);
           var s = w / 5;
           p.rect(x + (w - s) / 2, y + (h - s) / 2, s, s);
         }
         break;
-      case STYLE_CHECKER:
-        if (w < T.CHECKER_MIN_PX) {
-          p.stroke(C.ink);
-          p.fill(C.grayMid);
-          p.rect(x, y, w, h);
-        } else {
-          p.stroke(C.ink);
-          p.fill(C.paper);
-          p.rect(x, y, w, h);
-          p.noStroke();
-          p.fill(C.ink);
-          var cw = w / 4, chh = h / 4;
-          for (var cy = 0; cy < 4; cy++) {
-            for (var cx = 0; cx < 4; cx++) {
-              if (((cx + cy) & 1) === 0) p.rect(x + cx * cw, y + cy * chh, cw, chh);
-            }
-          }
-        }
-        break;
-      case STYLE_SOLID:
-        p.stroke(C.ink);
+      case 'solid':
+        p.noStroke();
         p.fill(C.ink);
         p.rect(x, y, w, h);
         break;
     }
   }
 
+  function drawLeaf(p, n, S) {
+    p.stroke(S.col.ink);
+    p.noFill();
+    p.rect(n.x, n.y, n.w, n.h);
+
+    if (n.styleT < 1) {
+      n.styleT = Math.min(1, n.styleT + S.dt / S.tune.STYLE_TWEEN_MS);
+      var eIn = easeOutCubic(n.styleT);
+      var eOut = 1 - eIn;
+      if (eOut > 0.05) {
+        var ow = n.w * eOut, oh = n.h * eOut;
+        drawBandTexture(p, S, n, n.prevStyle, n.x + (n.w - ow) / 2, n.y + (n.h - oh) / 2, ow, oh);
+      }
+      if (eIn > 0.05) {
+        var iw = n.w * eIn, ih = n.h * eIn;
+        drawBandTexture(p, S, n, n.style, n.x + (n.w - iw) / 2, n.y + (n.h - ih) / 2, iw, ih);
+      }
+      S.anyTween = true;
+    } else {
+      drawBandTexture(p, S, n, n.style, n.x, n.y, n.w, n.h);
+    }
+  }
+
   function drawNode(p, n, S, limit) {
-    if (n.occluded || n.x > limit) return;
+    if (n.x > limit) return;
     if (n.children) {
       var ch = n.children;
       drawNode(p, ch[0], S, limit);
@@ -647,35 +604,27 @@
     }
   }
 
+  // nav tiles are lattice cells: flush solid ink, no inset chrome, no growth.
+  // Hover swaps the fill to a dense hatch (still legible under paper text).
   function drawTile(p, tile, S) {
-    var T = S.tune, C = S.col;
-    var g = easeOutCubic(tile.hoverT) * T.TILE_GROW_PX;
-    var r = tile.rect;
-    var x = r.x - g, y = r.y - g, w = r.w + g * 2, h = r.h + g * 2;
-
-    if (tile.hovered || tile.hoverT > 0.6) {
+    var r = tile.rect, C = S.col;
+    p.strokeWeight(S.tune.STROKE_PX);
+    if (tile.kind === 'text') {
       p.stroke(C.ink);
-      p.fill(C.ink);
-      p.rect(x, y, w, h);
-      p.noFill();
-      p.stroke(C.paper);
-      p.rect(x + 4, y + 4, w - 8, h - 8);
+      p.fill(C.paper);
+      p.rect(r.x, r.y, r.w, r.h);
       return;
     }
-
-    p.stroke(C.ink);
-    p.fill(C.paper);
-    p.rect(x, y, w, h);
-    // faint internal grid so the tile belongs to the composition
-    p.stroke(C.grayLight);
-    var step = T.TILE_GRID_CELL_PX, gx, gy;
-    for (gx = x + step; gx < x + w - 1; gx += step) p.line(gx, y + 1, gx, y + h - 1);
-    for (gy = y + step; gy < y + h - 1; gy += step) p.line(x + 1, gy, x + w - 1, gy);
-    p.noFill();
-    p.stroke(C.ink);
-    p.rect(x + 4, y + 4, w - 8, h - 8);
-    // touch has no hover: tiles ship pre-emphasized with a doubled border
-    if (S.touch) p.rect(x + 1, y + 1, w - 2, h - 2);
+    if (tile.hovered) {
+      p.stroke(C.ink);
+      p.fill(C.paper);
+      p.rect(r.x, r.y, r.w, r.h);
+      gridLines(p, S, r.x + 1, r.y + 1, r.w - 2, r.h - 2, S.tune.TILE_HATCH_PITCH, true, true);
+    } else {
+      p.stroke(C.ink);
+      p.fill(C.ink);
+      p.rect(r.x, r.y, r.w, r.h);
+    }
   }
 
   function drawFieldView(p, S) {
@@ -711,6 +660,7 @@
     p.background(S.col.paper);
     if (S.fieldView) { drawFieldView(p, S); if (S.debug) drawHUD(p, S); return; }
     p.strokeWeight(S.tune.STROKE_PX);
+    S.anyTween = false;
 
     var limit = Infinity;
     if (S.buildProgress < 1) {
@@ -720,10 +670,7 @@
       if (S.buildProgress < 1) limit = easeOutCubic(S.buildProgress) * (p.width + 80);
     }
 
-    for (var r = 0; r < S.regions.length; r++) {
-      var roots = S.regions[r].roots;
-      for (var i = 0; i < roots.length; i++) drawNode(p, roots[i], S, limit);
-    }
+    for (var i = 0; i < S.roots.length; i++) drawNode(p, S.roots[i], S, limit);
     for (var t = 0; t < S.tiles.length; t++) {
       if (S.tiles[t].rect.x <= limit) drawTile(p, S.tiles[t], S);
     }
@@ -731,7 +678,7 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * 9. factory                                                          *
+   * 8. factory                                                          *
    * ------------------------------------------------------------------ */
   function createGridSketch(container, opts) {
     if (!container || typeof container.appendChild !== 'function') {
@@ -762,11 +709,13 @@
       debug: !!opts.debug,
       fieldView: false,
       driftMult: 1,
-      bounds: [tune.T_HATCH, tune.T_DOT, tune.T_CHECKER, tune.T_SOLID],
-      regions: [], tiles: [], field: null, col: null,
+      ladder: tune.STYLE_LADDER,
+      bounds: [tune.T_B1, tune.T_B2, tune.T_B3, tune.T_B4],
+      roots: [], tiles: [], field: null, col: null,
+      latCW: 1, latCH: 1,
       leafCount: 0, degradeLevel: 0, recoverStreak: 0, lastBudgetMs: 0,
       pointerSeen: false, pointerOn: false, px: 0, py: 0,
-      anyEnergy: false, initialPass: false,
+      anyEnergy: false, anyTween: false, initialPass: false,
       cardHover: false, looping: false, loopWanted: false, hidden: false,
       buildProgress: 1,
       maxDepth: tune.MAX_DEPTH, maxLeavesSoft: tune.MAX_LEAVES_SOFT, maxLeavesHard: tune.MAX_LEAVES_HARD,
@@ -788,7 +737,7 @@
     function fireTiles() {
       if (typeof opts.onTiles === 'function' && S.tiles.length) {
         opts.onTiles(S.tiles.map(function (t) {
-          return { id: t.id, x: t.rect.x, y: t.rect.y, w: t.rect.w, h: t.rect.h };
+          return { id: t.id, kind: t.kind, x: t.rect.x, y: t.rect.y, w: t.rect.w, h: t.rect.h };
         }));
       }
     }
@@ -814,28 +763,24 @@
         oy: rng() * 64
       });
 
-      // tiles first (they occlude), then regions; rng order is the contract
-      // that keeps a seed reproducible
-      var stacked = S.touch || w < tune.MOBILE_MAX_W;
-      var insets = typeof opts.insets === 'function' ? opts.insets()
-        : (opts.insets || { top: 0, right: 0, bottom: 0, left: 0 });
+      // lattice dims first, tiles claim spans, then the rest becomes roots;
+      // rng call order is the contract that keeps a seed reproducible
+      var target = tune.CELL_TARGET_PX * ((S.touch || w < tune.MOBILE_MAX_W) && mode !== 'card'
+        ? tune.MOBILE_CELL_SCALE : (S.density === 'low' ? tune.MOBILE_CELL_SCALE : 1));
+      var cols = clamp(Math.round(w / target), 2, 16);
+      var rows = clamp(Math.round(h / target), 1, 12);
+      var stacked = (S.touch || w < tune.MOBILE_MAX_W) && mode === 'landing';
+      if (stacked && opts.tiles && opts.tiles.length) rows = Math.max(rows, 8);
+      var cw = w / cols, ch = h / rows;
+      S.latCW = cw;
+      S.latCH = ch;
+
       S.tiles = (opts.tiles && opts.tiles.length)
-        ? resolveTiles(w, h, opts.tiles, insets, rng, tune, stacked)
+        ? placeTiles(opts.tiles, cols, rows, rng, tune, stacked, cw, ch)
         : [];
 
-      S.regions = makeRegions(w, h, rng, tune, S.cellScale, S.maxLeavesSoft);
-      for (var r = 0; r < S.regions.length; r++) {
-        var reg = S.regions[r];
-        var cw = reg.w / reg.cols, ch = reg.h / reg.rows;
-        reg.roots = [];
-        for (var gy = 0; gy < reg.rows; gy++) {
-          for (var gx = 0; gx < reg.cols; gx++) {
-            var node = makeNode(reg.x + gx * cw, reg.y + gy * ch, cw, ch, 0);
-            node.occluded = S.tiles.length ? rectInTiles(node, S.tiles) : false;
-            reg.roots.push(node);
-          }
-        }
-      }
+      var lattice = makeLatticeAt(w, h, cols, rows, cw, ch, rng, tune, S.tiles);
+      S.roots = lattice.roots;
 
       // initial full pass: exact styles, full cascade, no dwell smoothing
       S.nowMs = p.millis();
@@ -851,6 +796,37 @@
       fireTiles();
     }
 
+    // wrapper keeps makeLattice pure while build() controls the dims
+    function makeLatticeAt(w, h, cols, rows, cw, ch, rng, T, tiles) {
+      var taken = [];
+      for (var r = 0; r < rows; r++) taken.push(new Array(cols).fill(false));
+      tiles.forEach(function (tile) {
+        var sp = tile.span;
+        for (var rr = sp.r0; rr < Math.min(rows, sp.r0 + sp.rs); rr++) {
+          for (var cc = sp.c0; cc < Math.min(cols, sp.c0 + sp.cs); cc++) taken[rr][cc] = true;
+        }
+      });
+      var roots = [];
+      function isFree(r, c) { return r < rows && c < cols && !taken[r][c]; }
+      function claim(r0, c0, rs, cs) {
+        for (var r = r0; r < r0 + rs; r++) for (var c = c0; c < c0 + cs; c++) taken[r][c] = true;
+        roots.push(makeNode(c0 * cw, r0 * ch, cs * cw, rs * ch, 0));
+      }
+      for (var rr = 0; rr < rows; rr++) {
+        for (var cc = 0; cc < cols; cc++) {
+          if (taken[rr][cc]) continue;
+          if (rng() < T.MERGE_P) {
+            var shape = rng();
+            if (shape < 0.4 && isFree(rr, cc + 1)) { claim(rr, cc, 1, 2); continue; }
+            if (shape < 0.7 && isFree(rr + 1, cc)) { claim(rr, cc, 2, 1); continue; }
+            if (isFree(rr, cc + 1) && isFree(rr + 1, cc) && isFree(rr + 1, cc + 1)) { claim(rr, cc, 2, 2); continue; }
+          }
+          claim(rr, cc, 1, 1);
+        }
+      }
+      return { roots: roots };
+    }
+
     function safeRedraw() {
       if (!S.dead && S.p && !S.looping && !S.loopWanted) S.p.redraw();
     }
@@ -862,14 +838,7 @@
         p.pixelDensity(Math.min(tune.PIXEL_DENSITY_CAP, window.devicePixelRatio || 1));
         var renderer = p.createCanvas(Math.max(2, container.clientWidth), Math.max(2, container.clientHeight));
         renderer.elt.setAttribute('aria-hidden', 'true'); // hosts carry semantics
-        S.col = {
-          paper: p.color(tune.PAPER),
-          ink: p.color(tune.INK),
-          grayDark: p.color(tune.GRAY_DARK),
-          grayMid: p.color(tune.GRAY_MID),
-          grayLight: p.color(tune.GRAY_LIGHT),
-          line: p.color(tune.LINE)
-        };
+        S.col = { paper: p.color(tune.PAPER), ink: p.color(tune.INK) };
         build(p);
         if (S.animate === true && !S.reducedMotion) {
           S.loopWanted = true;
@@ -906,27 +875,13 @@
         S.px = p.mouseX;
         S.py = p.mouseY;
 
-        // tile hover: fill inverts instantly, grow eases
-        var tilesAnimating = false;
-        for (var i = 0; i < S.tiles.length; i++) {
-          var tl = S.tiles[i];
-          var tt = tl.hovered ? 1 : 0;
-          if (S.reducedMotion) {
-            tl.hoverT = tt;
-          } else if (tl.hoverT !== tt) {
-            var step = dt / tune.TILE_HOVER_EASE_MS;
-            tl.hoverT = tt > tl.hoverT ? Math.min(1, tl.hoverT + step) : Math.max(0, tl.hoverT - step);
-            if (tl.hoverT !== tt) tilesAnimating = true;
-          }
-        }
-
         updateTree(S);
         adjustBudget(S);
         renderFrame(p, S);
 
         // card mode: stop looping once fully settled
         if (S.animate === 'hover' && S.looping && !S.cardHover &&
-            S.field.getT() === 0 && !S.anyEnergy && !tilesAnimating) {
+            S.field.getT() === 0 && !S.anyEnergy && !S.anyTween) {
           S.looping = false;
           p.noLoop();
         }
@@ -977,13 +932,14 @@
 
       getTiles: function () {
         return S.tiles.map(function (t) {
-          return { id: t.id, x: t.rect.x, y: t.rect.y, w: t.rect.w, h: t.rect.h, hovered: t.hovered };
+          return { id: t.id, kind: t.kind, x: t.rect.x, y: t.rect.y, w: t.rect.w, h: t.rect.h, hovered: t.hovered };
         });
       },
 
       setTileHover: function (id) {
         var changed = false;
         for (var i = 0; i < S.tiles.length; i++) {
+          if (S.tiles[i].kind !== 'nav') continue;
           var hov = S.tiles[i].id === id;
           if (S.tiles[i].hovered !== hov) { S.tiles[i].hovered = hov; changed = true; }
         }
@@ -998,6 +954,20 @@
           S.looping = true;
           S.p.loop(); // drawFrame stops itself once settled
         }
+      },
+
+      // leaf cell under a canvas-space point; null over tiles / outside
+      cellAt: function (x, y) {
+        for (var i = 0; i < S.roots.length; i++) {
+          var n = S.roots[i];
+          if (x < n.x || y < n.y || x >= n.x + n.w || y >= n.y + n.h) continue;
+          while (n.children) {
+            var idx = (x >= n.x + n.w / 2 ? 1 : 0) + (y >= n.y + n.h / 2 ? 2 : 0);
+            n = n.children[idx];
+          }
+          return { x: n.x, y: n.y, w: n.w, h: n.h };
+        }
+        return null;
       },
 
       regenerate: function (seed) {

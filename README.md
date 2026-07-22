@@ -34,6 +34,9 @@ dev/engine-test.html  engine playground: seeds, modes, drift stress test, HUD
 ## Edit
 
 - Content lives directly in the HTML files.
+- Hover-images easter egg: drop images into `assets/img/` and list their
+  paths in `HOVER_IMAGES` at the top of `js/landing.js` - hovering the
+  landing grid then reveals a random one in the cell under the cursor.
 - Every generative canvas is a `data-sketch` host; its `data-seed` is the
   piece's stable identity. Seeds are curated by eye - change one and the
   thumbnail changes forever, so pick deliberately (use the playground).
