@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONCEPT A · INDEX ROWS · 01 WORK</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <script>document.documentElement.className += ' js';</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="../js/grid-engine.js"></script>
+  <script defer src="../js/site.js"></script>
+  <style>
+    .concept-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      border-bottom: var(--hair) solid var(--ink);
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-xs);
+      letter-spacing: var(--track-wide);
+      text-transform: uppercase;
+    }
+    .concept-bar a { text-decoration: none; padding: var(--space-1) var(--space-2); }
+    .concept-bar a:hover, .concept-bar a[aria-current="true"] { background: var(--ink); color: var(--paper); }
+    .concept-bar .set { display: flex; gap: var(--space-1); }
+
+    .rows { grid-template-columns: 1fr; }
+    .work-row {
+      display: grid;
+      grid-template-columns: 4.5rem 1fr auto 96px;
+      align-items: center;
+      gap: var(--space-4);
+      min-height: 96px;
+      padding-left: var(--space-3);
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .work-row .thumb { width: 96px; height: 96px; border-left: var(--hair) solid var(--ink); }
+    .work-row h2 { font-size: var(--text-m); }
+    .work-row .desc { margin-top: var(--space-1); font-size: var(--text-s); color: var(--gray-3); }
+    .work-row .meta { text-align: right; padding-right: var(--space-3); color: var(--gray-3); }
+    .work-row .meta .year { display: block; margin-top: var(--space-1); }
+    /* the row flips sign; the thumb cell stays paper = polarity, like the tiles */
+    .work-row:hover, .work-row:focus-visible { background: var(--ink); color: var(--paper); outline: none; }
+    .work-row:hover .desc, .work-row:hover .meta, .work-row:hover .idx,
+    .work-row:focus-visible .desc, .work-row:focus-visible .meta, .work-row:focus-visible .idx { color: var(--gray-2); }
+    @media (max-width: 700px) {
+      .work-row { grid-template-columns: 3rem 1fr 72px; }
+      .work-row .meta { display: none; }
+      .work-row .thumb { width: 72px; height: 72px; }
+    }
+  </style>
+</head>
+<body class="page-work">
+  <header class="concept-bar">
+    <a href="../index.html">← INDEX</a>
+    <span>01 WORK · CONCEPT A · INDEX ROWS</span>
+    <span class="set">
+      <a href="work-a.html" aria-current="true">A</a>
+      <a href="work-b.html">B</a>
+      <a href="work-c.html">C</a>
+    </span>
+  </header>
+
+  <main class="wrap">
+    <div class="title-row">
+      <h1>01 WORK</h1>
+      <p class="label count">6 PROJECTS</p>
+    </div>
+
+    <div class="hairline-grid rows">
+      <a class="card work-row" href="#">
+        <span class="idx">P-01</span>
+        <span><h2>CLINIC SCHEDULING SYSTEM</h2><span class="desc">Rebuilt the calendar core so clinics plan weeks, not days.</span></span>
+        <span class="meta label">PRODUCT · SERVICE DESIGN<span class="year">2025</span></span>
+        <span class="thumb" data-sketch="card" data-seed="1101" data-variant="quadtree" aria-hidden="true"></span>
+      </a>
+      <a class="card work-row" href="#">
+        <span class="idx">P-02</span>
+        <span><h2>PATIENT JOURNAL UX</h2><span class="desc">Faster clinical notes with structured templates and review states.</span></span>
+        <span class="meta label">PRODUCT · RESEARCH<span class="year">2025</span></span>
+        <span class="thumb" data-sketch="card" data-seed="1102" data-variant="flow" aria-hidden="true"></span>
+      </a>
+      <a class="card work-row" href="#">
+        <span class="idx">P-03</span>
+        <span><h2>DESIGN TOKEN PIPELINE</h2><span class="desc">One source of truth from Figma variables to shipped CSS.</span></span>
+        <span class="meta label">SYSTEMS · TOOLING<span class="year">2024</span></span>
+        <span class="thumb" data-sketch="card" data-seed="1103" data-variant="blocks" aria-hidden="true"></span>
+      </a>
+      <a class="card work-row" href="#">
+        <span class="idx">P-04</span>
+        <span><h2>BOOKING FLOW REBUILD</h2><span class="desc">Cut patient booking from six steps to three.</span></span>
+        <span class="meta label">PRODUCT · UX<span class="year">2024</span></span>
+        <span class="thumb" data-sketch="card" data-seed="1104" data-variant="dither" aria-hidden="true"></span>
+      </a>
+      <a class="card work-row" href="#">
+        <span class="idx">P-05</span>
+        <span><h2>CLINICAL DATA DASHBOARD</h2><span class="desc">Treatment outcomes, visualized for practitioners, not analysts.</span></span>
+        <span class="meta label">DATA VIZ · FRONTEND<span class="year">2023</span></span>
+        <span class="thumb" data-sketch="card" data-seed="1105" data-variant="field" aria-hidden="true"></span>
+      </a>
+      <a class="card work-row" href="#">
+        <span class="idx">P-06</span>
+        <span><h2>ONBOARDING EXPERIMENTS</h2><span class="desc">Growth experiments that doubled trial activation.</span></span>
+        <span class="meta label">GROWTH · PROTOTYPING<span class="year">2023</span></span>
+        <span class="thumb" data-sketch="card" data-seed="1106" data-variant="quadtree" aria-hidden="true"></span>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

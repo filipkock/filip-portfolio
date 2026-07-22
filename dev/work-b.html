@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONCEPT B · EMBEDDED LATTICE · 01 WORK</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <script>document.documentElement.className += ' js';</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="../js/grid-engine.js"></script>
+  <script defer src="../js/site.js"></script>
+  <style>
+    .concept-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      border-bottom: var(--hair) solid var(--ink);
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-xs);
+      letter-spacing: var(--track-wide);
+      text-transform: uppercase;
+    }
+    .concept-bar a { text-decoration: none; padding: var(--space-1) var(--space-2); }
+    .concept-bar a:hover, .concept-bar a[aria-current="true"] { background: var(--ink); color: var(--paper); }
+    .concept-bar .set { display: flex; gap: var(--space-1); }
+
+    /* projects are 2x2 spans inside a living lattice; 1x1 texture and paper
+       cells breathe between them, so the page stays an artwork */
+    .lattice {
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: minmax(150px, 1fr);
+      grid-auto-flow: dense;
+    }
+    .lattice .filler { min-height: 150px; }
+    .lattice .proj {
+      grid-column: span 2;
+      grid-row: span 2;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .proj .thumb { flex: 1; min-height: 0; border-bottom: var(--hair) solid var(--ink); }
+    .proj .strip { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: var(--space-2) var(--space-3); }
+    .proj .strip h2 { font-size: var(--text-s); }
+    .proj .strip .idx { font-size: var(--text-xs); }
+    .proj .desc {
+      display: none;
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-xs);
+      letter-spacing: var(--track);
+      text-transform: uppercase;
+    }
+    .proj:hover .strip, .proj:focus-visible .strip { background: var(--ink); color: var(--paper); }
+    .proj:hover .strip .idx, .proj:focus-visible .strip .idx { color: var(--gray-2); }
+    .proj:hover .desc, .proj:focus-visible .desc { display: block; background: var(--ink); color: var(--gray-2); }
+    .proj:focus-visible { outline: none; }
+    @media (max-width: 700px) {
+      .lattice { grid-template-columns: repeat(2, 1fr); }
+      .lattice .filler { display: none; }
+      .proj .desc { display: block; color: var(--gray-3); }
+    }
+  </style>
+</head>
+<body class="page-work">
+  <header class="concept-bar">
+    <a href="../index.html">← INDEX</a>
+    <span>01 WORK · CONCEPT B · EMBEDDED LATTICE</span>
+    <span class="set">
+      <a href="work-a.html">A</a>
+      <a href="work-b.html" aria-current="true">B</a>
+      <a href="work-c.html">C</a>
+    </span>
+  </header>
+
+  <main class="wrap">
+    <div class="title-row">
+      <h1>01 WORK</h1>
+      <p class="label count">6 PROJECTS</p>
+    </div>
+
+    <div class="hairline-grid lattice">
+      <a class="card proj" href="#">
+        <span class="thumb" data-sketch="card" data-seed="1101" data-variant="quadtree" aria-hidden="true"></span>
+        <span class="strip"><span><span class="idx">P-01</span> <h2 style="display:inline">CLINIC SCHEDULING SYSTEM</h2></span><span class="idx">2025</span></span>
+        <span class="desc">Rebuilt the calendar core so clinics plan weeks, not days.</span>
+      </a>
+      <span class="filler" data-sketch="card" data-seed="901" aria-hidden="true"></span>
+      <span class="filler" aria-hidden="true"></span>
+      <a class="card proj" href="#">
+        <span class="thumb" data-sketch="card" data-seed="1102" data-variant="flow" aria-hidden="true"></span>
+        <span class="strip"><span><span class="idx">P-02</span> <h2 style="display:inline">PATIENT JOURNAL UX</h2></span><span class="idx">2025</span></span>
+        <span class="desc">Faster clinical notes with structured templates and review states.</span>
+      </a>
+      <span class="filler" aria-hidden="true"></span>
+      <span class="filler" data-sketch="card" data-seed="902" data-variant="field" aria-hidden="true"></span>
+      <a class="card proj" href="#">
+        <span class="thumb" data-sketch="card" data-seed="1103" data-variant="blocks" aria-hidden="true"></span>
+        <span class="strip"><span><span class="idx">P-03</span> <h2 style="display:inline">DESIGN TOKEN PIPELINE</h2></span><span class="idx">2024</span></span>
+        <span class="desc">One source of truth from Figma variables to shipped CSS.</span>
+      </a>
+      <a class="card proj" href="#">
+        <span class="thumb" data-sketch="card" data-seed="1104" data-variant="dither" aria-hidden="true"></span>
+        <span class="strip"><span><span class="idx">P-04</span> <h2 style="display:inline">BOOKING FLOW REBUILD</h2></span><span class="idx">2024</span></span>
+        <span class="desc">Cut patient booking from six steps to three.</span>
+      </a>
+      <span class="filler" data-sketch="card" data-seed="903" aria-hidden="true"></span>
+      <span class="filler" aria-hidden="true"></span>
+      <a class="card proj" href="#">
+        <span class="thumb" data-sketch="card" data-seed="1105" data-variant="field" aria-hidden="true"></span>
+        <span class="strip"><span><span class="idx">P-05</span> <h2 style="display:inline">CLINICAL DATA DASHBOARD</h2></span><span class="idx">2023</span></span>
+        <span class="desc">Treatment outcomes, visualized for practitioners, not analysts.</span>
+      </a>
+      <span class="filler" data-sketch="card" data-seed="904" data-variant="flow" aria-hidden="true"></span>
+      <a class="card proj" href="#">
+        <span class="thumb" data-sketch="card" data-seed="1106" data-variant="quadtree" aria-hidden="true"></span>
+        <span class="strip"><span><span class="idx">P-06</span> <h2 style="display:inline">ONBOARDING EXPERIMENTS</h2></span><span class="idx">2023</span></span>
+        <span class="desc">Growth experiments that doubled trial activation.</span>
+      </a>
+      <span class="filler" aria-hidden="true"></span>
+    </div>
+  </main>
+</body>
+</html>
