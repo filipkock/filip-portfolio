@@ -32,9 +32,29 @@
       mode: 'landing',
       seed: 20260706,
       tiles: [
-        { id: 'work', kind: 'nav' },
-        { id: 'art', kind: 'nav' },
-        { id: 'about', kind: 'nav' },
+        // labels render as the engine's 5x7 pixel face; the anchors keep
+        // real (visually hidden) text for assistive tech and no-JS
+        {
+          id: 'work', kind: 'nav',
+          lines: [
+            { t: 'PRODUCT', h: 'left', v: 'top', row: 0 },
+            { t: 'DESIGN', h: 'right', v: 'top', row: 1 }
+          ]
+        },
+        {
+          id: 'art', kind: 'nav',
+          lines: [
+            { t: 'ART', h: 'right', v: 'top', row: 0 },
+            { t: '& STUFF', h: 'left', v: 'bottom', row: 0 }
+          ]
+        },
+        {
+          id: 'about', kind: 'nav',
+          lines: [
+            { t: 'ABOUT', h: 'left', v: 'top', row: 0 },
+            { t: 'ME', h: 'right', v: 'bottom', row: 0 }
+          ]
+        },
         { id: 'wordmark', kind: 'text' },
         { id: 'contact', kind: 'text' }
       ],

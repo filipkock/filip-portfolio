@@ -8,15 +8,6 @@
    6 page sections / 7 media + preferences + fallbacks (always last)
    ========================================================================== */
 
-/* 0. fonts -------------------------------------------------------------- */
-@font-face {
-  font-family: "Saira Stencil One";
-  src: url("../assets/fonts/saira-stencil-one.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* 1. tokens ------------------------------------------------------------- */
 :root {
   --paper: #fafafa;
@@ -36,7 +27,6 @@
   --strip-h: 2.5rem;
 
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --font-stencil: "Saira Stencil One", ui-monospace, "SF Mono", Menlo, monospace;
   --text-xs: 0.625rem;
   --text-s: 0.75rem;
   --text-m: 0.875rem;
@@ -264,22 +254,21 @@ h3 {
   pointer-events: none;
 }
 
-/* nav tiles are lattice cells: the canvas paints the black fill (or the
-   dense hatch on hover); the anchor carries only crisp white type */
+/* nav tiles are lattice cells: the canvas paints the fill AND the pixel-face
+   labels; the anchor is the hit target and carries real text for assistive
+   tech (visually hidden once the engine is confirmed alive, below) */
 .tile-link {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(12px, 7%, 28px);
+  padding: var(--space-3);
   pointer-events: auto;
   cursor: pointer;
   text-decoration: none;
   color: var(--paper);
-  font-family: var(--font-stencil);
-  font-size: clamp(1.05rem, 2.1vw, 1.7rem);
-  letter-spacing: 0.12em;
-  line-height: 1.15;
+  font-size: var(--text-l);
+  letter-spacing: var(--track-wide);
   text-transform: uppercase;
 }
 
@@ -295,16 +284,22 @@ html.js body.tiles-ready .tile-link {
   visibility: visible;
 }
 
-/* label corner choreography, per the mock */
-.tile-link[data-tile="about"] .tl-a { align-self: flex-start; }
-.tile-link[data-tile="about"] .tl-b { align-self: flex-end; }
-.tile-link[data-tile="art"] .tl-a { align-self: flex-end; }
-.tile-link[data-tile="art"] .tl-b { align-self: flex-start; }
-.tile-link[data-tile="work"] { justify-content: flex-start; gap: 0.15em; }
-.tile-link[data-tile="work"] .tl-a { align-self: flex-start; }
-.tile-link[data-tile="work"] .tl-b { align-self: flex-end; }
+/* the canvas draws the visible labels; keep the anchor text for screen
+   readers only. Without JS (or with a dead engine) tiles-ready never lands,
+   so these spans stay visible and the tiles remain plain text blocks. */
+html.js body.tiles-ready .tile-link .tl-a,
+html.js body.tiles-ready .tile-link .tl-b {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
-/* focus ring: inner dashed paper hairline (reads on black and on hatch) */
+/* focus ring: dashed hairline; focus also flips the tile to paper (the
+   engine wipe), so the ring is drawn in ink to sit on the light cell */
 .tile-link::after {
   content: "";
   position: absolute;
@@ -318,7 +313,7 @@ html.js body.tiles-ready .tile-link {
 }
 
 .tile-link:focus-visible::after {
-  border-color: var(--paper);
+  border-color: var(--ink);
 }
 
 /* wordmark + contact live in reserved lattice cells (kind: 'text') */
@@ -378,6 +373,9 @@ html.js body.tiles-ready .grid-cell-overlay {
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-decoration: none;
+  /* comfortable pointer/touch target without changing the visual weight */
+  padding: var(--space-2) var(--space-1);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-1));
 }
 
 [data-cell="contact"] a:hover {

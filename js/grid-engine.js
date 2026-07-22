@@ -76,8 +76,13 @@
     GRID_F_PITCH: 4.5,
     GRID_X_PITCH: 2.5,
     CHECKER_PITCH: 8,
-    TILE_HATCH_PITCH: 3.2,    // nav tile hover fill
     MAX_LINES_PER_CELL: 240,  // density cap: pitch doubles until under this
+
+    // nav tiles: labels are a 5x7 pixel face built from grid squares;
+    // hover is a left-to-right polarity wipe (ink cell -> paper cell)
+    TILE_HOVER_EASE_MS: 140,
+    TILE_LABEL_PS_MIN: 2,
+    TILE_LABEL_PS_MAX: 10,
 
     // motion smoothing
     STYLE_TWEEN_MS: 280,      // crossfade window for band changes
@@ -268,12 +273,16 @@
     return {
       id: def.id,
       kind: def.kind === 'text' ? 'text' : 'nav',
+      lines: (def.lines || []).map(function (l) {
+        return { t: String(l.t).toUpperCase(), h: l.h === 'right' ? 'right' : 'left', v: l.v === 'bottom' ? 'bottom' : 'top', row: l.row | 0 };
+      }),
       rect: {
         x: Math.round(c0 * cw), y: Math.round(r0 * ch),
         w: Math.round(cs * cw), h: Math.round(rs * ch)
       },
       span: { c0: c0, r0: r0, cs: cs, rs: rs },
-      hovered: false
+      hovered: false,
+      hoverT: 0
     };
   }
 
@@ -491,6 +500,68 @@
    * 7. render - pure black line-work at global-aligned pitches.         *
    * ------------------------------------------------------------------ */
 
+  // 5x7 pixel face for tile labels: type built from the same squares as
+  // the artwork. Uppercase A-Z and '&' only; that is all the tiles need.
+  var PIXEL_FONT = {
+    A: ['.XXX.', 'X...X', 'X...X', 'XXXXX', 'X...X', 'X...X', 'X...X'],
+    B: ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X...X', 'X...X', 'XXXX.'],
+    C: ['.XXX.', 'X...X', 'X....', 'X....', 'X....', 'X...X', '.XXX.'],
+    D: ['XXXX.', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', 'XXXX.'],
+    E: ['XXXXX', 'X....', 'X....', 'XXXX.', 'X....', 'X....', 'XXXXX'],
+    F: ['XXXXX', 'X....', 'X....', 'XXXX.', 'X....', 'X....', 'X....'],
+    G: ['.XXX.', 'X...X', 'X....', 'X.XXX', 'X...X', 'X...X', '.XXX.'],
+    H: ['X...X', 'X...X', 'X...X', 'XXXXX', 'X...X', 'X...X', 'X...X'],
+    I: ['XXXXX', '..X..', '..X..', '..X..', '..X..', '..X..', 'XXXXX'],
+    J: ['..XXX', '...X.', '...X.', '...X.', '...X.', 'X..X.', '.XX..'],
+    K: ['X...X', 'X..X.', 'X.X..', 'XX...', 'X.X..', 'X..X.', 'X...X'],
+    L: ['X....', 'X....', 'X....', 'X....', 'X....', 'X....', 'XXXXX'],
+    M: ['X...X', 'XX.XX', 'X.X.X', 'X.X.X', 'X...X', 'X...X', 'X...X'],
+    N: ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X', 'X...X', 'X...X'],
+    O: ['.XXX.', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
+    P: ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X....', 'X....', 'X....'],
+    Q: ['.XXX.', 'X...X', 'X...X', 'X...X', 'X.X.X', 'X..X.', '.XX.X'],
+    R: ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X.X..', 'X..X.', 'X...X'],
+    S: ['.XXXX', 'X....', 'X....', '.XXX.', '....X', '....X', 'XXXX.'],
+    T: ['XXXXX', '..X..', '..X..', '..X..', '..X..', '..X..', '..X..'],
+    U: ['X...X', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
+    V: ['X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.X.X.', '..X..'],
+    W: ['X...X', 'X...X', 'X...X', 'X.X.X', 'X.X.X', 'XX.XX', 'X...X'],
+    X: ['X...X', 'X...X', '.X.X.', '..X..', '.X.X.', 'X...X', 'X...X'],
+    Y: ['X...X', 'X...X', '.X.X.', '..X..', '..X..', '..X..', '..X..'],
+    Z: ['XXXXX', '....X', '...X.', '..X..', '.X...', 'X....', 'XXXXX'],
+    '&': ['.XX..', 'X..X.', 'X.X..', '.X...', 'X.X.X', 'X..X.', '.XX.X']
+  };
+
+  // columns a word occupies: glyphs are 5 + 1 gap, spaces advance 4
+  function wordCols(text) {
+    var c = 0;
+    for (var i = 0; i < text.length; i++) c += text[i] === ' ' ? 4 : 6;
+    return c - 1;
+  }
+
+  // every 'on' pixel picks its color from which side of the wipe edge it
+  // sits on, so the label inverts in perfect sync with the tile fill
+  function drawPixelWord(p, S, text, x, y, ps, edgeX) {
+    p.noStroke();
+    var cx = x;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (ch === ' ') { cx += 4 * ps; continue; }
+      var g = PIXEL_FONT[ch];
+      if (!g) { cx += 6 * ps; continue; }
+      for (var row = 0; row < 7; row++) {
+        var line = g[row];
+        for (var col = 0; col < 5; col++) {
+          if (line.charCodeAt(col) !== 88) continue; // 'X'
+          var sx = cx + col * ps;
+          p.fill(sx + ps / 2 < edgeX ? S.col.ink : S.col.paper);
+          p.rect(sx, y + row * ps, ps, ps);
+        }
+      }
+      cx += 6 * ps;
+    }
+  }
+
   // vertical/horizontal rules at a fixed pitch, aligned to the canvas origin
   // so parent and child cells share the exact same lines
   function gridLines(p, S, x, y, w, h, pitch, vertical, horizontal) {
@@ -605,25 +676,42 @@
   }
 
   // nav tiles are lattice cells: flush solid ink, no inset chrome, no growth.
-  // Hover swaps the fill to a dense hatch (still legible under paper text).
+  // Hover is a polarity wipe: paper sweeps in from the left and every label
+  // pixel flips as the edge passes it - the cell simply changes sign.
   function drawTile(p, tile, S) {
-    var r = tile.rect, C = S.col;
-    p.strokeWeight(S.tune.STROKE_PX);
+    var r = tile.rect, C = S.col, T = S.tune;
+    p.strokeWeight(T.STROKE_PX);
     if (tile.kind === 'text') {
       p.stroke(C.ink);
       p.fill(C.paper);
       p.rect(r.x, r.y, r.w, r.h);
       return;
     }
-    if (tile.hovered) {
-      p.stroke(C.ink);
-      p.fill(C.paper);
-      p.rect(r.x, r.y, r.w, r.h);
-      gridLines(p, S, r.x + 1, r.y + 1, r.w - 2, r.h - 2, S.tune.TILE_HATCH_PITCH, true, true);
-    } else {
-      p.stroke(C.ink);
-      p.fill(C.ink);
-      p.rect(r.x, r.y, r.w, r.h);
+
+    var e = easeOutCubic(tile.hoverT);
+    var edge = r.x + r.w * e;
+    p.noStroke();
+    if (e > 0.001) { p.fill(C.paper); p.rect(r.x, r.y, r.w * e, r.h); }
+    if (e < 0.999) { p.fill(C.ink); p.rect(edge, r.y, r.x + r.w - edge, r.h); }
+    p.noFill();
+    p.stroke(C.ink);
+    p.rect(r.x, r.y, r.w, r.h);
+
+    if (!tile.lines.length) return;
+    var maxCols = 1;
+    for (var i = 0; i < tile.lines.length; i++) maxCols = Math.max(maxCols, wordCols(tile.lines[i].t));
+    // pixel size fits the longest word plus generous margins (the mock keeps
+    // air around the labels), capped by tile height
+    var ps = clamp(Math.min(Math.floor(r.w / (maxCols + 9)), Math.floor(r.h / 24)),
+      T.TILE_LABEL_PS_MIN, T.TILE_LABEL_PS_MAX);
+    var inset = 2 * ps;
+    for (var j = 0; j < tile.lines.length; j++) {
+      var l = tile.lines[j];
+      var wpx = wordCols(l.t) * ps;
+      var x = l.h === 'right' ? r.x + r.w - inset - wpx : r.x + inset;
+      var rowOff = l.row * 10 * ps;
+      var y = l.v === 'bottom' ? r.y + r.h - inset - 7 * ps - rowOff : r.y + inset + rowOff;
+      drawPixelWord(p, S, l.t, x, y, ps, edge);
     }
   }
 
@@ -875,13 +963,28 @@
         S.px = p.mouseX;
         S.py = p.mouseY;
 
+        // tile hover wipe (reduced motion snaps; setTileHover repaints)
+        var tilesAnimating = false;
+        for (var i = 0; i < S.tiles.length; i++) {
+          var tl = S.tiles[i];
+          if (tl.kind !== 'nav') continue;
+          var tt = tl.hovered ? 1 : 0;
+          if (S.reducedMotion) {
+            tl.hoverT = tt;
+          } else if (tl.hoverT !== tt) {
+            var step = dt / tune.TILE_HOVER_EASE_MS;
+            tl.hoverT = tt > tl.hoverT ? Math.min(1, tl.hoverT + step) : Math.max(0, tl.hoverT - step);
+            if (tl.hoverT !== tt) tilesAnimating = true;
+          }
+        }
+
         updateTree(S);
         adjustBudget(S);
         renderFrame(p, S);
 
         // card mode: stop looping once fully settled
         if (S.animate === 'hover' && S.looping && !S.cardHover &&
-            S.field.getT() === 0 && !S.anyEnergy && !S.anyTween) {
+            S.field.getT() === 0 && !S.anyEnergy && !S.anyTween && !tilesAnimating) {
           S.looping = false;
           p.noLoop();
         }
