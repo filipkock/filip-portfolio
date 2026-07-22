@@ -274,7 +274,13 @@
       id: def.id,
       kind: def.kind === 'text' ? 'text' : 'nav',
       lines: (def.lines || []).map(function (l) {
-        return { t: String(l.t).toUpperCase(), h: l.h === 'right' ? 'right' : 'left', v: l.v === 'bottom' ? 'bottom' : 'top', row: l.row | 0 };
+        return {
+          t: String(l.t).toUpperCase(),
+          h: l.h === 'right' ? 'right' : 'left',
+          v: l.v === 'bottom' ? 'bottom' : 'top',
+          row: l.row | 0,
+          scale: l.scale > 0 ? clamp(l.scale, 0.3, 1) : 1 // sub-line size, e.g. 0.5
+        };
       }),
       rect: {
         x: Math.round(c0 * cw), y: Math.round(r0 * ch),
@@ -288,7 +294,9 @@
 
   // Nav tiles get one horizontal bin each (never overlapping); text cells pin
   // to the top-left (wordmark) and bottom-left (contact) lattice corners.
-  function placeTiles(defs, cols, rows, rng, T, stacked, cw, ch) {
+  // layout 'column' stacks nav tiles down one lattice column instead - the
+  // same artwork read as an index (project pages).
+  function placeTiles(defs, cols, rows, rng, T, stacked, cw, ch, layout) {
     var tiles = [];
     var navDefs = [], textDefs = [];
     for (var i = 0; i < defs.length; i++) {
@@ -301,6 +309,13 @@
       for (var s = 0; s < navDefs.length; s++) {
         var r = Math.min(firstRow + s * 2, rows - 2);
         tiles.push(makeTile(navDefs[s], 0, r, cols, 1, cw, ch));
+      }
+    } else if (layout === 'column') {
+      var ccs = Math.min(2, Math.max(1, cols - 2));
+      var cc0 = clamp(Math.round(cols * 0.4), 1, Math.max(1, cols - ccs - 1));
+      for (var q = 0; q < navDefs.length; q++) {
+        var cr = Math.min(1 + q * 2, Math.max(1, rows - 2));
+        tiles.push(makeTile(navDefs[q], cc0, cr, ccs, 1, cw, ch));
       }
     } else {
       var n = navDefs.length;
@@ -529,7 +544,18 @@
     X: ['X...X', 'X...X', '.X.X.', '..X..', '.X.X.', 'X...X', 'X...X'],
     Y: ['X...X', 'X...X', '.X.X.', '..X..', '..X..', '..X..', '..X..'],
     Z: ['XXXXX', '....X', '...X.', '..X..', '.X...', 'X....', 'XXXXX'],
-    '&': ['.XX..', 'X..X.', 'X.X..', '.X...', 'X.X.X', 'X..X.', '.XX.X']
+    '&': ['.XX..', 'X..X.', 'X.X..', '.X...', 'X.X.X', 'X..X.', '.XX.X'],
+    '0': ['.XXX.', 'X...X', 'X..XX', 'X.X.X', 'XX..X', 'X...X', '.XXX.'],
+    '1': ['..X..', '.XX..', '..X..', '..X..', '..X..', '..X..', 'XXXXX'],
+    '2': ['.XXX.', 'X...X', '....X', '...X.', '..X..', '.X...', 'XXXXX'],
+    '3': ['.XXX.', 'X...X', '....X', '..XX.', '....X', 'X...X', '.XXX.'],
+    '4': ['...X.', '..XX.', '.X.X.', 'X..X.', 'XXXXX', '...X.', '...X.'],
+    '5': ['XXXXX', 'X....', 'XXXX.', '....X', '....X', 'X...X', '.XXX.'],
+    '6': ['.XXX.', 'X....', 'X....', 'XXXX.', 'X...X', 'X...X', '.XXX.'],
+    '7': ['XXXXX', '....X', '...X.', '..X..', '.X...', '.X...', '.X...'],
+    '8': ['.XXX.', 'X...X', 'X...X', '.XXX.', 'X...X', 'X...X', '.XXX.'],
+    '9': ['.XXX.', 'X...X', 'X...X', '.XXXX', '....X', '....X', '.XXX.'],
+    '-': ['.....', '.....', '.....', 'XXXXX', '.....', '.....', '.....']
   };
 
   // columns a word occupies: glyphs are 5 + 1 gap, spaces advance 4
@@ -699,19 +725,22 @@
 
     if (!tile.lines.length) return;
     var maxCols = 1;
-    for (var i = 0; i < tile.lines.length; i++) maxCols = Math.max(maxCols, wordCols(tile.lines[i].t));
-    // pixel size fits the longest word plus generous margins (the mock keeps
-    // air around the labels), capped by tile height
+    for (var i = 0; i < tile.lines.length; i++) {
+      maxCols = Math.max(maxCols, wordCols(tile.lines[i].t) * tile.lines[i].scale);
+    }
+    // pixel size fits the longest (scaled) line plus generous margins (the
+    // mock keeps air around the labels), capped by tile height
     var ps = clamp(Math.min(Math.floor(r.w / (maxCols + 9)), Math.floor(r.h / 24)),
       T.TILE_LABEL_PS_MIN, T.TILE_LABEL_PS_MAX);
     var inset = 2 * ps;
     for (var j = 0; j < tile.lines.length; j++) {
       var l = tile.lines[j];
-      var wpx = wordCols(l.t) * ps;
+      var lps = Math.max(2, Math.round(ps * l.scale));
+      var wpx = wordCols(l.t) * lps;
       var x = l.h === 'right' ? r.x + r.w - inset - wpx : r.x + inset;
-      var rowOff = l.row * 10 * ps;
-      var y = l.v === 'bottom' ? r.y + r.h - inset - 7 * ps - rowOff : r.y + inset + rowOff;
-      drawPixelWord(p, S, l.t, x, y, ps, edge);
+      var rowOff = l.row * 10 * ps; // stacking unit stays in base ps
+      var y = l.v === 'bottom' ? r.y + r.h - inset - 7 * lps - rowOff : r.y + inset + rowOff;
+      drawPixelWord(p, S, l.t, x, y, lps, edge);
     }
   }
 
@@ -856,15 +885,16 @@
       var target = tune.CELL_TARGET_PX * ((S.touch || w < tune.MOBILE_MAX_W) && mode !== 'card'
         ? tune.MOBILE_CELL_SCALE : (S.density === 'low' ? tune.MOBILE_CELL_SCALE : 1));
       var cols = clamp(Math.round(w / target), 2, 16);
-      var rows = clamp(Math.round(h / target), 1, 12);
+      var rows = clamp(Math.round(h / target), 1, 24);
       var stacked = (S.touch || w < tune.MOBILE_MAX_W) && mode === 'landing';
-      if (stacked && opts.tiles && opts.tiles.length) rows = Math.max(rows, 8);
+      var navCount = (opts.tiles || []).filter(function (t) { return t.kind !== 'text'; }).length;
+      if (stacked && navCount) rows = Math.max(rows, 2 + navCount * 2);
       var cw = w / cols, ch = h / rows;
       S.latCW = cw;
       S.latCH = ch;
 
       S.tiles = (opts.tiles && opts.tiles.length)
-        ? placeTiles(opts.tiles, cols, rows, rng, tune, stacked, cw, ch)
+        ? placeTiles(opts.tiles, cols, rows, rng, tune, stacked, cw, ch, opts.layout)
         : [];
 
       var lattice = makeLatticeAt(w, h, cols, rows, cw, ch, rng, tune, S.tiles);

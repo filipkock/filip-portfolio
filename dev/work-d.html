@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONCEPT D · SAME ARTPIECE · 01 WORK</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <script>document.documentElement.className += ' js';</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="../js/grid-engine.js"></script>
+  <style>
+    .concept-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      border-bottom: var(--hair) solid var(--ink);
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-xs);
+      letter-spacing: var(--track-wide);
+      text-transform: uppercase;
+      background: var(--paper);
+      position: sticky;
+      top: 0;
+      z-index: 4;
+    }
+    .concept-bar a { text-decoration: none; padding: var(--space-1) var(--space-2); }
+    .concept-bar a:hover, .concept-bar a[aria-current="true"] { background: var(--ink); color: var(--paper); }
+    .concept-bar .set { display: flex; gap: var(--space-1); }
+
+    /* one tall sheet of the same artwork; the page scrolls through it */
+    .sheet { position: relative; height: 2660px; }
+    .sheet .grid-host { position: absolute; inset: 0; z-index: 0; }
+  </style>
+</head>
+<body class="page-work">
+  <header class="concept-bar">
+    <a href="../index.html">← INDEX</a>
+    <span>01 WORK · CONCEPT D · SAME ARTPIECE, PROJECT VIEW</span>
+    <span class="set">
+      <a href="work-a.html">A</a>
+      <a href="work-b.html">B</a>
+      <a href="work-c.html">C</a>
+      <a href="work-d.html" aria-current="true">D</a>
+    </span>
+  </header>
+
+  <main class="sheet">
+    <div id="grid-host" class="grid-host" aria-hidden="true"></div>
+
+    <header class="grid-cell-overlay" data-cell="wordmark">
+      <h1 class="wordmark"><a href="../index.html">FILIP KOCKENDAL</a></h1>
+      <p class="tagline label">01 WORK · 6 PROJECTS</p>
+    </header>
+
+    <nav class="tile-nav" aria-label="Projects">
+      <a class="tile-link" href="#" data-tile="p01" aria-label="P-01, Clinic scheduling system, 2025">
+        <span class="tl-a" aria-hidden="true">SCHEDULING</span>
+        <span class="tl-b" aria-hidden="true">P-01 2025</span>
+      </a>
+      <a class="tile-link" href="#" data-tile="p02" aria-label="P-02, Patient journal UX, 2025">
+        <span class="tl-a" aria-hidden="true">JOURNAL</span>
+        <span class="tl-b" aria-hidden="true">P-02 2025</span>
+      </a>
+      <a class="tile-link" href="#" data-tile="p03" aria-label="P-03, Design token pipeline, 2024">
+        <span class="tl-a" aria-hidden="true">TOKENS</span>
+        <span class="tl-b" aria-hidden="true">P-03 2024</span>
+      </a>
+      <a class="tile-link" href="#" data-tile="p04" aria-label="P-04, Booking flow rebuild, 2024">
+        <span class="tl-a" aria-hidden="true">BOOKING</span>
+        <span class="tl-b" aria-hidden="true">P-04 2024</span>
+      </a>
+      <a class="tile-link" href="#" data-tile="p05" aria-label="P-05, Clinical data dashboard, 2023">
+        <span class="tl-a" aria-hidden="true">DASHBOARD</span>
+        <span class="tl-b" aria-hidden="true">P-05 2023</span>
+      </a>
+      <a class="tile-link" href="#" data-tile="p06" aria-label="P-06, Onboarding experiments, 2023">
+        <span class="tl-a" aria-hidden="true">ONBOARDING</span>
+        <span class="tl-b" aria-hidden="true">P-06 2023</span>
+      </a>
+    </nav>
+
+    <footer class="grid-cell-overlay" data-cell="contact">
+      <nav aria-label="Contact">
+        <a href="mailto:hello@example.com">EMAIL</a>
+        <a href="https://github.com/" rel="me">GITHUB</a>
+        <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
+      </nav>
+    </footer>
+  </main>
+
+  <script>
+    // same wiring pattern as landing.js, but tiles are projects stacked in
+    // a column (layout: 'column') and the sheet is taller than the viewport
+    window.addEventListener('DOMContentLoaded', function () {
+      var host = document.getElementById('grid-host');
+      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+      var links = {};
+      document.querySelectorAll('.tile-link').forEach(function (a) { links[a.dataset.tile] = a; });
+      var cells = {};
+      document.querySelectorAll('.grid-cell-overlay').forEach(function (el) { cells[el.dataset.cell] = el; });
+
+      var PROJECTS = [
+        { id: 'p01', title: 'SCHEDULING', sub: 'P-01 2025' },
+        { id: 'p02', title: 'JOURNAL', sub: 'P-02 2025' },
+        { id: 'p03', title: 'TOKENS', sub: 'P-03 2024' },
+        { id: 'p04', title: 'BOOKING', sub: 'P-04 2024' },
+        { id: 'p05', title: 'DASHBOARD', sub: 'P-05 2023' },
+        { id: 'p06', title: 'ONBOARDING', sub: 'P-06 2023' }
+      ];
+
+      var sketch;
+      try {
+        sketch = window.createGridSketch(host, {
+          mode: 'landing',
+          layout: 'column',
+          seed: 20260722,
+          tiles: PROJECTS.map(function (pr) {
+            return {
+              id: pr.id, kind: 'nav',
+              lines: [
+                { t: pr.title, h: 'left', v: 'top', row: 0 },
+                { t: pr.sub, h: 'left', v: 'top', row: 1, scale: 0.5 }
+              ]
+            };
+          }).concat([
+            { id: 'wordmark', kind: 'text' },
+            { id: 'contact', kind: 'text' }
+          ]),
+          density: coarse ? 'low' : 'default',
+          touch: coarse,
+          reducedMotion: reduced,
+          buildIn: !reduced,
+          onTiles: placeTiles
+        });
+      } catch (err) {
+        document.documentElement.classList.add('engine-failed');
+        return;
+      }
+      window.__grid = sketch;
+
+      function placeTiles(rects) {
+        rects.forEach(function (r) {
+          var el = r.kind === 'text' ? cells[r.id] : links[r.id];
+          if (!el) return;
+          el.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px)';
+          el.style.width = r.w + 'px';
+          el.style.height = r.h + 'px';
+        });
+        document.body.classList.add('tiles-ready');
+      }
+
+      Object.keys(links).forEach(function (id) {
+        var a = links[id];
+        if (!coarse) {
+          a.addEventListener('pointerenter', function () { sketch.setTileHover(id); });
+          a.addEventListener('pointerleave', function () { sketch.setTileHover(null); });
+        }
+        a.addEventListener('focus', function () { sketch.setTileHover(id); });
+        a.addEventListener('blur', function () { sketch.setTileHover(null); });
+      });
+    });
+  </script>
+</body>
+</html>
