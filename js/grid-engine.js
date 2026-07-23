@@ -117,6 +117,7 @@
     PIXEL_DENSITY_CAP: 2,
     DT_CLAMP_MS: 100,
     BUILD_IN_MS: 500,
+    SWEEP_OUT_MS: 340,        // exit wipe before navigating away
 
     // card mode extras
     CARD_T_RETURN_TAU_MS: 400
@@ -334,9 +335,22 @@
 
     for (var t = 0; t < textDefs.length; t++) {
       var def = textDefs[t];
+      if (def.spanFrac) {
+        // free-form span in 0..1 fractions, snapped to the lattice so the
+        // cell is flush with the surrounding artwork
+        var f = def.spanFrac;
+        var c0 = clamp(Math.round((f.x0 || 0) * cols), 0, cols - 1);
+        var c1 = clamp(Math.round((f.x1 || 1) * cols), c0 + 1, cols);
+        var r0 = clamp(Math.round((f.y0 || 0) * rows), 0, rows - 1);
+        var r1 = clamp(Math.round((f.y1 || 1) * rows), r0 + 1, rows);
+        tiles.push(makeTile(def, c0, r0, c1 - c0, r1 - r0, cw, ch));
+        continue;
+      }
+      var at = def.at || (def.id === 'contact' ? 'bl' : 'tl');
       var span = Math.min(2, cols);
-      if (def.id === 'contact') tiles.push(makeTile(def, 0, rows - 1, span, 1, cw, ch));
-      else tiles.push(makeTile(def, 0, 0, span, 1, cw, ch));
+      var tc0 = (at === 'tr' || at === 'br') ? cols - span : 0;
+      var tr0 = (at === 'bl' || at === 'br') ? rows - 1 : 0;
+      tiles.push(makeTile(def, tc0, tr0, span, 1, cw, ch));
     }
     return tiles;
   }
@@ -791,6 +805,22 @@
     for (var t = 0; t < S.tiles.length; t++) {
       if (S.tiles[t].rect.x <= limit) drawTile(p, S.tiles[t], S);
     }
+
+    // exit sweep: paper erases the sheet left-to-right, then the page
+    // navigates and the destination redraws itself with its build-in
+    if (S.sweepProgress >= 0) {
+      S.sweepProgress = Math.min(1, S.sweepProgress + S.dt / S.tune.SWEEP_OUT_MS);
+      p.noStroke();
+      p.fill(S.col.paper);
+      p.rect(0, 0, easeOutCubic(S.sweepProgress) * (p.width + 80), p.height);
+      if (S.sweepProgress >= 1 && S.sweepCb) {
+        var cb = S.sweepCb;
+        S.sweepCb = null;
+        clearTimeout(S.sweepTimer);
+        cb();
+      }
+    }
+
     if (S.debug) drawHUD(p, S);
   }
 
@@ -835,6 +865,7 @@
       anyEnergy: false, anyTween: false, initialPass: false,
       cardHover: false, looping: false, loopWanted: false, hidden: false,
       buildProgress: 1,
+      sweepProgress: -1, sweepCb: null,
       maxDepth: tune.MAX_DEPTH, maxLeavesSoft: tune.MAX_LEAVES_SOFT, maxLeavesHard: tune.MAX_LEAVES_HARD,
       nowMs: 0, dt: 16,
       resizeTimer: null,
@@ -887,14 +918,16 @@
       var cols = clamp(Math.round(w / target), 2, 16);
       var rows = clamp(Math.round(h / target), 1, 24);
       var stacked = (S.touch || w < tune.MOBILE_MAX_W) && mode === 'landing';
-      var navCount = (opts.tiles || []).filter(function (t) { return t.kind !== 'text'; }).length;
+      // tiles may be a function so pages can re-derive spans per rebuild
+      var tileDefs = typeof opts.tiles === 'function' ? opts.tiles() : opts.tiles;
+      var navCount = (tileDefs || []).filter(function (t) { return t.kind !== 'text'; }).length;
       if (stacked && navCount) rows = Math.max(rows, 2 + navCount * 2);
       var cw = w / cols, ch = h / rows;
       S.latCW = cw;
       S.latCH = ch;
 
-      S.tiles = (opts.tiles && opts.tiles.length)
-        ? placeTiles(opts.tiles, cols, rows, rng, tune, stacked, cw, ch, opts.layout)
+      S.tiles = (tileDefs && tileDefs.length)
+        ? placeTiles(tileDefs, cols, rows, rng, tune, stacked, cw, ch, opts.layout)
         : [];
 
       var lattice = makeLatticeAt(w, h, cols, rows, cw, ch, rng, tune, S.tiles);
@@ -967,6 +1000,10 @@
       };
 
       p.draw = function () {
+        // built at 0x0 (hidden/detached tab): heal on the first live frame
+        if ((p.width <= 2 || p.height <= 2) && container.clientWidth > 2) {
+          rebuildToContainer();
+        }
         var dt = Math.min(p.deltaTime || 16, tune.DT_CLAMP_MS);
         S.dt = dt;
         S.nowMs = p.millis();
@@ -1025,19 +1062,24 @@
 
     var instance = new window.p5(sketchFn, container);
 
+    function rebuildToContainer() {
+      if (S.dead || !S.p) return;
+      var w2 = Math.max(2, container.clientWidth), h2 = Math.max(2, container.clientHeight);
+      S.p.resizeCanvas(w2, h2, true);
+      build(S.p);
+      if (!S.looping) S.p.redraw();
+    }
+
     function scheduleRebuildIfResized() {
       if (S.dead || !S.p) return;
       var w = container.clientWidth, h = container.clientHeight;
       if (!w || !h) return;
       if (w === S.p.width && h === S.p.height) return;
       clearTimeout(S.resizeTimer);
-      S.resizeTimer = setTimeout(function () {
-        if (S.dead || !S.p) return;
-        var w2 = Math.max(2, container.clientWidth), h2 = Math.max(2, container.clientHeight);
-        S.p.resizeCanvas(w2, h2, true);
-        build(S.p);
-        if (!S.looping) S.p.redraw();
-      }, tune.RESIZE_DEBOUNCE_MS);
+      // a canvas built while the tab had no dimensions heals immediately;
+      // the debounce only exists to coalesce real drag-resizes
+      if (S.p.width <= 2 || S.p.height <= 2) { rebuildToContainer(); return; }
+      S.resizeTimer = setTimeout(rebuildToContainer, tune.RESIZE_DEBOUNCE_MS);
     }
 
     function onVisibility() {
@@ -1110,6 +1152,28 @@
         if (!S.looping) S.p.redraw();
       },
 
+      // erase the sheet, then hand control back (used for page exits);
+      // under reduced motion the callback fires immediately
+      sweepOut: function (onDone) {
+        if (S.dead || S.reducedMotion || S.hidden || !S.p) {
+          if (onDone) onDone();
+          return;
+        }
+        if (S.sweepProgress >= 0) return; // already sweeping
+        S.sweepCb = onDone || null;
+        S.sweepProgress = 0;
+        if (!S.looping && !S.loopWanted) { S.looping = true; S.p.loop(); }
+        // navigation must never depend on frames actually running: if rAF
+        // stalls (tab hidden mid-click), a timer completes the exit anyway
+        clearTimeout(S.sweepTimer);
+        S.sweepTimer = setTimeout(function () {
+          if (S.dead || !S.sweepCb) return;
+          var cb = S.sweepCb;
+          S.sweepCb = null;
+          cb();
+        }, tune.SWEEP_OUT_MS + 250);
+      },
+
       setDrift: function (mult) { S.driftMult = clamp(+mult || 1, 0, 50); },
       setDebug: function (on) { S.debug = !!on; safeRedraw(); },
       setFieldView: function (on) { S.fieldView = !!on; safeRedraw(); },
@@ -1118,6 +1182,7 @@
         if (S.dead) return;
         S.dead = true;
         clearTimeout(S.resizeTimer);
+        clearTimeout(S.sweepTimer);
         if (ro) ro.disconnect();
         document.removeEventListener('visibilitychange', onVisibility);
         instance.remove();

@@ -79,6 +79,7 @@
       el.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px)';
       el.style.width = r.w + 'px';
       el.style.height = r.h + 'px';
+      el.classList.add('is-placed');
     });
     document.body.classList.add('tiles-ready');
   }
@@ -89,10 +90,25 @@
       a.addEventListener('pointerenter', function () { sketch.setTileHover(id); });
       a.addEventListener('pointerleave', function () { sketch.setTileHover(null); });
     }
-    // focus implies the hatch swap, so the dashed focus ring always has
+    // focus implies the polarity swap, so the dashed focus ring always has
     // a defined field to sit on
     a.addEventListener('focus', function () { sketch.setTileHover(id); });
     a.addEventListener('blur', function () { sketch.setTileHover(null); });
+
+    // exit gesture: the sheet erases itself, then we navigate. Modified
+    // clicks (new tab etc.) and reduced motion keep native behavior.
+    a.addEventListener('click', function (ev) {
+      if (ev.defaultPrevented || ev.button !== 0 ||
+          ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      ev.preventDefault();
+      document.body.classList.add('leaving');
+      sketch.sweepOut(function () { window.location.href = a.href; });
+    });
+  });
+
+  // restored from the back-forward cache mid-sweep: start the sheet fresh
+  window.addEventListener('pageshow', function (ev) {
+    if (ev.persisted) window.location.reload();
   });
 
   // -- hover images easter egg ------------------------------------------

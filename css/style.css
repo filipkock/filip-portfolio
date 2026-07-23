@@ -336,8 +336,17 @@ html.js .grid-cell-overlay {
   visibility: hidden;
 }
 
-html.js body.tiles-ready .grid-cell-overlay {
+/* an overlay only shows once the engine has actually placed it: pages may
+   omit cells per breakpoint (e.g. the work preview on narrow screens) */
+html.js body.tiles-ready .grid-cell-overlay.is-placed {
   visibility: visible;
+}
+
+/* page exit: chrome vanishes as the sweep starts erasing the artwork */
+body.leaving .tile-nav,
+body.leaving .grid-cell-overlay,
+body.leaving .hover-img {
+  visibility: hidden !important;
 }
 
 .grid-cell-overlay .wordmark {
@@ -363,13 +372,19 @@ html.js body.tiles-ready .grid-cell-overlay {
   justify-content: flex-end;
 }
 
-[data-cell="contact"] nav {
+[data-cell="menu"] {
+  align-items: flex-end;
+}
+
+[data-cell="contact"] nav,
+[data-cell="menu"] nav {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }
 
-[data-cell="contact"] a {
+[data-cell="contact"] a,
+[data-cell="menu"] a {
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-decoration: none;
@@ -378,7 +393,9 @@ html.js body.tiles-ready .grid-cell-overlay {
   margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-1));
 }
 
-[data-cell="contact"] a:hover {
+[data-cell="contact"] a:hover,
+[data-cell="menu"] a:hover,
+[data-cell="menu"] a[aria-current="page"] {
   background: var(--ink);
   color: var(--paper);
 }
@@ -397,6 +414,117 @@ html.js body.tiles-ready .grid-cell-overlay {
 
 .hover-img.is-visible {
   display: block;
+}
+
+/* 6a2. work page: index + preview living inside the artwork ------------- */
+.cell-list {
+  padding: 0;
+  pointer-events: auto; /* the list scrolls internally if it outgrows its cell */
+  overflow-y: auto;
+}
+
+/* row = a lattice cell that flips sign on hover, like the landing tiles.
+   The ::before ink wipe sweeps in; text is white under mix-blend difference,
+   so every glyph pixel inverts exactly as the edge passes it. */
+.w-row {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-bottom: var(--hair) solid var(--ink);
+  text-decoration: none;
+  /* the overlay is a stacking context, so difference-blended text needs an
+     in-context backdrop: the row owns its paper */
+  background: var(--paper);
+}
+
+.w-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 140ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.w-row:hover::before,
+.w-row.is-current::before,
+.w-row:focus-visible::before {
+  transform: scaleX(1);
+}
+
+.w-row > * {
+  position: relative;
+  z-index: 1;
+  mix-blend-mode: difference;
+  color: #fff; /* difference: reads ink on paper, paper on ink */
+}
+
+.w-row .idx,
+.w-row .year {
+  color: var(--gray-2); /* difference keeps this gray in both polarities */
+}
+
+.w-row h2 {
+  font-size: var(--text-m);
+}
+
+.w-row .year {
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+}
+
+.w-row:focus-visible {
+  outline: none;
+}
+
+.w-row::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  z-index: 2;
+  border: var(--hair) dashed transparent;
+  pointer-events: none;
+}
+
+.w-row:focus-visible::after {
+  border-color: var(--paper);
+}
+
+.cell-preview {
+  padding: 0;
+}
+
+.cell-preview .pv-thumb {
+  aspect-ratio: 4 / 3;
+  max-height: 62%;
+  border-bottom: var(--hair) solid var(--ink);
+}
+
+.cell-preview .pv-info {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--space-3);
+}
+
+.cell-preview .pv-info h2 {
+  display: inline;
+  font-size: var(--text-m);
+}
+
+.cell-preview .pv-info .desc {
+  margin-top: var(--space-2);
+  font-size: var(--text-s);
+}
+
+.cell-preview .pv-info .tags {
+  margin-top: var(--space-2);
+  color: var(--gray-3);
 }
 
 /* 6b. shared subpage title row */
@@ -736,4 +864,22 @@ html.engine-failed .tile-link:focus-visible {
 html:not(.js) .thumb,
 html.engine-failed .thumb {
   background: var(--paper);
+}
+
+/* work page without JS: plain readable list, no preview pane */
+html:not(.js) .cell-preview,
+html.engine-failed .cell-preview {
+  display: none;
+}
+
+html:not(.js) .cell-list,
+html.engine-failed .cell-list {
+  border: var(--hair) solid var(--ink);
+  width: min(760px, 100%);
+}
+
+html:not(.js) .w-row > *,
+html.engine-failed .w-row > * {
+  mix-blend-mode: normal;
+  color: var(--ink);
 }

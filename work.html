@@ -5,98 +5,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>01 WORK · FILIP KOCKENDAL</title>
   <meta name="description" content="Product design projects by Filip Kockendal: healthcare software, design systems, and clinical workflow UX.">
-  <meta name="theme-color" content="#ecebe7">
+  <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <script>document.documentElement.className += ' js';</script>
   <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   <script defer src="js/grid-engine.js"></script>
-  <script defer src="js/site.js"></script>
+  <script defer src="js/work.js"></script>
 </head>
 <body class="page-work">
-  <header class="site-head">
-    <a class="wordmark" href="index.html">FILIP KOCKENDAL</a>
-    <nav aria-label="Primary">
-      <a href="work.html" aria-current="page"><span class="idx">01</span> WORK</a>
-      <a href="art.html"><span class="idx">02</span> ART</a>
-      <a href="about.html"><span class="idx">03</span> ABOUT</a>
-    </nav>
-  </header>
+  <main class="stage">
+    <div id="grid-host" class="grid-host" aria-hidden="true"></div>
 
-  <div class="head-strip" aria-hidden="true">
-    <div data-sketch="strip" data-seed="402"></div>
-  </div>
+    <header class="grid-cell-overlay" data-cell="wordmark">
+      <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
+      <h1 class="tagline label">01 WORK · 6 PROJECTS</h1>
+    </header>
 
-  <main class="wrap">
-    <div class="title-row">
-      <h1>01 WORK</h1>
-      <p class="label count">6 PROJECTS</p>
+    <div class="grid-cell-overlay" data-cell="menu">
+      <nav aria-label="Primary">
+        <a href="work.html" aria-current="page">01 WORK</a>
+        <a href="art.html">02 ART</a>
+        <a href="about.html">03 ABOUT</a>
+      </nav>
     </div>
 
-    <div class="hairline-grid card-grid">
-      <article class="card">
-        <div class="thumb" data-sketch="card" data-seed="1101" data-variant="quadtree" aria-hidden="true"></div>
-        <div class="card-meta">
-          <p class="idx">P-01</p>
-          <h2>CLINIC SCHEDULING SYSTEM</h2>
-          <p class="card-tags label">PRODUCT · SERVICE DESIGN · 2025</p>
-        </div>
-      </article>
+    <section class="grid-cell-overlay cell-list" data-cell="list" aria-label="Projects">
+      <a class="w-row" href="#" data-seed="1101" data-variant="quadtree"
+         data-desc="Rebuilt the calendar core so clinics plan weeks, not days."
+         data-tags="PRODUCT · SERVICE DESIGN · 2025">
+        <span class="idx">P-01</span>
+        <h2>CLINIC SCHEDULING SYSTEM</h2>
+        <span class="year">2025</span>
+      </a>
+      <a class="w-row" href="#" data-seed="1102" data-variant="flow"
+         data-desc="Faster clinical notes with structured templates and review states."
+         data-tags="PRODUCT · RESEARCH · 2025">
+        <span class="idx">P-02</span>
+        <h2>PATIENT JOURNAL UX</h2>
+        <span class="year">2025</span>
+      </a>
+      <a class="w-row" href="#" data-seed="1103" data-variant="blocks"
+         data-desc="One source of truth from Figma variables to shipped CSS."
+         data-tags="SYSTEMS · TOOLING · 2024">
+        <span class="idx">P-03</span>
+        <h2>DESIGN TOKEN PIPELINE</h2>
+        <span class="year">2024</span>
+      </a>
+      <a class="w-row" href="#" data-seed="1104" data-variant="dither"
+         data-desc="Cut patient booking from six steps to three."
+         data-tags="PRODUCT · UX · 2024">
+        <span class="idx">P-04</span>
+        <h2>BOOKING FLOW REBUILD</h2>
+        <span class="year">2024</span>
+      </a>
+      <a class="w-row" href="#" data-seed="1105" data-variant="field"
+         data-desc="Treatment outcomes, visualized for practitioners, not analysts."
+         data-tags="DATA VIZ · FRONTEND · 2023">
+        <span class="idx">P-05</span>
+        <h2>CLINICAL DATA DASHBOARD</h2>
+        <span class="year">2023</span>
+      </a>
+      <a class="w-row" href="#" data-seed="1106" data-variant="quadtree"
+         data-desc="Growth experiments that doubled trial activation."
+         data-tags="GROWTH · PROTOTYPING · 2023">
+        <span class="idx">P-06</span>
+        <h2>ONBOARDING EXPERIMENTS</h2>
+        <span class="year">2023</span>
+      </a>
+    </section>
 
-      <article class="card">
-        <div class="thumb" data-sketch="card" data-seed="1102" data-variant="flow" aria-hidden="true"></div>
-        <div class="card-meta">
-          <p class="idx">P-02</p>
-          <h2>PATIENT JOURNAL UX</h2>
-          <p class="card-tags label">PRODUCT · RESEARCH · 2025</p>
-        </div>
-      </article>
+    <aside class="grid-cell-overlay cell-preview" data-cell="preview">
+      <div class="pv-thumb" id="pv-canvas" aria-hidden="true"></div>
+      <div class="pv-info" aria-live="polite">
+        <p class="idx" id="pv-idx"></p>
+        <h2 id="pv-title"></h2>
+        <p class="desc" id="pv-desc"></p>
+        <p class="tags label" id="pv-tags"></p>
+      </div>
+    </aside>
 
-      <article class="card">
-        <div class="thumb" data-sketch="card" data-seed="1103" data-variant="blocks" aria-hidden="true"></div>
-        <div class="card-meta">
-          <p class="idx">P-03</p>
-          <h2>DESIGN TOKEN PIPELINE</h2>
-          <p class="card-tags label">SYSTEMS · TOOLING · 2024</p>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="thumb" data-sketch="card" data-seed="1104" data-variant="dither" aria-hidden="true"></div>
-        <div class="card-meta">
-          <p class="idx">P-04</p>
-          <h2>BOOKING FLOW REBUILD</h2>
-          <p class="card-tags label">PRODUCT · UX · 2024</p>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="thumb" data-sketch="card" data-seed="1105" data-variant="field" aria-hidden="true"></div>
-        <div class="card-meta">
-          <p class="idx">P-05</p>
-          <h2>CLINICAL DATA DASHBOARD</h2>
-          <p class="card-tags label">DATA VIZ · FRONTEND · 2023</p>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="thumb" data-sketch="card" data-seed="1106" data-variant="quadtree" aria-hidden="true"></div>
-        <div class="card-meta">
-          <p class="idx">P-06</p>
-          <h2>ONBOARDING EXPERIMENTS</h2>
-          <p class="card-tags label">GROWTH · PROTOTYPING · 2023</p>
-        </div>
-      </article>
-    </div>
+    <footer class="grid-cell-overlay" data-cell="contact">
+      <nav aria-label="Contact">
+        <a href="mailto:hello@example.com">EMAIL</a>
+        <a href="https://github.com/" rel="me">GITHUB</a>
+        <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
+      </nav>
+    </footer>
   </main>
-
-  <footer class="site-foot">
-    <p>© 2026 FILIP KOCKENDAL</p>
-    <nav aria-label="Contact">
-      <a href="mailto:hello@example.com">EMAIL</a>
-      <a href="https://github.com/" rel="me">GITHUB</a>
-      <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
-    </nav>
-  </footer>
 </body>
 </html>
