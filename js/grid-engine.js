@@ -8,7 +8,10 @@
  *     seed: Number (required, deterministic output per seed),
  *     mode: 'landing' | 'strip' | 'card',
  *     animate: true | false | 'hover',
- *     tiles: [{id, kind?}],           (landing; kind 'nav' (default) | 'text')
+ *     tiles: [{id, kind?, spanFrac?}], (kind 'nav' (default) | 'text' | 'photo';
+ *                                      spanFrac {x0,y0,x1,y1} places any kind
+ *                                      explicitly, snapped to the lattice -
+ *                                      photo cells require it)
  *     reducedMotion, touch: Boolean,  (env detected by the page layer)
  *     density: 'default' | 'low',
  *     buildIn: Boolean, variant: String (card flavor preset),
@@ -289,7 +292,7 @@
   function makeTile(def, c0, r0, cs, rs, cw, ch) {
     return {
       id: def.id,
-      kind: def.kind === 'text' ? 'text' : 'nav',
+      kind: def.kind === 'text' ? 'text' : def.kind === 'photo' ? 'photo' : 'nav',
       panel: !!def.panel, // heavier frame + white fill: content, not chrome
       lines: (def.lines || []).map(function (l) {
         return {
@@ -317,8 +320,24 @@
   function placeTiles(defs, cols, rows, rng, T, stacked, cw, ch, layout) {
     var tiles = [];
     var navDefs = [], textDefs = [];
+
+    // pass 1: an explicit spanFrac wins for EVERY kind - nav tiles placed
+    // this way keep their labels and hover; photo cells require a span.
+    // This pass consumes no rng, so auto-placed pages stay bit-identical.
+    function snapSpan(def) {
+      var f = def.spanFrac;
+      var c0 = clamp(Math.round((f.x0 || 0) * cols), 0, cols - 1);
+      var c1 = clamp(Math.round((f.x1 || 1) * cols), c0 + 1, cols);
+      var r0 = clamp(Math.round((f.y0 || 0) * rows), 0, rows - 1);
+      var r1 = clamp(Math.round((f.y1 || 1) * rows), r0 + 1, rows);
+      tiles.push(makeTile(def, c0, r0, c1 - c0, r1 - r0, cw, ch));
+    }
     for (var i = 0; i < defs.length; i++) {
-      (defs[i].kind === 'text' ? textDefs : navDefs).push(defs[i]);
+      var d = defs[i];
+      if (d.spanFrac) { snapSpan(d); continue; }
+      if (d.kind === 'text') textDefs.push(d);
+      else if (d.kind === 'photo') continue; // photo without a span: skipped
+      else navDefs.push(d);
     }
 
     if (stacked) {
@@ -352,17 +371,6 @@
 
     for (var t = 0; t < textDefs.length; t++) {
       var def = textDefs[t];
-      if (def.spanFrac) {
-        // free-form span in 0..1 fractions, snapped to the lattice so the
-        // cell is flush with the surrounding artwork
-        var f = def.spanFrac;
-        var c0 = clamp(Math.round((f.x0 || 0) * cols), 0, cols - 1);
-        var c1 = clamp(Math.round((f.x1 || 1) * cols), c0 + 1, cols);
-        var r0 = clamp(Math.round((f.y0 || 0) * rows), 0, rows - 1);
-        var r1 = clamp(Math.round((f.y1 || 1) * rows), r0 + 1, rows);
-        tiles.push(makeTile(def, c0, r0, c1 - c0, r1 - r0, cw, ch));
-        continue;
-      }
       var at = def.at || (def.id === 'contact' ? 'bl' : 'tl');
       var span = Math.min(2, cols);
       var tc0 = (at === 'tr' || at === 'br') ? cols - span : 0;
@@ -755,6 +763,16 @@
       }
       return;
     }
+    if (tile.kind === 'photo') {
+      // a quiet cell holding a photo: paper + outline + a crop-mark tick
+      // in the corner as the only hint that it responds to hover
+      p.stroke(C.ink);
+      p.fill(C.paper);
+      p.rect(r.x, r.y, r.w, r.h);
+      p.line(r.x + 6, r.y + r.h - 6, r.x + 14, r.y + r.h - 6);
+      p.line(r.x + 6, r.y + r.h - 14, r.x + 6, r.y + r.h - 6);
+      return;
+    }
 
     var e = easeOutCubic(tile.hoverT);
     var edge = r.x + r.w * e;
@@ -998,7 +1016,7 @@
       var stacked = (S.touch || w < tune.MOBILE_MAX_W) && mode === 'landing';
       // tiles may be a function so pages can re-derive spans per rebuild
       var tileDefs = typeof opts.tiles === 'function' ? opts.tiles() : opts.tiles;
-      var navCount = (tileDefs || []).filter(function (t) { return t.kind !== 'text'; }).length;
+      var navCount = (tileDefs || []).filter(function (t) { return t.kind !== 'text' && t.kind !== 'photo'; }).length;
       if (stacked && navCount) rows = Math.max(rows, 2 + navCount * 2);
       var cw = w / cols, ch = h / rows;
       S.latCW = cw;

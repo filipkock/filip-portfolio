@@ -5,91 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>03 ABOUT · FILIP KOCKENDAL</title>
   <meta name="description" content="About Filip Kockendal: product designer working in healthcare software, creative coder drawing parametric grids in black and white.">
-  <meta name="theme-color" content="#ecebe7">
+  <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <script>
     document.documentElement.className += ' js';
-    // not mold-aware yet: consume the transition flag so it cannot go stale
-    try { sessionStorage.removeItem('grid-mold'); } catch (e) { /* fine */ }
+    // arriving from a mold exit: start black, the engine retreats it.
+    // The timeout is the last-resort un-hide if scripts stall.
+    try {
+      if (sessionStorage.getItem('grid-mold') === '1') {
+        document.documentElement.className += ' arriving';
+        setTimeout(function () { document.documentElement.classList.remove('arriving'); }, 1500);
+      }
+    } catch (e) { /* private mode */ }
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   <script defer src="js/grid-engine.js"></script>
-  <script defer src="js/site.js"></script>
+  <script defer src="js/about.js"></script>
 </head>
 <body class="page-about">
-  <header class="site-head">
-    <a class="wordmark" href="index.html">FILIP KOCKENDAL</a>
-    <nav aria-label="Primary">
-      <a href="work.html"><span class="idx">01</span> WORK</a>
-      <a href="art.html"><span class="idx">02</span> ART</a>
-      <a href="about.html" aria-current="page"><span class="idx">03</span> ABOUT</a>
-    </nav>
-  </header>
+  <main class="stage">
+    <div id="grid-host" class="grid-host" aria-hidden="true"></div>
 
-  <div class="head-strip" aria-hidden="true">
-    <div data-sketch="strip" data-seed="404"></div>
-  </div>
+    <header class="grid-cell-overlay" data-cell="wordmark">
+      <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
+      <h1 class="tagline label">03 ABOUT</h1>
+    </header>
 
-  <main class="wrap">
-    <div class="hairline-grid about-grid">
-      <section class="cell cell-bio">
-        <h1>03 ABOUT</h1>
+    <div class="grid-cell-overlay" data-cell="menu">
+      <nav aria-label="Primary">
+        <a href="work.html">01 WORK</a>
+        <a href="art.html">02 ART</a>
+        <a href="about.html" aria-current="page">03 ABOUT</a>
+      </nav>
+    </div>
+
+    <section class="grid-cell-overlay cell-bio" data-cell="bio" aria-label="About Filip Kockendal">
+      <div class="bio-body">
         <p>I am Filip Kockendal, a product designer and creative coder based in Copenhagen. By day I design healthcare software: scheduling, journals, and clinical workflows for practitioners across the Nordics.</p>
         <p>The rest of the time I draw with code. Parametric grids, dithered fields, and recursive subdivisions, in black and white, made to survive a pen plotter. This site is one of those systems: every canvas on it is drawn live from a seed.</p>
-      </section>
+        <p class="bio-line label"><span class="idx">APPROACH</span> SYSTEMS BEFORE SCREENS · CONSTRAINTS ARE MATERIAL · SHIP, OBSERVE, REFINE</p>
+        <p class="bio-line label"><span class="idx">TOOLS</span> FIGMA · P5.JS · VUE + TYPESCRIPT · PEN PLOTTER</p>
+        <p class="bio-line label"><span class="idx">NOW</span> DESIGNING CLINICAL WORKFLOWS · PLOTTING GRID STUDIES · LEARNING SHADERS</p>
+        <p class="bio-colophon">SET IN SYSTEM MONO + A 5X7 PIXEL FACE DRAWN BY THE GRID ENGINE. MADE WITH P5.JS 1.11.3. NO COOKIES, NO TRACKING, NO WEBFONTS. © 2026 FILIP KOCKENDAL.</p>
+      </div>
+    </section>
 
-      <section class="cell cell-portrait" aria-label="Portrait">
-        <div class="thumb" data-sketch="card" data-seed="7777" data-variant="dither" role="img" aria-label="Generative self-portrait: dithered grid field, black ink on paper"></div>
-      </section>
+    <nav class="tile-nav" aria-label="Actions">
+      <a class="tile-link" href="mailto:hello@example.com" data-tile="contact" aria-label="Contact me by email">
+        <span class="tl-a" aria-hidden="true">CONTACT</span>
+        <span class="tl-b" aria-hidden="true">ME</span>
+      </a>
+      <a class="tile-link" href="assets/resume.pdf" target="_blank" rel="noopener" data-tile="resume" aria-label="Resume, PDF, opens in a new tab">
+        <span class="tl-a" aria-hidden="true">RESUME</span>
+      </a>
+      <a class="tile-link" href="https://linkedin.com/" target="_blank" rel="noopener me" data-tile="linkedin" aria-label="LinkedIn profile, opens in a new tab">
+        <span class="tl-a" aria-hidden="true">LINKEDIN</span>
+      </a>
+    </nav>
 
-      <section class="cell cell-approach">
-        <h2 class="label">APPROACH</h2>
-        <ul>
-          <li><span class="idx">01</span> SYSTEMS BEFORE SCREENS</li>
-          <li><span class="idx">02</span> CONSTRAINTS ARE MATERIAL</li>
-          <li><span class="idx">03</span> SHIP, OBSERVE, REFINE</li>
-        </ul>
-      </section>
-
-      <section class="cell cell-tools">
-        <h2 class="label">TOOLS</h2>
-        <ul>
-          <li>FIGMA</li>
-          <li>P5.JS</li>
-          <li>VUE + TYPESCRIPT</li>
-          <li>PEN PLOTTER</li>
-        </ul>
-      </section>
-
-      <section class="cell cell-now">
-        <h2 class="label">NOW</h2>
-        <ul>
-          <li>DESIGNING CLINICAL WORKFLOWS</li>
-          <li>PLOTTING GRID STUDIES</li>
-          <li>LEARNING SHADERS</li>
-        </ul>
-      </section>
-
-      <section class="cell cell-contact" aria-label="Contact">
-        <a href="mailto:hello@example.com">EMAIL</a>
-        <a href="https://github.com/" rel="me">GITHUB</a>
-        <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
-      </section>
-
-      <section class="cell cell-colophon">
-        <p>SET IN SYSTEM MONO + A 5X7 PIXEL FACE DRAWN BY THE GRID ENGINE. MADE WITH P5.JS 1.11.3. NO COOKIES, NO TRACKING, NO WEBFONTS. © 2026 FILIP KOCKENDAL.</p>
-      </section>
+    <div class="grid-cell-overlay photo-overlay" data-cell="photo-1">
+      <button type="button" class="photo-cell" aria-pressed="false" aria-label="Photo of Filip Kockendal, 1 of 3">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">IMG 01</span>
+          <img src="assets/img/me-01.jpg" alt="" loading="lazy">
+        </span>
+      </button>
+    </div>
+    <div class="grid-cell-overlay photo-overlay" data-cell="photo-2">
+      <button type="button" class="photo-cell" aria-pressed="false" aria-label="Photo of Filip Kockendal, 2 of 3">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">IMG 02</span>
+          <img src="assets/img/me-02.jpg" alt="" loading="lazy">
+        </span>
+      </button>
+    </div>
+    <div class="grid-cell-overlay photo-overlay" data-cell="photo-3">
+      <button type="button" class="photo-cell" aria-pressed="false" aria-label="Photo of Filip Kockendal, 3 of 3">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">IMG 03</span>
+          <img src="assets/img/me-03.jpg" alt="" loading="lazy">
+        </span>
+      </button>
     </div>
   </main>
-
-  <footer class="site-foot">
-    <p>© 2026 FILIP KOCKENDAL</p>
-    <nav aria-label="Contact">
-      <a href="mailto:hello@example.com">EMAIL</a>
-      <a href="https://github.com/" rel="me">GITHUB</a>
-      <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
-    </nav>
-  </footer>
 </body>
 </html>

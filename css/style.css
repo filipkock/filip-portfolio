@@ -634,90 +634,102 @@ html.js .tag-row {
   color: var(--gray-3);
 }
 
-/* 6e. about */
-.about-grid {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-areas:
-    "bio      bio      portrait"
-    "approach tools    now"
-    "contact  contact  contact"
-    "colophon colophon colophon";
-  margin-block: var(--space-5);
+/* 6e. about page: bio panel + photo cells inside the artwork ----------- */
+.cell-bio {
+  /* stay clear of the panel's canvas-drawn double frame */
+  padding: 7px;
+  pointer-events: auto;
+  overflow-y: auto;
 }
 
-.cell {
+.cell-bio .bio-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-width: 62ch;
   padding: var(--space-4);
 }
 
-.cell h1 {
-  font-size: var(--text-xl);
-  margin-bottom: var(--space-3);
-}
-
-.cell h2 {
-  color: var(--gray-3);
-  margin-bottom: var(--space-2);
-}
-
-.cell p + p {
+.cell-bio p + p {
   margin-top: var(--space-3);
 }
 
-.cell li {
-  padding-block: var(--space-1);
+.cell-bio .bio-line .idx {
+  display: inline-block;
+  min-width: 5.5rem;
 }
 
-.cell-bio {
-  grid-area: bio;
-}
-
-.cell-portrait {
-  grid-area: portrait;
-  padding: 0;
-}
-
-.cell-portrait .thumb {
-  height: 100%;
-  min-height: 240px;
-}
-
-.cell-approach {
-  grid-area: approach;
-}
-
-.cell-tools {
-  grid-area: tools;
-}
-
-.cell-now {
-  grid-area: now;
-}
-
-.cell-contact {
-  grid-area: contact;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-}
-
-.cell-contact a {
-  font-size: var(--text-l);
-  letter-spacing: var(--track-wide);
-  text-transform: uppercase;
-  text-decoration: none;
-}
-
-.cell-contact a:hover {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.cell-colophon {
-  grid-area: colophon;
+.cell-bio .bio-colophon {
+  margin-top: auto;
+  padding-top: var(--space-4);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
   color: var(--gray-3);
+}
+
+.photo-overlay {
+  padding: 0;
+}
+
+.photo-cell {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* dashed focus ring, tile-link recipe (ink: it sits on a paper cell) */
+.photo-cell::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: var(--hair) dashed transparent;
+  pointer-events: none;
+}
+
+.photo-cell:focus-visible {
+  outline: none;
+}
+
+.photo-cell:focus-visible::after {
+  border-color: var(--ink);
+}
+
+/* hidden until hover/focus/tap; checker backdrop is the placeholder, the
+   real photo (grayscaled) covers it once the asset exists */
+.photo-reveal {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  border: var(--hair) solid var(--ink);
+  background: repeating-conic-gradient(var(--ink) 0% 25%, var(--panel) 0% 50%) 0 0 / 16px 16px;
+}
+
+.photo-cell:hover .photo-reveal,
+.photo-cell:focus-visible .photo-reveal,
+.photo-cell.is-revealed .photo-reveal {
+  visibility: visible;
+}
+
+.photo-reveal .ph-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2px 6px;
+  background: var(--panel);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+}
+
+.photo-reveal img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05); /* photos join the b&w system */
 }
 
 /* 6f. page-enter: a mechanical dither-in, not a fade. Hidden state lives
@@ -749,16 +761,6 @@ html.js body:not(.page-index) .head-strip {
   .art-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-
-  .about-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-areas:
-      "bio      bio"
-      "portrait approach"
-      "tools    now"
-      "contact  contact"
-      "colophon colophon";
-  }
 }
 
 @media (max-width: 600px) {
@@ -768,18 +770,6 @@ html.js body:not(.page-index) .head-strip {
 
   .art-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .about-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "bio"
-      "portrait"
-      "approach"
-      "tools"
-      "now"
-      "contact"
-      "colophon";
   }
 
   .grid-cell-overlay {
@@ -891,6 +881,28 @@ html:not(.js) .cell-list,
 html.engine-failed .cell-list {
   border: var(--hair) solid var(--ink);
   width: min(760px, 100%);
+}
+
+/* about page without JS: readable bio, no canvas-dependent photo cells */
+html:not(.js) .photo-overlay,
+html.engine-failed .photo-overlay {
+  display: none;
+}
+
+html:not(.js) .cell-bio,
+html.engine-failed .cell-bio {
+  border: var(--hair) solid var(--ink);
+  width: min(760px, 100%);
+}
+
+html:not(.js) .cell-bio .bio-body,
+html.engine-failed .cell-bio .bio-body {
+  min-height: auto;
+}
+
+html:not(.js) .cell-bio .bio-colophon,
+html.engine-failed .cell-bio .bio-colophon {
+  margin-top: var(--space-4);
 }
 
 html:not(.js) .w-row > *,
