@@ -12,6 +12,8 @@
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  var arriving = document.documentElement.classList.contains('arriving');
+  try { sessionStorage.removeItem('grid-mold'); } catch (e) { /* private mode */ }
 
   var overlays = {};
   document.querySelectorAll('.grid-cell-overlay').forEach(function (el) {
@@ -29,10 +31,10 @@
       { id: 'contact', kind: 'text' }
     ];
     if (narrow) {
-      defs.push({ id: 'list', kind: 'text', spanFrac: { x0: 0, y0: 0.16, x1: 1, y1: 0.88 } });
+      defs.push({ id: 'list', kind: 'text', panel: true, spanFrac: { x0: 0, y0: 0.16, x1: 1, y1: 0.88 } });
     } else {
-      defs.push({ id: 'list', kind: 'text', spanFrac: { x0: 0.125, y0: 0.18, x1: 0.55, y1: 0.85 } });
-      defs.push({ id: 'preview', kind: 'text', spanFrac: { x0: 0.55, y0: 0.18, x1: 0.9, y1: 0.85 } });
+      defs.push({ id: 'list', kind: 'text', panel: true, spanFrac: { x0: 0.125, y0: 0.18, x1: 0.55, y1: 0.85 } });
+      defs.push({ id: 'preview', kind: 'text', panel: true, spanFrac: { x0: 0.55, y0: 0.18, x1: 0.9, y1: 0.85 } });
     }
     return defs;
   }
@@ -46,10 +48,13 @@
       density: coarse ? 'low' : 'default',
       touch: coarse,
       reducedMotion: reduced,
-      buildIn: !reduced,
+      buildIn: !reduced && !arriving,
+      arrive: arriving,
+      onArrived: function () { document.documentElement.classList.remove('arriving'); },
       onTiles: placeCells
     });
   } catch (err) {
+    document.documentElement.classList.remove('arriving');
     document.documentElement.classList.add('engine-failed');
     return;
   }
@@ -100,7 +105,8 @@
         variant: row.dataset.variant || 'quadtree',
         animate: 'hover',
         reducedMotion: reduced,
-        touch: coarse
+        touch: coarse,
+        tune: { PAPER: '#ffffff' } // match the panel fill, no seam
       });
     } catch (e) { /* preview cell stays paper */ }
   }
@@ -133,7 +139,11 @@
       if (a.getAttribute('aria-current') === 'page') { ev.preventDefault(); return; }
       ev.preventDefault();
       document.body.classList.add('leaving');
-      sketch.sweepOut(function () { window.location.href = a.href; });
+      try { sessionStorage.setItem('grid-mold', '1'); } catch (e) { /* fine */ }
+      var cellId = a.closest('.grid-cell-overlay').dataset.cell;
+      var t = sketch.getTiles().filter(function (x) { return x.id === cellId; })[0];
+      var origin = t ? { x: t.x + t.w / 2, y: t.y + t.h / 2 } : null;
+      sketch.sweepOut(origin, function () { window.location.href = a.href; });
     });
   });
 

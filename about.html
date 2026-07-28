@@ -8,7 +8,11 @@
   <meta name="theme-color" content="#ecebe7">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
-  <script>document.documentElement.className += ' js';</script>
+  <script>
+    document.documentElement.className += ' js';
+    // not mold-aware yet: consume the transition flag so it cannot go stale
+    try { sessionStorage.removeItem('grid-mold'); } catch (e) { /* fine */ }
+  </script>
   <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   <script defer src="js/grid-engine.js"></script>
   <script defer src="js/site.js"></script>

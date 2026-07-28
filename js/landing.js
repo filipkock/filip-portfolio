@@ -16,6 +16,8 @@
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  var arriving = document.documentElement.classList.contains('arriving');
+  try { sessionStorage.removeItem('grid-mold'); } catch (e) { /* private mode */ }
 
   var links = {};
   document.querySelectorAll('.tile-link').forEach(function (a) {
@@ -61,11 +63,14 @@
       density: coarse ? 'low' : 'default',
       touch: coarse,
       reducedMotion: reduced,
-      buildIn: !reduced,
+      buildIn: !reduced && !arriving,
+      arrive: arriving,
+      onArrived: function () { document.documentElement.classList.remove('arriving'); },
       onTiles: placeTiles
     });
   } catch (err) {
     // no p5, engine crash: the static CSS layout takes over
+    document.documentElement.classList.remove('arriving');
     document.documentElement.classList.add('engine-failed');
     return;
   }
@@ -95,14 +100,18 @@
     a.addEventListener('focus', function () { sketch.setTileHover(id); });
     a.addEventListener('blur', function () { sketch.setTileHover(null); });
 
-    // exit gesture: the sheet erases itself, then we navigate. Modified
-    // clicks (new tab etc.) and reduced motion keep native behavior.
+    // exit gesture: ink spreads from the clicked tile until the sheet is
+    // consumed, then we navigate and the next page retreats the mold.
+    // Modified clicks (new tab etc.) and reduced motion keep native behavior.
     a.addEventListener('click', function (ev) {
       if (ev.defaultPrevented || ev.button !== 0 ||
           ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
       ev.preventDefault();
       document.body.classList.add('leaving');
-      sketch.sweepOut(function () { window.location.href = a.href; });
+      try { sessionStorage.setItem('grid-mold', '1'); } catch (e) { /* fine */ }
+      var t = sketch.getTiles().filter(function (x) { return x.id === id; })[0];
+      var origin = t ? { x: t.x + t.w / 2, y: t.y + t.h / 2 } : null;
+      sketch.sweepOut(origin, function () { window.location.href = a.href; });
     });
   });
 

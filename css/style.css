@@ -12,6 +12,7 @@
 :root {
   --paper: #fafafa;
   --ink: #111111;
+  --panel: #ffffff; /* content panels lift slightly off the field */
   --gray-1: #e4e4e4;
   --gray-2: #9c9c9c;
   --gray-3: #5c5c5c; /* darkest gray allowed for text: >= 4.5:1 on paper */
@@ -342,10 +343,22 @@ html.js body.tiles-ready .grid-cell-overlay.is-placed {
   visibility: visible;
 }
 
-/* page exit: chrome vanishes as the sweep starts erasing the artwork */
+/* page exit: chrome vanishes as the mold starts consuming the artwork */
 body.leaving .tile-nav,
 body.leaving .grid-cell-overlay,
 body.leaving .hover-img {
+  visibility: hidden !important;
+}
+
+/* page arrival: the sheet starts fully consumed (black), chrome stays
+   hidden until the engine has retreated the mold (onArrived) */
+html.arriving body {
+  background: var(--ink);
+}
+
+html.arriving .tile-nav,
+html.arriving .grid-cell-overlay,
+html.arriving .hover-img {
   visibility: hidden !important;
 }
 
@@ -437,8 +450,8 @@ body.leaving .hover-img {
   border-bottom: var(--hair) solid var(--ink);
   text-decoration: none;
   /* the overlay is a stacking context, so difference-blended text needs an
-     in-context backdrop: the row owns its paper */
-  background: var(--paper);
+     in-context backdrop: the row owns its fill (panel white, no seam) */
+  background: var(--panel);
 }
 
 .w-row::before {

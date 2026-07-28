@@ -44,7 +44,9 @@
     // palette: cold, high contrast; textures do the shading
     PAPER: '#fafafa',
     INK: '#111111',
+    PANEL: '#ffffff',         // content panels lift slightly off the field
     STROKE_PX: 1,
+    PANEL_STROKE_PX: 2,
 
     // lattice
     CELL_TARGET_PX: 190,      // super-cell size the lattice aims for
@@ -117,7 +119,15 @@
     PIXEL_DENSITY_CAP: 2,
     DT_CLAMP_MS: 100,
     BUILD_IN_MS: 500,
-    SWEEP_OUT_MS: 340,        // exit wipe before navigating away
+
+    // page transition: ink spreads cell by cell from the click, mold-like,
+    // until the sheet is black with paper grid lines; the destination page
+    // starts in that state and the mold retreats to reveal it
+    MOLD_OUT_MS: 700,
+    MOLD_IN_MS: 600,
+    MOLD_DIST_W: 0.62,        // wavefront: distance share of the threshold
+    MOLD_NOISE_W: 0.38,       // organic fingers: noise share, scaled by distance
+    MOLD_NOISE_PX: 130,       // finger size
 
     // card mode extras
     CARD_T_RETURN_TAU_MS: 400
@@ -188,6 +198,12 @@
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function easeOutCubic(t) { var u = 1 - t; return 1 - u * u * u; }
+
+  function moldMaxDist(origin, p) {
+    var ox = origin ? origin.x : p.width / 2, oy = origin ? origin.y : p.height / 2;
+    var fx = Math.max(ox, p.width - ox), fy = Math.max(oy, p.height - oy);
+    return Math.max(60, Math.sqrt(fx * fx + fy * fy));
+  }
 
   function merge() {
     var out = {};
@@ -274,6 +290,7 @@
     return {
       id: def.id,
       kind: def.kind === 'text' ? 'text' : 'nav',
+      panel: !!def.panel, // heavier frame + white fill: content, not chrome
       lines: (def.lines || []).map(function (l) {
         return {
           t: String(l.t).toUpperCase(),
@@ -722,9 +739,20 @@
     var r = tile.rect, C = S.col, T = S.tune;
     p.strokeWeight(T.STROKE_PX);
     if (tile.kind === 'text') {
-      p.stroke(C.ink);
-      p.fill(C.paper);
-      p.rect(r.x, r.y, r.w, r.h);
+      if (tile.panel) {
+        // separation from the field: white fill, heavy border, inner hairline
+        p.stroke(C.ink);
+        p.strokeWeight(T.PANEL_STROKE_PX);
+        p.fill(C.panel);
+        p.rect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+        p.strokeWeight(T.STROKE_PX);
+        p.noFill();
+        p.rect(r.x + 5, r.y + 5, r.w - 10, r.h - 10);
+      } else {
+        p.stroke(C.ink);
+        p.fill(C.paper);
+        p.rect(r.x, r.y, r.w, r.h);
+      }
       return;
     }
 
@@ -806,22 +834,72 @@
       if (S.tiles[t].rect.x <= limit) drawTile(p, S.tiles[t], S);
     }
 
-    // exit sweep: paper erases the sheet left-to-right, then the page
-    // navigates and the destination redraws itself with its build-in
-    if (S.sweepProgress >= 0) {
-      S.sweepProgress = Math.min(1, S.sweepProgress + S.dt / S.tune.SWEEP_OUT_MS);
-      p.noStroke();
-      p.fill(S.col.paper);
-      p.rect(0, 0, easeOutCubic(S.sweepProgress) * (p.width + 80), p.height);
-      if (S.sweepProgress >= 1 && S.sweepCb) {
-        var cb = S.sweepCb;
-        S.sweepCb = null;
-        clearTimeout(S.sweepTimer);
-        cb();
+    if (S.trans) drawMoldPass(p, S);
+
+    if (S.debug) drawHUD(p, S);
+  }
+
+  /* mold transition: a cell is consumed once the wavefront passes its
+     threshold = dist * (DIST_W + NOISE_W * smooth-noise). Noise grows with
+     distance, so the frontier breaks into organic fingers. Consumed cells
+     are solid ink with paper grid lines. 'in' runs the same field with
+     progress inverted: the last cells consumed are the first to clear. */
+  function moldThreshold(cx, cy, S) {
+    var tr = S.trans, T = S.tune;
+    var dx = cx - tr.origin.x, dy = cy - tr.origin.y;
+    var dNorm = Math.sqrt(dx * dx + dy * dy) / tr.maxDist;
+    var n = vnoise(cx / T.MOLD_NOISE_PX, cy / T.MOLD_NOISE_PX, 3.7, S.seed);
+    return dNorm * (T.MOLD_DIST_W + T.MOLD_NOISE_W * n);
+  }
+
+  function drawMoldRect(p, S, prog, x, y, w, h) {
+    if (prog >= moldThreshold(x + w / 2, y + h / 2, S)) {
+      p.stroke(S.col.paper);
+      p.fill(S.col.ink);
+      p.rect(x, y, w, h);
+    }
+  }
+
+  function drawMoldNode(p, S, prog, n) {
+    if (n.children) {
+      var ch = n.children;
+      drawMoldNode(p, S, prog, ch[0]);
+      drawMoldNode(p, S, prog, ch[1]);
+      drawMoldNode(p, S, prog, ch[2]);
+      drawMoldNode(p, S, prog, ch[3]);
+    } else {
+      drawMoldRect(p, S, prog, n.x, n.y, n.w, n.h);
+    }
+  }
+
+  function drawMoldPass(p, S) {
+    var tr = S.trans, T = S.tune;
+    tr.t = Math.min(1, tr.t + S.dt / (tr.mode === 'out' ? T.MOLD_OUT_MS : T.MOLD_IN_MS));
+    var prog = tr.mode === 'out' ? tr.t : 1 - tr.t;
+
+    p.strokeWeight(T.STROKE_PX);
+    var i;
+    for (i = 0; i < S.roots.length; i++) drawMoldNode(p, S, prog, S.roots[i]);
+    // reserved tile spans have no quadtree cells: consume them in
+    // lattice-cell chunks so panels get eaten organically too
+    for (i = 0; i < S.tiles.length; i++) {
+      var r = S.tiles[i].rect;
+      for (var gy = r.y; gy < r.y + r.h - 1; gy += S.latCH) {
+        for (var gx = r.x; gx < r.x + r.w - 1; gx += S.latCW) {
+          drawMoldRect(p, S, prog, gx, gy,
+            Math.min(S.latCW, r.x + r.w - gx), Math.min(S.latCH, r.y + r.h - gy));
+        }
       }
     }
 
-    if (S.debug) drawHUD(p, S);
+    if (tr.t >= 1) {
+      var cb = tr.cb;
+      tr.cb = null;
+      clearTimeout(S.sweepTimer);
+      // 'out' keeps the sheet fully black until navigation; 'in' is done
+      if (tr.mode === 'in') S.trans = null;
+      if (cb) cb();
+    }
   }
 
   /* ------------------------------------------------------------------ *
@@ -865,7 +943,7 @@
       anyEnergy: false, anyTween: false, initialPass: false,
       cardHover: false, looping: false, loopWanted: false, hidden: false,
       buildProgress: 1,
-      sweepProgress: -1, sweepCb: null,
+      trans: null, arrivedOnce: false,
       maxDepth: tune.MAX_DEPTH, maxLeavesSoft: tune.MAX_LEAVES_SOFT, maxLeavesHard: tune.MAX_LEAVES_HARD,
       nowMs: 0, dt: 16,
       resizeTimer: null,
@@ -944,6 +1022,34 @@
       S.initialPass = false;
 
       S.buildProgress = S.buildIn ? 0 : 1;
+
+      // arriving from a mold exit: start fully consumed and retreat.
+      // Only on the first build - resize rebuilds must not replay it.
+      if (opts.arrive && !S.reducedMotion && !S.arrivedOnce && w > 2) {
+        S.arrivedOnce = true;
+        S.buildProgress = 1;
+        S.trans = {
+          mode: 'in',
+          t: 0,
+          origin: { x: w / 2, y: h / 2 },
+          maxDist: moldMaxDist(null, { width: w, height: h }),
+          cb: typeof opts.onArrived === 'function' ? opts.onArrived : null
+        };
+        // overlays must never stay hidden if frames stall before reveal ends
+        clearTimeout(S.arriveTimer);
+        S.arriveTimer = setTimeout(function () {
+          if (S.dead || !S.trans || S.trans.mode !== 'in') return;
+          var cb = S.trans.cb;
+          S.trans = null;
+          if (cb) cb();
+          if (S.p && !S.looping) S.p.redraw();
+        }, tune.MOLD_IN_MS + 400);
+      } else if (opts.arrive && !S.arrivedOnce && w > 2) {
+        // reduced motion: no animation, but the page must still un-hide
+        S.arrivedOnce = true;
+        if (typeof opts.onArrived === 'function') opts.onArrived();
+      }
+
       fireTiles();
     }
 
@@ -989,7 +1095,7 @@
         p.pixelDensity(Math.min(tune.PIXEL_DENSITY_CAP, window.devicePixelRatio || 1));
         var renderer = p.createCanvas(Math.max(2, container.clientWidth), Math.max(2, container.clientHeight));
         renderer.elt.setAttribute('aria-hidden', 'true'); // hosts carry semantics
-        S.col = { paper: p.color(tune.PAPER), ink: p.color(tune.INK) };
+        S.col = { paper: p.color(tune.PAPER), ink: p.color(tune.INK), panel: p.color(tune.PANEL) };
         build(p);
         if (S.animate === true && !S.reducedMotion) {
           S.loopWanted = true;
@@ -1004,9 +1110,14 @@
         if ((p.width <= 2 || p.height <= 2) && container.clientWidth > 2) {
           rebuildToContainer();
         }
-        var dt = Math.min(p.deltaTime || 16, tune.DT_CLAMP_MS);
+        // own frame clock: p5's deltaTime is unreliable under manual
+        // redraw() pumping, and wall time is what animations should follow
+        var nowMs = p.millis();
+        var dt = S.lastFrameMs === undefined ? 16 : nowMs - S.lastFrameMs;
+        S.lastFrameMs = nowMs;
+        dt = Math.max(0.01, Math.min(dt, tune.DT_CLAMP_MS));
         S.dt = dt;
-        S.nowMs = p.millis();
+        S.nowMs = nowMs;
 
         // time evolution
         if (mode === 'card') {
@@ -1152,26 +1263,33 @@
         if (!S.looping) S.p.redraw();
       },
 
-      // erase the sheet, then hand control back (used for page exits);
-      // under reduced motion the callback fires immediately
-      sweepOut: function (onDone) {
+      // consume the sheet from `origin` (canvas px; defaults to center),
+      // then hand control back (used for page exits); under reduced motion
+      // the callback fires immediately
+      sweepOut: function (origin, onDone) {
+        if (typeof origin === 'function') { onDone = origin; origin = null; }
         if (S.dead || S.reducedMotion || S.hidden || !S.p) {
           if (onDone) onDone();
           return;
         }
-        if (S.sweepProgress >= 0) return; // already sweeping
-        S.sweepCb = onDone || null;
-        S.sweepProgress = 0;
+        if (S.trans) return; // already transitioning
+        S.trans = {
+          mode: 'out',
+          t: 0,
+          origin: origin || { x: S.p.width / 2, y: S.p.height / 2 },
+          maxDist: moldMaxDist(origin, S.p),
+          cb: onDone || null
+        };
         if (!S.looping && !S.loopWanted) { S.looping = true; S.p.loop(); }
         // navigation must never depend on frames actually running: if rAF
         // stalls (tab hidden mid-click), a timer completes the exit anyway
         clearTimeout(S.sweepTimer);
         S.sweepTimer = setTimeout(function () {
-          if (S.dead || !S.sweepCb) return;
-          var cb = S.sweepCb;
-          S.sweepCb = null;
+          if (S.dead || !S.trans || !S.trans.cb) return;
+          var cb = S.trans.cb;
+          S.trans.cb = null;
           cb();
-        }, tune.SWEEP_OUT_MS + 250);
+        }, tune.MOLD_OUT_MS + 300);
       },
 
       setDrift: function (mult) { S.driftMult = clamp(+mult || 1, 0, 50); },
@@ -1183,6 +1301,7 @@
         S.dead = true;
         clearTimeout(S.resizeTimer);
         clearTimeout(S.sweepTimer);
+        clearTimeout(S.arriveTimer);
         if (ro) ro.disconnect();
         document.removeEventListener('visibilitychange', onVisibility);
         instance.remove();

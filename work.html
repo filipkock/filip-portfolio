@@ -8,7 +8,17 @@
   <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
-  <script>document.documentElement.className += ' js';</script>
+  <script>
+    document.documentElement.className += ' js';
+    // arriving from a mold exit: start black, the engine retreats it.
+    // The timeout is the last-resort un-hide if scripts stall.
+    try {
+      if (sessionStorage.getItem('grid-mold') === '1') {
+        document.documentElement.className += ' arriving';
+        setTimeout(function () { document.documentElement.classList.remove('arriving'); }, 1500);
+      }
+    } catch (e) { /* private mode */ }
+  </script>
   <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   <script defer src="js/grid-engine.js"></script>
   <script defer src="js/work.js"></script>
