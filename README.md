@@ -10,9 +10,12 @@ loaded from a pinned CDN.
 ## Run
 
 ```
-python3 -m http.server 8137
-# -> http://localhost:8137
+python3 dev/serve.py 8137
+# -> http://localhost:8137 (no-cache, edits show on plain reload)
 ```
+
+Plain `python3 -m http.server` works too, but the browser will cache
+js/css heuristically - you then need hard refreshes after every edit.
 
 Opening `index.html` directly from the filesystem also works (all scripts are
 classic scripts, no modules).

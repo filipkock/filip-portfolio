@@ -431,7 +431,9 @@ html.arriving .hover-img {
 
 /* 6a2. work page: index + preview living inside the artwork ------------- */
 .cell-list {
-  padding: 0;
+  /* stay clear of the panel's canvas-drawn double frame (2px + hairline):
+     without this inset the white rows paint straight over the border */
+  padding: 7px;
   pointer-events: auto; /* the list scrolls internally if it outgrows its cell */
   overflow-y: auto;
 }
@@ -509,7 +511,7 @@ html.arriving .hover-img {
 }
 
 .cell-preview {
-  padding: 0;
+  padding: 7px; /* same inset: keep the double frame visible */
 }
 
 .cell-preview .pv-thumb {

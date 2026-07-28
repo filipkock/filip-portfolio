@@ -1292,6 +1292,9 @@
         }, tune.MOLD_OUT_MS + 300);
       },
 
+      // 'out' | 'in' | null - what transition is running (debug/tests)
+      transition: function () { return S.trans ? S.trans.mode : null; },
+
       setDrift: function (mult) { S.driftMult = clamp(+mult || 1, 0, 50); },
       setDebug: function (on) { S.debug = !!on; safeRedraw(); },
       setFieldView: function (on) { S.fieldView = !!on; safeRedraw(); },

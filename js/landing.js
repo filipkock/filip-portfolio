@@ -16,8 +16,14 @@
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  // the inline head script normally sets .arriving (and the black pre-paint),
+  // but read the flag directly too so a stale HTML cache cannot skip the
+  // retreat animation
   var arriving = document.documentElement.classList.contains('arriving');
-  try { sessionStorage.removeItem('grid-mold'); } catch (e) { /* private mode */ }
+  try {
+    arriving = arriving || sessionStorage.getItem('grid-mold') === '1';
+    sessionStorage.removeItem('grid-mold');
+  } catch (e) { /* private mode */ }
 
   var links = {};
   document.querySelectorAll('.tile-link').forEach(function (a) {
