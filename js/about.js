@@ -67,10 +67,14 @@
       var cells = function (c0, r0, cs, rs) {
         return { x0: c0 / C, y0: r0 / R, x1: (c0 + cs) / C, y1: (r0 + rs) / R };
       };
+      // the trio steps down as a triangle anchored on resume's column:
+      // contact spans the two columns above, linkedin sits one column left
+      // (never straight under resume - they would read as one button)
+      var rc = Math.min(C - 1, Math.max(3, Math.round(C * 0.72)));
       defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0.10, y0: 0.20, x1: 0.52, y1: 0.88 } });
-      defs.push({ id: 'contact', kind: 'nav', lines: LINES.contact, spanFrac: cells(Math.round(C * 0.60), 1, 2, 1) });
-      defs.push({ id: 'resume', kind: 'nav', lines: LINES.resume, spanFrac: cells(Math.round(C * 0.72), Math.min(2, R - 1), 1, 1) });
-      defs.push({ id: 'linkedin', kind: 'nav', lines: LINES.linkedin, spanFrac: cells(Math.round(C * 0.62), Math.min(3, R - 1), 1, 1) });
+      defs.push({ id: 'contact', kind: 'nav', lines: LINES.contact, spanFrac: cells(rc - 1, 1, 2, 1) });
+      defs.push({ id: 'resume', kind: 'nav', lines: LINES.resume, spanFrac: cells(rc, Math.min(2, R - 1), 1, 1) });
+      defs.push({ id: 'linkedin', kind: 'nav', lines: LINES.linkedin, spanFrac: cells(rc - 1, Math.min(3, R - 1), 1, 1) });
       defs.push({ id: 'photo-1', kind: 'photo', spanFrac: { x0: 0.30, y0: 0.00, x1: 0.42, y1: 0.20 } });
       defs.push({ id: 'photo-2', kind: 'photo', spanFrac: { x0: 0.00, y0: 0.30, x1: 0.10, y1: 0.55 } });
       defs.push({ id: 'photo-3', kind: 'photo', spanFrac: { x0: 0.90, y0: 0.86, x1: 1.00, y1: 1.00 } });
