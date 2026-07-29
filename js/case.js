@@ -34,23 +34,37 @@
     };
   }
 
+  // The document lives in a paper channel cut into the lattice: a full-height
+  // reserved column, so scrolling text is always backed by the sheet instead
+  // of floating over the drawing. Chrome takes the columns either side, which
+  // is also why nothing can scroll underneath it.
+  var SIDE = 2; // lattice columns reserved for chrome on each side
+
+  function columns(L) {
+    var cols = L ? L.cols : predict().cols;
+    // a channel needs the two chrome columns plus at least two of its own
+    if (cols < SIDE * 2 + 2) return { channel: false, start: 0, span: cols, cols: cols };
+    return { channel: true, start: SIDE, span: cols - SIDE * 2, cols: cols };
+  }
+
   function tileDefs() {
     var L = predict();
+    var C = columns(L);
     var defs = [];
-    // corner cells are 2 lattice columns each: below 4 columns they would
-    // overlap, so CSS lays them out as a flush top row instead
-    if (L.cols >= 4) {
+    // corner cells are 2 lattice columns each: without a channel the lattice
+    // is too coarse for them, and CSS lays them out as a flush top row
+    if (C.channel) {
       defs.push({ id: 'wordmark', kind: 'text' });
       defs.push({ id: 'menu', kind: 'text', at: 'tr' });
-    }
-    // the index is a flush band of lattice cells on the right edge; on
-    // narrower screens it becomes a bottom bar (CSS) and claims no cells
-    if (L.wide) {
-      var span = Math.min(3, Math.max(2, Math.round(230 / (window.innerWidth / L.cols))));
+      defs.push({
+        id: 'channel', kind: 'text',
+        spanFrac: { x0: C.start / C.cols, x1: (C.start + C.span) / C.cols, y0: 0, y1: 1 }
+      });
+      // the index sits in the right chrome column, under the menu
       defs.push({
         id: 'index', kind: 'text',
         spanFrac: {
-          x0: (L.cols - span) / L.cols, x1: 1,
+          x0: (C.cols - SIDE) / C.cols, x1: 1,
           y0: 1 / L.rows, y1: Math.min(L.rows, 3) / L.rows
         }
       });
@@ -124,18 +138,14 @@
     try { L = sketch.lattice(); } catch (e) { return false; }
     if (!L || !L.cols || !L.cw) return false;
     var root = document.documentElement.style;
-    var wide = window.innerWidth >= WIDE_MIN;
-    var idxSpan = wide ? Math.min(3, Math.max(2, Math.round(230 / L.cw))) : 0;
-    // leave the index band free on the right, one column of air on the left
-    var start = 1;
-    var maxCols = Math.max(1, L.cols - idxSpan - start);
-    var want = Math.max(1, Math.round(760 / L.cw));
-    var span = Math.min(maxCols, want);
-    if (!wide) { start = 0; span = L.cols; } // full bleed when stacked
-    root.setProperty('--doc-x', Math.round(start * L.cw) + 'px');
-    root.setProperty('--doc-w', Math.round(span * L.cw) + 'px');
-    root.setProperty('--doc-top', Math.round(L.ch) + 'px'); // below the corner row
+    var C = columns(L);
+    root.setProperty('--doc-x', Math.round(C.start * L.cw) + 'px');
+    root.setProperty('--doc-w', Math.round(C.span * L.cw) + 'px');
+    // clear the chrome: a full lattice row when it is canvas-drawn cells,
+    // or just the thin flush row of the fallback layout
+    root.setProperty('--doc-top', (C.channel ? Math.round(L.ch) : 72) + 'px');
     root.setProperty('--lat-ch', Math.round(L.ch) + 'px');
+    document.body.classList.toggle('has-channel', C.channel);
     return true;
   }
 

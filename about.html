@@ -42,8 +42,63 @@
 
     <section class="grid-cell-overlay cell-bio" data-cell="bio" aria-label="About Filip Kockendal">
       <div class="bio-body">
-        <p>I am Filip Kockendal, a product designer and creative coder based in Copenhagen. By day I design healthcare software: scheduling, journals, and clinical workflows for practitioners across the Nordics.</p>
-        <p>The rest of the time I draw with code. Parametric grids, dithered fields, and recursive subdivisions, in black and white, made to survive a pen plotter. This site is one of those systems: every canvas on it is drawn live from a seed.</p>
+        <p class="bio-hey">Heey!</p>
+        <p>My name is Filip Kockendal, and I'm a product designer currently improving clinical workflows for practitioners across the Nordics at Nordhealth. I've hopped around a bit across different domains, from finance to clinical workflows and AI initiatives. It's hard to say what I enjoy the most, but it's safe to say that I like trying new things.</p>
+        <p>In my spare time, I enjoy doing a bit of creative coding and exploring ways to make fun interactive art. I'm still learning, but it's really fun! Something I want to get into more is the intersection between interactive art and sound design.</p>
+        <p>Another hobby I've had for some time is playing guitar. I still haven't tried playing an electric guitar, but hopefully at some point! I'd also love to try playing the contrabass; I've tried it briefly, but definitely want to learn more. PS: it's a beautiful thing to have a hobby even though you're poor at it, so expect nothing fancy :-D</p>
+
+        <!-- fun facts: authored as a plain list, turned into a click-through
+             deck by js/about.js. Without JS every fact just stays visible. -->
+        <section class="fun-deck" aria-labelledby="ff-title">
+          <h2 class="ff-head" id="ff-title">
+            <button type="button" class="ff-toggle" aria-expanded="false" aria-controls="ff-body">
+              <span class="label">Some fun facts about me</span>
+              <span class="ff-cue label" aria-hidden="true">REVEAL</span>
+            </button>
+          </h2>
+          <div class="ff-body" id="ff-body">
+            <ol class="ff-list" aria-live="polite">
+              <li class="ff-fact">
+                <h3 class="label">Hamlet</h3>
+                <p>I know Act 3, Scene 1 by heart. Recently watched the new Hamnet movie and I decided to try to learn some of the manuscript. Now I will forever remember Act 3, Scene 1, "Get thee to a nunnery!", and the next three lines. Pls ask me if you want a live performance.</p>
+              </li>
+              <li class="ff-fact">
+                <h3 class="label">Capybaras</h3>
+                <p>I find them hella cute. No other opinion is accepted.</p>
+              </li>
+              <li class="ff-fact">
+                <h3 class="label">Cantonese cussing</h3>
+                <p>There is no better cussing language than Cantonese. It's poetic and beautiful. For example, pok gai means "I hope you fall onto the street", and it's something really rude to say.</p>
+              </li>
+              <li class="ff-fact">
+                <h3 class="label">Sports</h3>
+                <p>Hot take: watching sports is kinda boring and overrated :-D Some favorite sports of mine to do include football, beach volleyball, tennis, and climbing.</p>
+              </li>
+              <li class="ff-fact">
+                <h3 class="label">Hair</h3>
+                <p>I usually grow out my hair until I accidentally catch a reflection of myself and think I look homeless. I then try to cut it myself, fail miserably, and go around with an ugly haircut for about a week until I go to a barber who fixes it, and they always say, what happened to your hair. This is usually a continuous cycle every 6 months.</p>
+              </li>
+              <li class="ff-fact">
+                <h3 class="label">Sauce</h3>
+                <p>You can put chilli bean oil on any Asian dish to save it. Or for that matter, sauce with that lady on it. <a href="https://www.google.com/search?q=chili+bean+oil&amp;udm=2" target="_blank" rel="noopener">See here</a>.</p>
+              </li>
+              <li class="ff-fact">
+                <h3 class="label">Universal topics</h3>
+                <p>I think food and poo are two of the most universal topics, ones you can speak about with anyone and have a fun and good conversation. It's something we all do. But not in combination, please bring up the topics at separate instances. PS: I promise I'm really professional.</p>
+              </li>
+              <li class="ff-fact">
+                <h3 class="label">That's all</h3>
+                <p>Please <a href="mailto:hello@example.com">book a call</a> if you want to know more about me :-D</p>
+              </li>
+            </ol>
+            <div class="ff-bar">
+              <button type="button" class="ff-step" data-step="-1">PREV</button>
+              <div class="ff-ticks" role="group" aria-label="Jump to fact"></div>
+              <button type="button" class="ff-step" data-step="1">NEXT</button>
+            </div>
+          </div>
+        </section>
+
         <p class="bio-line label"><span class="idx">APPROACH</span> SYSTEMS BEFORE SCREENS · CONSTRAINTS ARE MATERIAL · SHIP, OBSERVE, REFINE</p>
         <p class="bio-line label"><span class="idx">TOOLS</span> FIGMA · P5.JS · VUE + TYPESCRIPT · PEN PLOTTER</p>
         <p class="bio-line label"><span class="idx">NOW</span> DESIGNING CLINICAL WORKFLOWS · PLOTTING GRID STUDIES · LEARNING SHADERS</p>

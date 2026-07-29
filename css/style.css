@@ -683,6 +683,12 @@ html.js .tag-row {
   margin-top: var(--space-3);
 }
 
+.cell-bio .bio-hey {
+  font-size: var(--text-l);
+  letter-spacing: var(--track);
+  margin-bottom: var(--space-2);
+}
+
 .cell-bio .bio-line .idx {
   display: inline-block;
   min-width: 5.5rem;
@@ -695,6 +701,183 @@ html.js .tag-row {
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
   color: var(--gray-3);
+}
+
+/* fun facts: a deck at the foot of the bio panel. The inked header is the
+   click target that reveals it; inside, one fact shows at a time and the card
+   itself steps. The frame is a lattice cell of its own, with the photo cells'
+   crop-mark tick redrawn in CSS as the hover hint. Without JS the header is
+   inert and every fact stays visible, so reading never depends on any of it. */
+.fun-deck {
+  margin-top: var(--space-5);
+  border: var(--hair) solid var(--ink);
+}
+
+/* the bio outgrows its cell on most viewports, so while the deck is closed it
+   rides the foot of the scrolling panel: the invitation is always in view.
+   Opening drops it back into the flow (js/about.js scrolls it into place). */
+html.js .fun-deck {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--panel);
+}
+
+html.js .fun-deck.is-open {
+  position: static;
+}
+
+.ff-head {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.ff-toggle {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+/* the header flips sign on hover, like every other cell on the site */
+html.js .ff-toggle:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.ff-cue {
+  display: none; /* REVEAL / the counter only mean something under JS */
+  color: var(--gray-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+html.js .ff-cue {
+  display: block;
+}
+
+.ff-list {
+  position: relative;
+}
+
+/* the whole card is the step target; PREV/NEXT and the ticks stay the
+   keyboard route, so the pointer shortcut owes nothing to assistive tech */
+html.js .ff-list {
+  cursor: pointer;
+}
+
+html.js .ff-list::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  width: 8px;
+  height: 8px;
+  border-left: var(--hair) solid var(--gray-2);
+  border-bottom: var(--hair) solid var(--gray-2);
+  pointer-events: none;
+}
+
+html.js .ff-list:hover::after {
+  border-color: var(--ink);
+}
+
+.ff-fact {
+  padding: var(--space-3);
+}
+
+.ff-fact + .ff-fact {
+  border-top: var(--hair) solid var(--gray-1);
+}
+
+/* a floor for the single visible card: stepping must not shuffle the panel */
+html.js .ff-fact {
+  min-height: 8.5rem;
+}
+
+.ff-fact h3 {
+  font-size: var(--text-xs);
+}
+
+.ff-fact p {
+  margin-top: var(--space-2);
+  font-size: var(--text-s);
+  line-height: 1.7;
+}
+
+.ff-fact a {
+  text-decoration: underline;
+}
+
+.ff-fact a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* the step happens in two frames, like the page boot: mechanical, not eased */
+@keyframes ff-step {
+  from {
+    opacity: 0;
+  }
+}
+
+html.js .ff-fact:not([hidden]) {
+  animation: ff-step 160ms steps(2, end) both;
+}
+
+.ff-bar {
+  display: none; /* stepping is a JS feature, like the art page's tag row */
+}
+
+html.js .ff-bar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  border-top: var(--hair) solid var(--ink);
+}
+
+.ff-step {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+}
+
+.ff-step:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ticks are lattice cells: hairline squares, the current one inked */
+.ff-ticks {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ff-tick {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 100%;
+  min-height: 28px;
+}
+
+.ff-tick::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border: var(--hair) solid var(--ink);
+}
+
+.ff-tick:hover::before {
+  background: var(--gray-2);
+}
+
+.ff-tick[aria-current="true"]::before {
+  background: var(--ink);
 }
 
 .photo-overlay {
@@ -775,6 +958,8 @@ html.js .tag-row {
 /* chrome and index are lattice cells (js/case.js places them from onTiles),
    fixed so they hold position while the document scrolls underneath.
    Flush to the grid lines: no margins, no gaps, hairline rules. */
+/* the canvas draws these cells (paper fill + rule); the HTML only carries
+   the text, exactly as on the artwork sheets - so no white box of its own */
 .case-cell {
   position: fixed;
   z-index: 4;
@@ -784,9 +969,7 @@ html.js .tag-row {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: var(--space-2) var(--space-3);
-  background: var(--panel);
-  border: var(--hair) solid var(--ink);
+  padding: var(--space-3);
 }
 
 html.js body.tiles-ready .case-cell.is-placed {
@@ -800,6 +983,9 @@ body.tiles-ready .case-cell[data-cell="menu"]:not(.is-placed) {
   visibility: visible;
   top: 0;
   height: auto;
+  /* no canvas cell behind an unplaced overlay: it supplies its own paper */
+  background: var(--panel);
+  border: var(--hair) solid var(--ink);
   border-width: 0 0 var(--hair);
   padding: var(--space-2);
 }
@@ -823,11 +1009,13 @@ body.tiles-ready .case-index:not(.is-placed) {
   left: 0;
   width: 100%;
   height: auto;
-  border-width: var(--hair) 0 0;
+  background: var(--panel);
+  border-top: var(--hair) solid var(--ink);
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  padding: 0;
 }
 
 body.tiles-ready .case-index:not(.is-placed) .ci-list {
@@ -869,17 +1057,19 @@ body.tiles-ready .case-index:not(.is-placed) .ci-fill {
   color: var(--gray-3);
 }
 
+/* menu items keep their own height (a stretched row made the active chip
+   as tall as the whole lattice cell) */
 [data-cell="menu"] {
   flex-direction: row;
-  align-items: stretch;
+  align-items: flex-start;
   justify-content: flex-end;
-  padding: 0;
+  gap: var(--space-1);
 }
 
 [data-cell="menu"] a {
   display: inline-flex;
   align-items: center;
-  padding: 0 var(--space-3);
+  padding: var(--space-2);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-decoration: none;
@@ -896,6 +1086,8 @@ body.tiles-ready .case-index:not(.is-placed) .ci-fill {
   justify-content: flex-start;
   padding: 0;
   overflow: hidden;
+  background: var(--panel);
+  border: var(--hair) solid var(--ink);
 }
 
 .ci-list {
@@ -989,6 +1181,22 @@ body.tiles-ready .case-index:not(.is-placed) .ci-fill {
 
 .case-panel + .case-panel {
   border-top-width: 0;
+}
+
+/* with a channel reserved in the lattice, the sections need no boxes of
+   their own: they sit directly on the sheet, separated by hairline rules */
+body.has-channel .case-panel {
+  background: none;
+  border-width: 0 0 var(--hair);
+}
+
+body.has-channel .case-panel:last-of-type {
+  border-bottom-width: 0;
+}
+
+/* the index cell is canvas-drawn too */
+body.has-channel .case-index.is-placed {
+  background: none;
 }
 
 .case-panel > * + * {
@@ -1464,6 +1672,12 @@ html.engine-failed .cell-bio .bio-body {
 html:not(.js) .cell-bio .bio-colophon,
 html.engine-failed .cell-bio .bio-colophon {
   margin-top: var(--space-4);
+}
+
+/* the fun-facts header only toggles something when JS is there to toggle it */
+html:not(.js) .ff-toggle {
+  cursor: default;
+  pointer-events: none;
 }
 
 html:not(.js) .w-row > *,

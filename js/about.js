@@ -3,8 +3,82 @@
  * linkedin) are black lattice tiles like the landing's; three fixed photo
  * cells reveal an image on hover (placeholders until assets/img/me-0N.jpg
  * exist). All spans are explicit (spanFrac), chosen so lattice snapping
- * cannot make them collide.
+ * cannot make them collide. Inside the panel, the fun-facts list becomes a
+ * one-card-at-a-time deck.
  */
+
+/* The deck owes nothing to the canvas, so it is wired first: a dead engine
+ * still leaves a working deck.
+ */
+(function funFacts() {
+  'use strict';
+
+  var deck = document.querySelector('.fun-deck');
+  if (!deck) return;
+  var facts = [].slice.call(deck.querySelectorAll('.ff-fact'));
+  var ticks = deck.querySelector('.ff-ticks');
+  var card = deck.querySelector('.ff-list');
+  var toggle = deck.querySelector('.ff-toggle');
+  var body = deck.querySelector('.ff-body');
+  var cue = deck.querySelector('.ff-cue');
+  // anything missing and the deck stays the plain authored list
+  if (facts.length < 2 || !ticks || !card || !toggle || !body) return;
+  var i = 0;
+  var open = false;
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  // ticks are built here, so their count can never drift from the markup
+  var dots = facts.map(function (fact, n) {
+    var b = document.createElement('button');
+    var h = fact.querySelector('h3');
+    b.type = 'button';
+    b.className = 'ff-tick';
+    b.setAttribute('aria-label', 'Fact ' + (n + 1) + (h ? ': ' + h.textContent : ''));
+    b.addEventListener('click', function () { show(n); });
+    ticks.appendChild(b);
+    return b;
+  });
+
+  function show(n) {
+    i = (n % facts.length + facts.length) % facts.length; // wraps both ways
+    facts.forEach(function (f, k) { f.hidden = k !== i; });
+    dots.forEach(function (b, k) { b.setAttribute('aria-current', String(k === i)); });
+    if (cue) cue.textContent = pad(i + 1) + '/' + pad(facts.length);
+  }
+
+  function setOpen(on) {
+    open = !!on;
+    body.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    if (cue) cue.textContent = open ? pad(i + 1) + '/' + pad(facts.length) : 'REVEAL';
+    // the panel scrolls internally: bring the opened deck to its foot
+    if (open) deck.scrollIntoView({ block: 'end' });
+  }
+
+  toggle.addEventListener('click', function () { setOpen(!open); });
+
+  deck.querySelectorAll('.ff-step').forEach(function (b) {
+    b.addEventListener('click', function () { show(i + (+b.dataset.step || 1)); });
+  });
+
+  // the card is the big pointer target; links inside it still navigate
+  card.addEventListener('click', function (ev) {
+    if (ev.target.closest('a, button')) return;
+    show(i + 1);
+  });
+
+  // arrows step once focus is inside the deck (ticks, PREV / NEXT)
+  deck.addEventListener('keydown', function (ev) {
+    if (!open || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    if (ev.key === 'ArrowRight') { ev.preventDefault(); show(i + 1); }
+    else if (ev.key === 'ArrowLeft') { ev.preventDefault(); show(i - 1); }
+  });
+
+  show(0);
+  setOpen(false);
+})();
+
 (function () {
   'use strict';
 
