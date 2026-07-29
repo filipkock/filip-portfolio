@@ -27,20 +27,21 @@
   <!-- the living lattice sits behind the document; content scrolls over it -->
   <div id="grid-host" class="case-bg" aria-hidden="true"></div>
 
-  <!-- same corner cells as the artwork sheets, held fixed over the document -->
-  <header class="case-corner case-corner--tl">
+  <!-- chrome and index are engine lattice cells (js/case.js places them
+       from onTiles), held fixed so they stay put as the document scrolls -->
+  <header class="case-cell" data-cell="wordmark">
     <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
     <p class="tagline label">P-01 · CASE STUDY</p>
   </header>
 
-  <nav class="case-corner case-corner--tr" aria-label="Primary">
+  <nav class="case-cell" data-cell="menu" aria-label="Primary">
     <a href="work.html" aria-current="true">01 WORK</a>
     <a href="art.html">02 ART</a>
     <a href="about.html">03 ABOUT</a>
   </nav>
 
-  <!-- section index: built by js/case.js from [data-nav] panels -->
-  <nav class="case-index" id="case-index" aria-label="On this page"></nav>
+  <!-- section list built by js/case.js from [data-nav] panels -->
+  <nav class="case-cell case-index" data-cell="index" id="case-index" aria-label="On this page"></nav>
 
   <main class="case-doc">
 

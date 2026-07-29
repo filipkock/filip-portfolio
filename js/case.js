@@ -17,17 +17,60 @@
     sessionStorage.removeItem('grid-mold');
   } catch (e) { /* private mode */ }
 
+  var overlays = {};
+  document.querySelectorAll('.case-cell').forEach(function (el) {
+    overlays[el.dataset.cell] = el;
+  });
+
+  // mirrors the engine's own sizing so spans can be whole lattice cells.
+  // This page always runs density 'low', so the cell target is scaled.
+  var WIDE_MIN = 1240;
+  var CELL_TARGET = 190 * 1.2;
+  function predict() {
+    return {
+      cols: Math.min(16, Math.max(2, Math.round(window.innerWidth / CELL_TARGET))),
+      rows: Math.min(24, Math.max(1, Math.round(window.innerHeight / CELL_TARGET))),
+      wide: window.innerWidth >= WIDE_MIN
+    };
+  }
+
+  function tileDefs() {
+    var L = predict();
+    var defs = [];
+    // corner cells are 2 lattice columns each: below 4 columns they would
+    // overlap, so CSS lays them out as a flush top row instead
+    if (L.cols >= 4) {
+      defs.push({ id: 'wordmark', kind: 'text' });
+      defs.push({ id: 'menu', kind: 'text', at: 'tr' });
+    }
+    // the index is a flush band of lattice cells on the right edge; on
+    // narrower screens it becomes a bottom bar (CSS) and claims no cells
+    if (L.wide) {
+      var span = Math.min(3, Math.max(2, Math.round(230 / (window.innerWidth / L.cols))));
+      defs.push({
+        id: 'index', kind: 'text',
+        spanFrac: {
+          x0: (L.cols - span) / L.cols, x1: 1,
+          y0: 1 / L.rows, y1: Math.min(L.rows, 3) / L.rows
+        }
+      });
+    }
+    return defs;
+  }
+
   var sketch;
   try {
     sketch = window.createGridSketch(host, {
       mode: 'landing',
       seed: 1101, // the project's own seed: same identity as its row thumb
       density: 'low', // calmer behind long-form text
+      tiles: tileDefs,
       touch: coarse,
       reducedMotion: reduced,
       buildIn: !reduced && !arriving,
       arrive: arriving,
-      onArrived: function () { document.documentElement.classList.remove('arriving'); }
+      onArrived: function () { document.documentElement.classList.remove('arriving'); },
+      onTiles: placeCells
     });
   } catch (err) {
     document.documentElement.classList.remove('arriving');
@@ -35,6 +78,72 @@
     return;
   }
   window.__grid = sketch; // debug handle
+  // onTiles only fires when the page actually reserved cells; run one pass
+  // regardless so the CSS fallbacks and the column alignment always apply
+  placeCells([]);
+
+  function placeCells(rects) {
+    var placed = {};
+    rects.forEach(function (r) {
+      var el = overlays[r.id];
+      if (!el) return;
+      placed[r.id] = true;
+      el.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px)';
+      el.style.width = r.w + 'px';
+      el.style.height = r.h + 'px';
+      el.classList.add('is-placed');
+    });
+    Object.keys(overlays).forEach(function (id) {
+      if (placed[id]) return;
+      // unplaced cells fall back to their CSS layout: clear the inline
+      // geometry so it cannot fight the stylesheet
+      var el = overlays[id];
+      el.classList.remove('is-placed');
+      el.style.transform = '';
+      el.style.width = '';
+      el.style.height = '';
+    });
+    document.body.classList.add('tiles-ready');
+    alignTries = 0;
+    alignSoon();
+  }
+
+  // the reading column is not a tile (it outgrows the viewport), so instead
+  // its edges are snapped onto the lattice's column lines: the document
+  // reads as a continuation of the grid rather than a floating card
+  // p5 runs setup() asynchronously, and rebuilds are debounced, so the
+  // lattice may not exist yet: retry until it does
+  var alignTries = 0;
+  function alignSoon() {
+    if (alignDocument() || alignTries++ > 12) return;
+    setTimeout(alignSoon, 80);
+  }
+
+  function alignDocument() {
+    var L;
+    try { L = sketch.lattice(); } catch (e) { return false; }
+    if (!L || !L.cols || !L.cw) return false;
+    var root = document.documentElement.style;
+    var wide = window.innerWidth >= WIDE_MIN;
+    var idxSpan = wide ? Math.min(3, Math.max(2, Math.round(230 / L.cw))) : 0;
+    // leave the index band free on the right, one column of air on the left
+    var start = 1;
+    var maxCols = Math.max(1, L.cols - idxSpan - start);
+    var want = Math.max(1, Math.round(760 / L.cw));
+    var span = Math.min(maxCols, want);
+    if (!wide) { start = 0; span = L.cols; } // full bleed when stacked
+    root.setProperty('--doc-x', Math.round(start * L.cw) + 'px');
+    root.setProperty('--doc-w', Math.round(span * L.cw) + 'px');
+    root.setProperty('--doc-top', Math.round(L.ch) + 'px'); // below the corner row
+    root.setProperty('--lat-ch', Math.round(L.ch) + 'px');
+    return true;
+  }
+
+  window.addEventListener('resize', function () {
+    alignDocument();          // immediate, using the current lattice
+    alignTries = 0;
+    setTimeout(alignSoon, 260); // again after the engine's debounced rebuild
+  });
 
   /* ---- section index: scroll-spy + progress ------------------------- */
   (function buildIndex() {

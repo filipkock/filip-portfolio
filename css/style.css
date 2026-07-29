@@ -772,73 +772,138 @@ html.js .tag-row {
   z-index: 0;
 }
 
-/* chrome held fixed over the document, styled as the sheets' corner cells */
-.case-corner {
+/* chrome and index are lattice cells (js/case.js places them from onTiles),
+   fixed so they hold position while the document scrolls underneath.
+   Flush to the grid lines: no margins, no gaps, hairline rules. */
+.case-cell {
   position: fixed;
   z-index: 4;
-  top: var(--space-4);
-  background: var(--panel);
-  border: 2px solid var(--ink);
-  padding: var(--space-2) var(--space-3);
-}
-
-.case-corner--tl {
-  left: var(--space-4);
-}
-
-.case-corner--tr {
-  right: var(--space-4);
+  top: 0;
+  left: 0;
+  visibility: hidden;
   display: flex;
-  gap: var(--space-1);
-  padding: var(--space-1);
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  border: var(--hair) solid var(--ink);
 }
 
-.case-corner .wordmark {
+html.js body.tiles-ready .case-cell.is-placed {
+  visibility: visible;
+}
+
+/* fallback when the lattice is too coarse to give a cell its own span
+   (few columns): the chrome becomes one flush top row that CSS owns */
+body.tiles-ready .case-cell[data-cell="wordmark"]:not(.is-placed),
+body.tiles-ready .case-cell[data-cell="menu"]:not(.is-placed) {
+  visibility: visible;
+  top: 0;
+  height: auto;
+  border-width: 0 0 var(--hair);
+  padding: var(--space-2);
+}
+
+body.tiles-ready [data-cell="wordmark"]:not(.is-placed) {
+  left: 0;
+  border-right-width: var(--hair);
+}
+
+body.tiles-ready [data-cell="menu"]:not(.is-placed) {
+  left: auto;
+  right: 0;
+  padding: 0;
+}
+
+/* same for the index: unplaced means it spans the foot of the viewport */
+body.tiles-ready .case-index:not(.is-placed) {
+  visibility: visible;
+  top: auto;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  border-width: var(--hair) 0 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+body.tiles-ready .case-index:not(.is-placed) .ci-list {
+  flex-direction: row;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+body.tiles-ready .case-index:not(.is-placed) .ci-list::-webkit-scrollbar {
+  display: none;
+}
+
+body.tiles-ready .case-index:not(.is-placed) .ci-meter {
+  border-top: none;
+  border-left: var(--hair) solid var(--ink);
+}
+
+body.tiles-ready .case-index:not(.is-placed) .ci-bar {
+  width: 44px;
+  height: 6px;
+}
+
+body.tiles-ready .case-index:not(.is-placed) .ci-fill {
+  transform: scaleX(var(--p, 0));
+  transform-origin: left center;
+}
+
+.case-cell .wordmark {
   font-size: var(--text-s);
   letter-spacing: var(--track-wide);
 }
 
-.case-corner .wordmark a {
+.case-cell .wordmark a {
   text-decoration: none;
 }
 
-.case-corner .tagline {
+.case-cell .tagline {
   margin-top: 2px;
   color: var(--gray-3);
 }
 
-.case-corner--tr a {
-  padding: var(--space-2);
+[data-cell="menu"] {
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+}
+
+[data-cell="menu"] a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-3);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-decoration: none;
 }
 
-.case-corner a:hover,
-.case-corner--tr a[aria-current="true"] {
+.case-cell a:hover,
+[data-cell="menu"] a[aria-current="true"] {
   background: var(--ink);
   color: var(--paper);
 }
 
-/* floating section index: where you are, how far is left, jump anywhere */
+/* section index: a lattice cell listing the sections, with a reading meter */
 .case-index {
-  position: fixed;
-  z-index: 4;
-  right: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-  display: none;
-  background: var(--panel);
-  border: 2px solid var(--ink);
-}
-
-.case-index.is-ready {
-  display: block;
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
 }
 
 .ci-list {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .ci-list a {
@@ -873,8 +938,9 @@ html.js .tag-row {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  border-top: 2px solid var(--ink);
+  border-top: var(--hair) solid var(--ink);
   padding: var(--space-2);
+  flex-shrink: 0;
 }
 
 .ci-bar {
@@ -900,23 +966,29 @@ html.js .tag-row {
   font-variant-numeric: tabular-nums;
 }
 
+/* the reading column continues the lattice: its edges sit on column lines
+   (js/case.js writes --doc-x / --doc-w from the engine's own geometry) */
 .case-doc {
   position: relative;
   z-index: 2;
-  width: min(760px, 100% - 2 * var(--space-4));
-  /* left-of-centre: clear of the fixed index on the right */
-  margin-inline: auto;
-  padding-block: calc(var(--space-6) + var(--space-5)) var(--space-6);
+  width: var(--doc-w, min(760px, 100%));
+  margin-left: var(--doc-x, 0);
+  padding-top: var(--doc-top, var(--space-6));
+  padding-bottom: calc(var(--lat-ch, 190px) + var(--space-5));
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
 }
 
-/* every section is a panel lifted off the artwork, like the work page */
+/* sections stack flush into one ruled column of cells - the shared 2px
+   rules are the grid's lines, not card edges floating in space */
 .case-panel {
   background: var(--panel);
   border: 2px solid var(--ink);
   padding: var(--space-5) clamp(var(--space-4), 5%, var(--space-6));
+}
+
+.case-panel + .case-panel {
+  border-top-width: 0;
 }
 
 .case-panel > * + * {
@@ -1190,87 +1262,27 @@ html.js body:not(.page-index) .head-strip {
   }
 }
 
-/* below ~1240px the fixed index would collide with the document column,
-   so it becomes a compact bottom bar: current section + progress */
+/* below ~1240px the index cell would crowd the reading column, so it
+   spans the foot of the viewport as one flush band instead */
+/* unplaced index spans the viewport foot: keep the last panel clear of it */
 @media (max-width: 1239px) {
-  .case-index {
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    transform: none;
-    border-width: 2px 0 0;
-    display: none;
-  }
-
-  .case-index.is-ready {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-  }
-
-  .ci-list {
-    flex-direction: row;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .ci-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  .ci-meter {
-    border-top: none;
-    border-left: 2px solid var(--ink);
-    flex-shrink: 0;
-  }
-
-  .ci-bar {
-    width: 44px;
-    height: 6px;
-  }
-
-  .ci-fill {
-    transform: scaleX(var(--p, 0));
-    transform-origin: left center;
-  }
-
-  /* leave room for the bar so the last panel is never covered */
   .case-doc {
-    padding-bottom: calc(var(--space-6) + 44px);
+    padding-bottom: calc(var(--space-6) + 52px);
   }
 }
 
-/* narrow: the corner cells would collide, so they become one flush top row */
+/* narrow type + spacing (the flush-row fallback itself is width-agnostic) */
 @media (max-width: 760px) {
-  .case-corner {
-    top: 0;
-    border-width: 0 0 2px;
-    padding: var(--space-2);
-  }
-
-  .case-corner--tl {
-    left: 0;
-    border-right-width: 2px;
-  }
-
-  .case-corner--tr {
-    right: 0;
-    border-left-width: 2px;
-    padding: 2px;
-  }
-
-  .case-corner .wordmark {
+  .case-cell .wordmark {
     font-size: var(--text-xs);
   }
 
   /* the project line lives in the hero on small screens */
-  .case-corner .tagline {
+  .case-cell .tagline {
     display: none;
   }
 
-  .case-corner--tr a {
+  [data-cell="menu"] a {
     padding: var(--space-2) var(--space-1);
     letter-spacing: var(--track);
   }
@@ -1280,7 +1292,7 @@ html.js body:not(.page-index) .head-strip {
   }
 
   .case-doc {
-    padding-top: calc(var(--space-6) + var(--space-3));
+    padding-top: calc(var(--space-6) + var(--space-2));
   }
 }
 

@@ -1021,6 +1021,8 @@
       var cw = w / cols, ch = h / rows;
       S.latCW = cw;
       S.latCH = ch;
+      S.latCols = cols;
+      S.latRows = rows;
 
       S.tiles = (tileDefs && tileDefs.length)
         ? placeTiles(tileDefs, cols, rows, rng, tune, stacked, cw, ch, opts.layout)
@@ -1312,6 +1314,12 @@
 
       // 'out' | 'in' | null - what transition is running (debug/tests)
       transition: function () { return S.trans ? S.trans.mode : null; },
+
+      // the lattice this build settled on, so pages can align their own
+      // (non-tile) content to the same column and row lines
+      lattice: function () {
+        return { cols: S.latCols, rows: S.latRows, cw: S.latCW, ch: S.latCH };
+      },
 
       setDrift: function (mult) { S.driftMult = clamp(+mult || 1, 0, 50); },
       setDebug: function (on) { S.debug = !!on; safeRedraw(); },
