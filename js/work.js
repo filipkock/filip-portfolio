@@ -128,11 +128,21 @@
       });
     }
     row.addEventListener('focus', function () { select(i); });
-    // no case pages yet: a click selects (matters on touch, where there
-    // is no hover) instead of navigating to a dead link
     row.addEventListener('click', function (ev) {
+      if (ev.defaultPrevented || ev.button !== 0 ||
+          ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      var href = row.getAttribute('href');
+      // rows without a case page just select (matters on touch, where
+      // there is no hover to preview with)
+      if (!href || href === '#') { ev.preventDefault(); select(i); return; }
       ev.preventDefault();
       select(i);
+      document.body.classList.add('leaving');
+      try { sessionStorage.setItem('grid-mold', '1'); } catch (e) { /* fine */ }
+      var r = row.getBoundingClientRect();
+      sketch.sweepOut({ x: r.left + r.width / 2, y: r.top + r.height / 2 }, function () {
+        window.location.href = row.href;
+      });
     });
   });
   select(0);
