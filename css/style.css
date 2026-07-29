@@ -95,6 +95,35 @@ h3 {
   color: var(--paper);
 }
 
+/* scrollbar as part of the drawing: a square ink thumb on a ruled track */
+html {
+  scrollbar-color: var(--ink) var(--paper); /* Firefox */
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--paper);
+  border-left: var(--hair) solid var(--ink);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ink);
+  border: 3px solid var(--paper); /* inset so the thumb reads as a bar */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  border-width: 2px;
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--paper);
+}
+
 :focus-visible {
   outline: var(--hair) solid var(--ink);
   outline-offset: 2px;
@@ -743,55 +772,141 @@ html.js .tag-row {
   z-index: 0;
 }
 
-.case-bar {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-height: var(--head-h);
-  padding-inline: var(--space-4);
+/* chrome held fixed over the document, styled as the sheets' corner cells */
+.case-corner {
+  position: fixed;
+  z-index: 4;
+  top: var(--space-4);
   background: var(--panel);
-  border-bottom: 2px solid var(--ink);
+  border: 2px solid var(--ink);
+  padding: var(--space-2) var(--space-3);
 }
 
-.case-bar .wordmark {
-  display: inline-flex;
-  align-items: center;
+.case-corner--tl {
+  left: var(--space-4);
+}
+
+.case-corner--tr {
+  right: var(--space-4);
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+}
+
+.case-corner .wordmark {
   font-size: var(--text-s);
   letter-spacing: var(--track-wide);
+}
+
+.case-corner .wordmark a {
   text-decoration: none;
 }
 
-.case-bar nav {
-  display: flex;
+.case-corner .tagline {
+  margin-top: 2px;
+  color: var(--gray-3);
 }
 
-.case-bar nav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 var(--space-3);
+.case-corner--tr a {
+  padding: var(--space-2);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-decoration: none;
 }
 
-.case-bar .wordmark:hover,
-.case-bar nav a:hover,
-.case-bar nav a[aria-current="true"] {
+.case-corner a:hover,
+.case-corner--tr a[aria-current="true"] {
   background: var(--ink);
   color: var(--paper);
+}
+
+/* floating section index: where you are, how far is left, jump anywhere */
+.case-index {
+  position: fixed;
+  z-index: 4;
+  right: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+}
+
+.case-index.is-ready {
+  display: block;
+}
+
+.ci-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ci-list a {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 7px var(--space-3) 7px var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ci-num {
+  color: var(--gray-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.ci-list a:hover,
+.ci-list a.is-current {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.ci-list a:hover .ci-num,
+.ci-list a.is-current .ci-num {
+  color: var(--gray-2);
+}
+
+/* reading meter: an ink column that fills as you go */
+.ci-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-top: 2px solid var(--ink);
+  padding: var(--space-2);
+}
+
+.ci-bar {
+  position: relative;
+  width: 6px;
+  height: 44px;
+  border: var(--hair) solid var(--ink);
+}
+
+/* JS writes --p (0..1); each breakpoint picks the axis it fills along */
+.ci-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: scaleY(var(--p, 0));
+  transform-origin: top center;
+}
+
+.ci-pct {
+  font-size: var(--text-xs);
+  letter-spacing: var(--track);
+  color: var(--gray-3);
+  font-variant-numeric: tabular-nums;
 }
 
 .case-doc {
   position: relative;
   z-index: 2;
-  width: min(940px, 100% - 2 * var(--space-4));
+  width: min(760px, 100% - 2 * var(--space-4));
+  /* left-of-centre: clear of the fixed index on the right */
   margin-inline: auto;
-  padding-block: var(--space-5) var(--space-6);
+  padding-block: calc(var(--space-6) + var(--space-5)) var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
@@ -801,29 +916,44 @@ html.js .tag-row {
 .case-panel {
   background: var(--panel);
   border: 2px solid var(--ink);
-  padding: var(--space-5);
+  padding: var(--space-5) clamp(var(--space-4), 5%, var(--space-6));
 }
 
 .case-panel > * + * {
   margin-top: var(--space-4);
 }
 
+/* body copy: the one place on the site tuned for reading, not for pattern */
 .case-panel p {
-  max-width: 68ch;
+  max-width: 66ch;
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
+.case-panel p + p {
+  margin-top: var(--space-4);
+}
+
+/* section label: small, tracked, gray, on its own rule */
 .case-h {
-  font-size: var(--text-s);
-  letter-spacing: var(--track-wide);
+  font-size: var(--text-xs);
+  letter-spacing: 0.24em;
   color: var(--gray-3);
   padding-bottom: var(--space-2);
-  border-bottom: var(--hair) solid var(--ink);
+  margin-bottom: var(--space-4);
+  border-bottom: 2px solid var(--ink);
 }
 
 /* hero */
+.case-hero {
+  padding-block: var(--space-6);
+}
+
 .case-hero h1 {
-  font-size: var(--text-xl);
-  letter-spacing: var(--track);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  margin-top: var(--space-2);
 }
 
 .case-hero .idx {
@@ -832,13 +962,18 @@ html.js .tag-row {
 }
 
 .case-sub {
-  font-size: var(--text-l);
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
   line-height: 1.35;
-  max-width: 34ch;
+  max-width: 30ch;
+  margin-top: var(--space-4);
+  color: var(--gray-3);
 }
 
 .case-lede {
-  font-size: var(--text-m);
+  font-size: 1rem !important;
+  line-height: 1.7 !important;
+  padding-top: var(--space-4);
+  border-top: var(--hair) solid var(--gray-1);
 }
 
 /* explicit columns: with auto-fit, an incomplete last row exposes the ink
@@ -899,19 +1034,21 @@ html.js .tag-row {
 }
 
 .case-quote {
-  border-left: 2px solid var(--ink);
-  padding: var(--space-2) 0 var(--space-2) var(--space-4);
-  font-size: var(--text-l);
-  line-height: 1.4;
-  max-width: 44ch;
+  border-left: 3px solid var(--ink);
+  padding: var(--space-3) 0 var(--space-3) var(--space-4);
+  font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+  line-height: 1.45;
+  max-width: 40ch;
 }
 
 .case-list {
-  max-width: 68ch;
+  max-width: 66ch;
+  font-size: 0.9375rem;
+  line-height: 1.7;
 }
 
 .case-list li {
-  padding-block: var(--space-2);
+  padding-block: var(--space-3);
   border-bottom: var(--hair) solid var(--gray-1);
 }
 
@@ -929,12 +1066,18 @@ html.js .tag-row {
 .case-step h3 {
   display: flex;
   align-items: baseline;
-  gap: var(--space-2);
-  font-size: var(--text-m);
+  gap: var(--space-3);
+  font-size: 1.0625rem;
+  letter-spacing: 0.04em;
+}
+
+.case-step h3 .idx {
+  font-size: var(--text-s);
+  color: var(--gray-2);
 }
 
 .case-step p {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .case-step .img-slot {
@@ -949,14 +1092,16 @@ html.js .tag-row {
 }
 
 .case-decisions dt {
-  font-size: var(--text-m);
-  letter-spacing: var(--track);
+  font-size: 1.0625rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .case-decisions dd {
-  margin-top: var(--space-2);
-  max-width: 68ch;
+  margin-top: var(--space-3);
+  max-width: 66ch;
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
 /* image + video slots: checker placeholder in the engine's language,
@@ -1042,6 +1187,100 @@ html.js body:not(.page-index) .head-strip {
 @media (min-width: 901px) {
   .case-facts {
     grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* below ~1240px the fixed index would collide with the document column,
+   so it becomes a compact bottom bar: current section + progress */
+@media (max-width: 1239px) {
+  .case-index {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    border-width: 2px 0 0;
+    display: none;
+  }
+
+  .case-index.is-ready {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .ci-list {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ci-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ci-meter {
+    border-top: none;
+    border-left: 2px solid var(--ink);
+    flex-shrink: 0;
+  }
+
+  .ci-bar {
+    width: 44px;
+    height: 6px;
+  }
+
+  .ci-fill {
+    transform: scaleX(var(--p, 0));
+    transform-origin: left center;
+  }
+
+  /* leave room for the bar so the last panel is never covered */
+  .case-doc {
+    padding-bottom: calc(var(--space-6) + 44px);
+  }
+}
+
+/* narrow: the corner cells would collide, so they become one flush top row */
+@media (max-width: 760px) {
+  .case-corner {
+    top: 0;
+    border-width: 0 0 2px;
+    padding: var(--space-2);
+  }
+
+  .case-corner--tl {
+    left: 0;
+    border-right-width: 2px;
+  }
+
+  .case-corner--tr {
+    right: 0;
+    border-left-width: 2px;
+    padding: 2px;
+  }
+
+  .case-corner .wordmark {
+    font-size: var(--text-xs);
+  }
+
+  /* the project line lives in the hero on small screens */
+  .case-corner .tagline {
+    display: none;
+  }
+
+  .case-corner--tr a {
+    padding: var(--space-2) var(--space-1);
+    letter-spacing: var(--track);
+  }
+
+  .case-hero {
+    padding-block: var(--space-5);
+  }
+
+  .case-doc {
+    padding-top: calc(var(--space-6) + var(--space-3));
   }
 }
 

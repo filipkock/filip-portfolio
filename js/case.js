@@ -36,6 +36,79 @@
   }
   window.__grid = sketch; // debug handle
 
+  /* ---- section index: scroll-spy + progress ------------------------- */
+  (function buildIndex() {
+    var host = document.getElementById('case-index');
+    var panels = Array.prototype.slice.call(document.querySelectorAll('.case-panel[data-nav]'));
+    if (!host || panels.length < 2) return;
+
+    var list = document.createElement('ol');
+    list.className = 'ci-list';
+    var links = panels.map(function (panel, i) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + panel.id;
+      a.innerHTML = '<span class="ci-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+        '<span class="ci-label">' + panel.dataset.nav + '</span>';
+      // native anchors still work; this just adds smooth scroll + no hash
+      a.addEventListener('click', function (ev) {
+        if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+        ev.preventDefault();
+        panel.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      });
+      li.appendChild(a);
+      list.appendChild(li);
+      return a;
+    });
+    host.appendChild(list);
+
+    var meter = document.createElement('div');
+    meter.className = 'ci-meter';
+    meter.innerHTML = '<span class="ci-bar"><span class="ci-fill"></span></span>' +
+      '<span class="ci-pct">0%</span>';
+    host.appendChild(meter);
+    var fill = meter.querySelector('.ci-fill');
+    var pct = meter.querySelector('.ci-pct');
+    host.classList.add('is-ready');
+
+    // the section whose top is closest to a line ~a third down the viewport
+    var current = -1;
+    function update() {
+      var mark = window.innerHeight * 0.33;
+      var best = 0, bestDist = Infinity;
+      for (var i = 0; i < panels.length; i++) {
+        var top = panels[i].getBoundingClientRect().top;
+        var dist = Math.abs(top - mark);
+        // prefer sections already started over ones still below the mark
+        if (top <= mark + 1) { best = i; bestDist = 0; }
+        else if (bestDist > 0 && dist < bestDist) { bestDist = dist; best = i; }
+      }
+      if (best !== current) {
+        current = best;
+        links.forEach(function (a, j) {
+          a.classList.toggle('is-current', j === best);
+          if (j === best) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      }
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 1;
+      fill.style.setProperty('--p', p.toFixed(4));
+      pct.textContent = Math.round(p * 100) + '%';
+    }
+
+    var queued = false;
+    function onScroll() {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () { queued = false; update(); });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+    window.__caseIndex = { update: update }; // debug/test handle
+  })();
+
   // internal links exit through the mold, like the artwork sheets
   document.querySelectorAll('a[href$=".html"]').forEach(function (a) {
     a.addEventListener('click', function (ev) {

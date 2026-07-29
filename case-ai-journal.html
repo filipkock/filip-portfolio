@@ -27,20 +27,25 @@
   <!-- the living lattice sits behind the document; content scrolls over it -->
   <div id="grid-host" class="case-bg" aria-hidden="true"></div>
 
-  <header class="case-bar">
-    <a class="wordmark" href="index.html">FILIP KOCKENDAL</a>
-    <nav aria-label="Primary">
-      <a href="work.html" aria-current="true">01 WORK</a>
-      <a href="art.html">02 ART</a>
-      <a href="about.html">03 ABOUT</a>
-    </nav>
+  <!-- same corner cells as the artwork sheets, held fixed over the document -->
+  <header class="case-corner case-corner--tl">
+    <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
+    <p class="tagline label">P-01 · CASE STUDY</p>
   </header>
+
+  <nav class="case-corner case-corner--tr" aria-label="Primary">
+    <a href="work.html" aria-current="true">01 WORK</a>
+    <a href="art.html">02 ART</a>
+    <a href="about.html">03 ABOUT</a>
+  </nav>
+
+  <!-- section index: built by js/case.js from [data-nav] panels -->
+  <nav class="case-index" id="case-index" aria-label="On this page"></nav>
 
   <main class="case-doc">
 
     <!-- HEADER / HERO -->
-    <section class="case-panel case-hero">
-      <p class="idx">P-01 · CASE STUDY</p>
+    <section class="case-panel case-hero" id="hero" data-nav="INTRO">
       <h1>AI JOURNALING ASSISTANT</h1>
       <p class="case-sub">Less time writing notes. More time with patients.</p>
       <dl class="case-facts">
@@ -59,7 +64,7 @@
     </section>
 
     <!-- TL;DR -->
-    <section class="case-panel">
+    <section class="case-panel" id="tldr" data-nav="TL;DR">
       <h2 class="case-h">TL;DR</h2>
       <p>Clinical documentation was the top time sink for therapists on our platform, and AI-first startups were circling the workflow. In six weeks we shipped an MVP that records a session, transcribes it, and drafts a structured SOAP note the therapist reviews before saving. Usage tripled to 1,500 generated notes a day, 500+ customers across Norway, Finland, and Denmark now pay for it, and a Norway pilot showed 92.9% positive sentiment toward AI in journaling.</p>
       <ul class="case-metrics">
@@ -70,14 +75,14 @@
     </section>
 
     <!-- THE PROBLEM -->
-    <section class="case-panel">
+    <section class="case-panel" id="problem" data-nav="THE PROBLEM">
       <h2 class="case-h">THE PROBLEM</h2>
       <p>A psychologist finishes a heavy 50-minute session. Before the next patient arrives, they reconstruct it from memory into a compliant journal entry, then maybe an epicrisis and a sick note from the same material. Customers named this their number one time sink, and worse than the time itself: it pulled attention away from the patient in the room.</p>
       <p>For the business the stakes were commercial. Documentation drag limited clinic capacity, and standalone AI scribes threatened to own this high-value workflow first, then expand into ours. An embedded assistant could make the platform more compelling, support migrations, reduce churn, and open a new paid add-on. Winning meant real daily usage, not a demo feature.</p>
     </section>
 
     <!-- DISCOVERY & INSIGHT -->
-    <section class="case-panel">
+    <section class="case-panel" id="discovery" data-nav="DISCOVERY">
       <h2 class="case-h">DISCOVERY &amp; INSIGHT</h2>
       <p>I interviewed therapists, mapped their documentation workflows end to end, mined existing customer feedback, and audited the AI-first competitors. The pattern was clear: those tools produced decent text but lived outside the therapist's world, so every note meant switching apps, copying, and reformatting.</p>
       <blockquote class="case-quote">We didn't need a better transcription tool. We needed no tool at all.</blockquote>
@@ -92,14 +97,14 @@
     </section>
 
     <!-- THE APPROACH -->
-    <section class="case-panel">
+    <section class="case-panel" id="approach" data-nav="THE APPROACH">
       <h2 class="case-h">THE APPROACH</h2>
       <p>We had a hard MVP deadline, legacy journal workflows we couldn't break, GDPR and consent requirements, and real limits around audio capture, transcription quality, latency, and browser support. So I cut ruthlessly: embedded note generation with editable SOAP summaries first. Patient-history context, confidence highlighting, speaker diarization, and multi-document workflows were designed as directions, not deliverables.</p>
       <p>I also designed a standalone version of the same engine, so the assistant could be sold on its own and grow into later features without rework.</p>
     </section>
 
     <!-- THE SOLUTION / USER JOURNEY -->
-    <section class="case-panel">
+    <section class="case-panel" id="flow" data-nav="THE FLOW">
       <h2 class="case-h">THE FLOW</h2>
 
       <figure class="case-figure case-figure--video">
@@ -148,7 +153,7 @@
     </section>
 
     <!-- DESIGN DECISIONS -->
-    <section class="case-panel">
+    <section class="case-panel" id="decisions" data-nav="DECISIONS">
       <h2 class="case-h">DESIGN DECISIONS</h2>
       <dl class="case-decisions">
         <div>
@@ -171,7 +176,7 @@
     </section>
 
     <!-- IMPACT & RESULTS -->
-    <section class="case-panel">
+    <section class="case-panel" id="impact" data-nav="IMPACT">
       <h2 class="case-h">IMPACT</h2>
       <ul class="case-list">
         <li>~200 sign-ups from the Oslo launch event: 40 on day one of the conference, 80 more from the pre-announcement email.</li>
@@ -188,7 +193,7 @@
     </section>
 
     <!-- REFLECTION -->
-    <section class="case-panel">
+    <section class="case-panel" id="reflection" data-nav="REFLECTION">
       <h2 class="case-h">REFLECTION</h2>
       <p>The need was real, and shipping fast proved it. But the first version was rushed, and it showed: we launched before proper validation, and early feedback called out weak AI output and too many clicks to start a session - exactly what deeper research would have caught. The lesson I carry forward is that an MVP still has to be genuinely viable, and shipping is the start of the research, not the end of it.</p>
       <p>Since then the assistant has outgrown its MVP: a standalone experience, dictation, an AI co-pilot for journaling, broader templates, handwritten note digitization, and more markets. Custom templates and deeper contextual assistance are next, currently paused for other priorities but expected to resume.</p>
