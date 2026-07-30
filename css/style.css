@@ -709,7 +709,7 @@ html.js .tag-row {
    crop-mark tick redrawn in CSS as the hover hint. Without JS the header is
    inert and every fact stays visible, so reading never depends on any of it. */
 .fun-deck {
-  margin-top: var(--space-5);
+  margin-block: var(--space-5) var(--space-4);
   border: var(--hair) solid var(--ink);
 }
 
@@ -742,8 +742,10 @@ html.js .fun-deck.is-open {
   text-align: left;
 }
 
-/* the header flips sign on hover, like every other cell on the site */
-html.js .ff-toggle:hover {
+/* the header flips sign on hover, like every other cell on the site. Focus
+   flips it too: the shared focus ring is ink, and ink on ink is nothing */
+html.js .ff-toggle:hover,
+.ff-toggle:focus-visible {
   background: var(--paper);
   color: var(--ink);
 }
@@ -828,6 +830,45 @@ html.js .ff-fact:not([hidden]) {
   animation: ff-step 160ms steps(2, end) both;
 }
 
+/* the window: fact text, then a square slot for a supporting image */
+html.js .ff-window {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+  gap: var(--space-3);
+  cursor: pointer; /* the whole card steps forward */
+}
+
+.ff-shot {
+  display: none;
+}
+
+html.js .ff-shot {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 8.5rem;
+  aspect-ratio: 1;
+  border: var(--hair) solid var(--ink);
+  background:
+    repeating-conic-gradient(var(--gray-1) 0% 25%, var(--panel) 0% 50%) 0 0 / 14px 14px;
+}
+
+.ff-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ff-shot-label {
+  padding: 2px var(--space-1);
+  background: var(--panel);
+  border: var(--hair) solid var(--ink);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  color: var(--gray-3);
+}
+
 .ff-bar {
   display: none; /* stepping is a JS feature, like the art page's tag row */
 }
@@ -836,31 +877,50 @@ html.js .ff-bar {
   display: flex;
   align-items: stretch;
   justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
   border-top: var(--hair) solid var(--ink);
+  padding-top: var(--space-2);
 }
 
+/* the steps are ink blocks, like the landing's tiles */
 .ff-step {
+  flex-shrink: 0; /* never let the labels wrap to one letter per line */
   padding: var(--space-2) var(--space-3);
+  background: var(--ink);
+  color: var(--paper);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
+  white-space: nowrap;
 }
 
 .ff-step:hover {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+  outline: var(--hair) solid var(--ink);
+}
+
+.ff-count {
+  display: flex;
+  align-items: center;
+  color: var(--gray-3);
+  white-space: nowrap;
 }
 
 /* ticks are lattice cells: hairline squares, the current one inked */
 .ff-ticks {
   display: flex;
+  flex: 1;
+  min-width: 0; /* the row must never outgrow the panel: PREV/NEXT stay put */
   align-items: center;
+  justify-content: center;
   gap: 2px;
 }
 
 .ff-tick {
   display: grid;
   place-items: center;
-  width: 24px;
+  width: 22px;
   height: 100%;
   min-height: 28px;
 }
@@ -1547,6 +1607,19 @@ html.js body:not(.page-index) .head-strip {
 
   .grid-cell-overlay .wordmark {
     font-size: var(--text-s);
+  }
+
+  /* the fun-facts control row has to fit a narrow panel: tighter everything */
+  .cell-bio .bio-body {
+    padding: var(--space-3);
+  }
+
+  .ff-step {
+    padding: var(--space-2);
+  }
+
+  .ff-tick {
+    width: 18px;
   }
 
   .tile-link {

@@ -37,6 +37,10 @@ dev/engine-test.html  engine playground: seeds, modes, drift stress test, HUD
 ## Edit
 
 - Content lives directly in the HTML files.
+- About page fun facts: each fact is an `<li class="ff-fact">` in about.html
+  (heading + one paragraph). `js/about.js` turns the list into a click-through
+  deck and builds one tick per item, so adding or removing a fact is a pure
+  HTML edit. Without JS the whole list just shows.
 - About page photos: drop `me-01.jpg`, `me-02.jpg`, `me-03.jpg` into
   `assets/img/` - the hover cells show a checker placeholder until then.
   The RESUME tile points at `assets/resume.pdf` (also not in the repo yet).

@@ -17,7 +17,8 @@
   if (!deck) return;
   var facts = [].slice.call(deck.querySelectorAll('.ff-fact'));
   var ticks = deck.querySelector('.ff-ticks');
-  var card = deck.querySelector('.ff-list');
+  // the whole window is the pointer target (text and image), not just the list
+  var card = deck.querySelector('.ff-window') || deck.querySelector('.ff-list');
   var toggle = deck.querySelector('.ff-toggle');
   var body = deck.querySelector('.ff-body');
   var cue = deck.querySelector('.ff-cue');
@@ -40,20 +41,49 @@
     return b;
   });
 
+  var shot = deck.querySelector('.ff-shot');
+  var shotLabel = deck.querySelector('.ff-shot-label');
+  var at = deck.querySelector('.ff-at');
+  var of = deck.querySelector('.ff-of');
+  if (of) of.textContent = pad(facts.length);
+
   function show(n) {
     i = (n % facts.length + facts.length) % facts.length; // wraps both ways
     facts.forEach(function (f, k) { f.hidden = k !== i; });
     dots.forEach(function (b, k) { b.setAttribute('aria-current', String(k === i)); });
-    if (cue) cue.textContent = pad(i + 1) + '/' + pad(facts.length);
+    if (cue && open) cue.textContent = pad(i + 1) + '/' + pad(facts.length);
+    if (at) at.textContent = pad(i + 1);
+    // a fact carries its own image via data-img; the checker placeholder
+    // (numbered with the fact) stands in until one exists
+    if (shot) {
+      var src = facts[i].dataset.img;
+      var img = shot.querySelector('img');
+      if (src) {
+        if (!img) {
+          img = document.createElement('img');
+          img.alt = '';
+          shot.insertBefore(img, shot.firstChild);
+        }
+        img.src = src;
+      } else if (img) {
+        img.remove();
+      }
+      if (shotLabel) {
+        shotLabel.hidden = !!src;
+        shotLabel.textContent = 'IMG ' + pad(i + 1);
+      }
+    }
   }
 
   function setOpen(on) {
     open = !!on;
     body.hidden = !open;
+    deck.classList.toggle('is-open', open); // closed = pinned to the panel foot
     toggle.setAttribute('aria-expanded', String(open));
     if (cue) cue.textContent = open ? pad(i + 1) + '/' + pad(facts.length) : 'REVEAL';
-    // the panel scrolls internally: bring the opened deck to its foot
-    if (open) deck.scrollIntoView({ block: 'end' });
+    // the panel scrolls internally: bring the whole opened deck into it,
+    // header included, so the way back out stays visible
+    if (open) deck.scrollIntoView({ block: 'nearest' });
   }
 
   toggle.addEventListener('click', function () { setOpen(!open); });

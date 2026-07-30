@@ -57,7 +57,11 @@
             </button>
           </h2>
           <div class="ff-body" id="ff-body">
-            <ol class="ff-list" aria-live="polite">
+            <!-- the window is the card: facts on the left, a square slot for
+                 a small supporting image on the right (js/about.js swaps the
+                 image per fact once assets/img/ff-NN.jpg files exist) -->
+            <div class="ff-window">
+              <ol class="ff-list" aria-live="polite">
               <li class="ff-fact">
                 <h3 class="label">Hamlet</h3>
                 <p>I know Act 3, Scene 1 by heart. Recently watched the new Hamnet movie and I decided to try to learn some of the manuscript. Now I will forever remember Act 3, Scene 1, "Get thee to a nunnery!", and the next three lines. Pls ask me if you want a live performance.</p>
@@ -83,26 +87,28 @@
                 <p>You can put chilli bean oil on any Asian dish to save it. Or for that matter, sauce with that lady on it. <a href="https://www.google.com/search?q=chili+bean+oil&amp;udm=2" target="_blank" rel="noopener">See here</a>.</p>
               </li>
               <li class="ff-fact">
-                <h3 class="label">Universal topics</h3>
-                <p>I think food and poo are two of the most universal topics, ones you can speak about with anyone and have a fun and good conversation. It's something we all do. But not in combination, please bring up the topics at separate instances. PS: I promise I'm really professional.</p>
+                <h3 class="label">Conversation topic</h3>
+                <p>Best conversation topic to impress your colleagues, boss or friends: bring out Guess The Asian. A game everyone will love. PS: usually works better if you are Asian when you bring this up, might be odd otherwise :P</p>
               </li>
               <li class="ff-fact">
                 <h3 class="label">That's all</h3>
                 <p>Please <a href="mailto:hello@example.com">book a call</a> if you want to know more about me :-D</p>
               </li>
-            </ol>
+              </ol>
+              <div class="ff-shot" aria-hidden="true">
+                <!-- IMAGE: small square image per fact (optional) -->
+                <span class="ff-shot-label">IMG</span>
+              </div>
+            </div>
+
             <div class="ff-bar">
-              <button type="button" class="ff-step" data-step="-1">PREV</button>
+              <button type="button" class="ff-step" data-step="-1">PREVIOUS</button>
               <div class="ff-ticks" role="group" aria-label="Jump to fact"></div>
               <button type="button" class="ff-step" data-step="1">NEXT</button>
             </div>
           </div>
         </section>
 
-        <p class="bio-line label"><span class="idx">APPROACH</span> SYSTEMS BEFORE SCREENS · CONSTRAINTS ARE MATERIAL · SHIP, OBSERVE, REFINE</p>
-        <p class="bio-line label"><span class="idx">TOOLS</span> FIGMA · P5.JS · VUE + TYPESCRIPT · PEN PLOTTER</p>
-        <p class="bio-line label"><span class="idx">NOW</span> DESIGNING CLINICAL WORKFLOWS · PLOTTING GRID STUDIES · LEARNING SHADERS</p>
-        <p class="bio-colophon">SET IN SYSTEM MONO + A 5X7 PIXEL FACE DRAWN BY THE GRID ENGINE. MADE WITH P5.JS 1.11.3. NO COOKIES, NO TRACKING, NO WEBFONTS. © 2026 FILIP KOCKENDAL.</p>
       </div>
     </section>
 
