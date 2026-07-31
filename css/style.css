@@ -703,33 +703,36 @@ html.js .tag-row {
   color: var(--gray-3);
 }
 
-/* fun facts: a deck at the foot of the bio panel. The inked header is the
-   click target that reveals it; inside, one fact shows at a time and the card
-   itself steps. The frame is a lattice cell of its own, with the photo cells'
-   crop-mark tick redrawn in CSS as the hover hint. Without JS the header is
-   inert and every fact stays visible, so reading never depends on any of it. */
+/* fun facts: its own black lattice tile, sibling to RESUME and LINKEDIN.
+   Closed, the canvas draws the tile and its pixel-face title; clicking grows
+   the cell open (engine tile animation) and the drawer inside appears: the
+   fact, PREVIOUS / NEXT, and a square slot for a supporting image.
+   Without JS the tile is a plain bordered block with every fact visible. */
 .fun-deck {
   margin-block: var(--space-5) var(--space-4);
   border: var(--hair) solid var(--ink);
 }
 
-/* the bio outgrows its cell on most viewports, so while the deck is closed it
-   rides the foot of the scrolling panel: the invitation is always in view.
-   Opening drops it back into the flow (js/about.js scrolls it into place). */
-html.js .fun-deck {
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  background: var(--panel);
-}
-
-html.js .fun-deck.is-open {
-  position: static;
+/* engine-placed cell: the canvas paints the ink fill, so the overlay is
+   transparent and only carries text - like the other tiles */
+html.js .cell-funfact {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  pointer-events: auto;
+  color: var(--paper);
+  overflow: hidden;
 }
 
 .ff-head {
   background: var(--ink);
   color: var(--paper);
+}
+
+/* closed: the button is the whole cell (canvas draws the label) */
+html.js .cell-funfact .ff-head {
+  background: none;
+  height: 100%;
 }
 
 .ff-toggle {
@@ -742,12 +745,54 @@ html.js .fun-deck.is-open {
   text-align: left;
 }
 
-/* the header flips sign on hover, like every other cell on the site. Focus
-   flips it too: the shared focus ring is ink, and ink on ink is nothing */
-html.js .ff-toggle:hover,
-.ff-toggle:focus-visible {
-  background: var(--paper);
-  color: var(--ink);
+html.js .cell-funfact .ff-toggle {
+  position: relative;
+  height: 100%;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* dashed paper focus ring, as on the nav tiles (ink on ink is nothing) */
+html.js .cell-funfact .ff-toggle::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: var(--hair) dashed transparent;
+}
+
+html.js .cell-funfact .ff-toggle:focus-visible {
+  outline: none;
+}
+
+html.js .cell-funfact .ff-toggle:focus-visible::after {
+  border-color: var(--paper);
+}
+
+/* open: the title button steps aside for the drawer */
+html.js .cell-funfact.is-open .ff-head {
+  display: none;
+}
+
+html.js .cell-funfact .tl-a {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* the drawer: fact + controls, with the image slot at the far end */
+html.js .cell-funfact .ff-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+
+html.js .cell-funfact .ff-body[hidden] {
+  display: none;
 }
 
 .ff-cue {
@@ -837,6 +882,80 @@ html.js .ff-window {
   align-items: stretch;
   gap: var(--space-3);
   cursor: pointer; /* the whole card steps forward */
+}
+
+/* inside the ink drawer everything inverts: paper text, paper rules */
+html.js .cell-funfact .ff-window {
+  flex: 1;
+  min-height: 0;
+}
+
+html.js .cell-funfact .ff-list {
+  overflow-y: auto; /* long facts scroll rather than burst the cell */
+}
+
+html.js .cell-funfact .ff-list::after {
+  display: none; /* the drawer is already open: no reveal hint needed */
+}
+
+html.js .cell-funfact .ff-fact {
+  padding: 0;
+  min-height: 0;
+}
+
+html.js .cell-funfact .ff-fact h3 {
+  color: var(--gray-2);
+}
+
+html.js .cell-funfact .ff-fact a:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+html.js .cell-funfact .ff-shot {
+  align-self: start;
+  border-color: var(--paper);
+  background:
+    repeating-conic-gradient(var(--gray-3) 0% 25%, var(--ink) 0% 50%) 0 0 / 14px 14px;
+}
+
+html.js .cell-funfact .ff-shot-label {
+  background: var(--ink);
+  border-color: var(--paper);
+  color: var(--gray-2);
+}
+
+html.js .cell-funfact .ff-bar {
+  border-top: var(--hair) solid var(--gray-3);
+  padding-top: var(--space-2);
+}
+
+html.js .cell-funfact .ff-step,
+html.js .cell-funfact .ff-close {
+  border: var(--hair) solid var(--paper);
+  color: var(--paper);
+  background: none;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+}
+
+html.js .cell-funfact .ff-step:hover,
+html.js .cell-funfact .ff-close:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+html.js .cell-funfact .ff-close {
+  margin-left: auto;
+}
+
+html.js .cell-funfact .ff-tick::before {
+  border-color: var(--paper);
+}
+
+html.js .cell-funfact .ff-tick[aria-current="true"]::before {
+  background: var(--paper);
 }
 
 .ff-shot {

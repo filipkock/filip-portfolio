@@ -289,27 +289,34 @@
    * 5. lattice - uniform grid + seeded merges; tiles claim spans first. *
    *    Tile spans get no roots at all: the chrome IS those cells.       *
    * ------------------------------------------------------------------ */
+  function normLines(lines) {
+    return (lines || []).map(function (l) {
+      return {
+        t: String(l.t).toUpperCase(),
+        h: l.h === 'right' ? 'right' : 'left',
+        v: l.v === 'bottom' ? 'bottom' : 'top',
+        row: l.row | 0,
+        scale: l.scale > 0 ? clamp(l.scale, 0.3, 1) : 1 // sub-line size, e.g. 0.5
+      };
+    });
+  }
+
   function makeTile(def, c0, r0, cs, rs, cw, ch) {
     return {
       id: def.id,
       kind: def.kind === 'text' ? 'text' : def.kind === 'photo' ? 'photo' : 'nav',
       panel: !!def.panel, // heavier frame + white fill: content, not chrome
-      lines: (def.lines || []).map(function (l) {
-        return {
-          t: String(l.t).toUpperCase(),
-          h: l.h === 'right' ? 'right' : 'left',
-          v: l.v === 'bottom' ? 'bottom' : 'top',
-          row: l.row | 0,
-          scale: l.scale > 0 ? clamp(l.scale, 0.3, 1) : 1 // sub-line size, e.g. 0.5
-        };
-      }),
+      // a wide tile would otherwise shout: cap its label to match the others
+      labelMax: def.labelMax > 0 ? def.labelMax : 0,
+      lines: normLines(def.lines),
       rect: {
         x: Math.round(c0 * cw), y: Math.round(r0 * ch),
         w: Math.round(cs * cw), h: Math.round(rs * ch)
       },
       span: { c0: c0, r0: r0, cs: cs, rs: rs },
       hovered: false,
-      hoverT: 0
+      hoverT: 0,
+      anim: null // set by setTileState: eases the cell from one span to another
     };
   }
 
@@ -791,7 +798,7 @@
     // pixel size fits the longest (scaled) line plus generous margins (the
     // mock keeps air around the labels), capped by tile height
     var ps = clamp(Math.min(Math.floor(r.w / (maxCols + 9)), Math.floor(r.h / 24)),
-      T.TILE_LABEL_PS_MIN, T.TILE_LABEL_PS_MAX);
+      T.TILE_LABEL_PS_MIN, tile.labelMax || T.TILE_LABEL_PS_MAX);
     var inset = 2 * ps;
     for (var j = 0; j < tile.lines.length; j++) {
       var l = tile.lines[j];
@@ -1176,9 +1183,29 @@
           }
         }
 
+        // a tile changing span (the about page's fun-fact deck) eases from
+        // its old cell to the new one; overlays follow via onTiles per frame
+        var tileMoving = false;
+        for (var ti = 0; ti < S.tiles.length; ti++) {
+          var tl2 = S.tiles[ti];
+          if (!tl2.anim) continue;
+          tl2.anim.t = Math.min(1, tl2.anim.t + dt / tl2.anim.ms);
+          var e2 = easeOutCubic(tl2.anim.t);
+          var a = tl2.anim.from, b = tl2.anim.to;
+          tl2.rect = {
+            x: Math.round(a.x + (b.x - a.x) * e2),
+            y: Math.round(a.y + (b.y - a.y) * e2),
+            w: Math.round(a.w + (b.w - a.w) * e2),
+            h: Math.round(a.h + (b.h - a.h) * e2)
+          };
+          if (tl2.anim.t >= 1) { tl2.rect = b; tl2.anim = null; }
+          tileMoving = true;
+        }
+
         updateTree(S);
         adjustBudget(S);
         renderFrame(p, S);
+        if (tileMoving) fireTiles();
 
         // card mode: stop looping once fully settled
         if (S.animate === 'hover' && S.looping && !S.cardHover &&
@@ -1240,6 +1267,40 @@
         return S.tiles.map(function (t) {
           return { id: t.id, kind: t.kind, x: t.rect.x, y: t.rect.y, w: t.rect.w, h: t.rect.h, hovered: t.hovered };
         });
+      },
+
+      // move a tile to another lattice span, easing the cell open or shut.
+      // { spanFrac, lines, animateMs } - lines replace the pixel-face label,
+      // so an expanded cell can drop its title and show HTML content instead
+      setTileState: function (id, opts) {
+        if (S.dead || !S.p) return;
+        opts = opts || {};
+        var tile = null, i;
+        for (i = 0; i < S.tiles.length; i++) if (S.tiles[i].id === id) tile = S.tiles[i];
+        if (!tile) return;
+        if (opts.lines !== undefined) tile.lines = normLines(opts.lines);
+        if (opts.spanFrac && S.latCols) {
+          var f = opts.spanFrac;
+          var c0 = clamp(Math.round((f.x0 || 0) * S.latCols), 0, S.latCols - 1);
+          var c1 = clamp(Math.round((f.x1 || 1) * S.latCols), c0 + 1, S.latCols);
+          var r0 = clamp(Math.round((f.y0 || 0) * S.latRows), 0, S.latRows - 1);
+          var r1 = clamp(Math.round((f.y1 || 1) * S.latRows), r0 + 1, S.latRows);
+          var next = {
+            x: Math.round(c0 * S.latCW), y: Math.round(r0 * S.latCH),
+            w: Math.round((c1 - c0) * S.latCW), h: Math.round((r1 - r0) * S.latCH)
+          };
+          tile.span = { c0: c0, r0: r0, cs: c1 - c0, rs: r1 - r0 };
+          var ms = opts.animateMs | 0;
+          if (ms > 0 && !S.reducedMotion) {
+            tile.anim = { from: tile.rect, to: next, t: 0, ms: ms };
+          } else {
+            tile.rect = next;
+            tile.anim = null;
+            fireTiles();
+          }
+        }
+        if (!S.looping && !S.hidden) { S.looping = true; S.p.loop(); }
+        if (S.reducedMotion || S.animate === false) safeRedraw();
       },
 
       setTileHover: function (id) {

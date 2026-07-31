@@ -78,15 +78,18 @@
   function setOpen(on) {
     open = !!on;
     body.hidden = !open;
-    deck.classList.toggle('is-open', open); // closed = pinned to the panel foot
+    deck.classList.toggle('is-open', open);
     toggle.setAttribute('aria-expanded', String(open));
     if (cue) cue.textContent = open ? pad(i + 1) + '/' + pad(facts.length) : 'REVEAL';
-    // the panel scrolls internally: bring the whole opened deck into it,
-    // header included, so the way back out stays visible
-    if (open) deck.scrollIntoView({ block: 'nearest' });
   }
 
-  toggle.addEventListener('click', function () { setOpen(!open); });
+  // the tile animation belongs to the engine, so the page script drives
+  // open/close through here; this IIFE keeps owning the content stepping
+  window.__deck = {
+    setOpen: setOpen,
+    isOpen: function () { return open; },
+    show: show
+  };
 
   deck.querySelectorAll('.ff-step').forEach(function (b) {
     b.addEventListener('click', function () { show(i + (+b.dataset.step || 1)); });
@@ -153,8 +156,44 @@
       { t: 'ME', h: 'right', v: 'bottom', row: 0 }
     ],
     resume: [{ t: 'RESUME', h: 'left', v: 'top', row: 0 }],
-    linkedin: [{ t: 'LINKEDIN', h: 'left', v: 'bottom', row: 0 }]
+    linkedin: [{ t: 'LINKEDIN', h: 'left', v: 'bottom', row: 0 }],
+    funfact: [
+      { t: 'FUN', h: 'left', v: 'top', row: 0 },
+      { t: 'FACTS', h: 'left', v: 'top', row: 1 },
+      { t: 'CLICK TO OPEN', h: 'left', v: 'bottom', row: 0, scale: 0.5 }
+    ]
   };
+
+  // the deck's two shapes, in lattice cells: a small tile that grows into a
+  // wide drawer. Derived on demand (p5 runs setup asynchronously, so this
+  // must not depend on a build having happened yet) and re-derived on resize.
+  var deckOpen = false;
+
+  function deckShape() {
+    var L = lattice();
+    var R = L.rows, C = L.cols;
+    var cells = function (c0, r0, cs, rs) {
+      return { x0: c0 / C, y0: r0 / R, x1: (c0 + cs) / C, y1: (r0 + rs) / R };
+    };
+    if (window.innerWidth >= 900 && C >= 5) {
+      var rc = Math.min(C - 1, Math.max(3, Math.round(C * 0.72)));
+      return {
+        closed: cells(1, R - 1, 2, 1),
+        open: cells(1, Math.max(1, R - 2), Math.max(3, rc - 2), Math.min(2, R - 1))
+      };
+    }
+    if (L.stacked) {
+      // a band above the actions, opening upward over the bio
+      return {
+        closed: { x0: 0, y0: (R - 6) / R, x1: 1, y1: (R - 5) / R },
+        open: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 5) / R }
+      };
+    }
+    return {
+      closed: { x0: 0, y0: (R - 2) / R, x1: 0.5, y1: (R - 1) / R },
+      open: { x0: 0, y0: (R - 3) / R, x1: 1, y1: (R - 1) / R }
+    };
+  }
 
   function tileDefs() {
     var L = lattice();
@@ -175,7 +214,13 @@
       // contact spans the two columns above, linkedin sits one column left
       // (never straight under resume - they would read as one button)
       var rc = Math.min(C - 1, Math.max(3, Math.round(C * 0.72)));
-      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0.10, y0: 0.20, x1: 0.52, y1: 0.88 } });
+      // the bio ends one row short so the deck tile has its own band below
+      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: cells(1, 1, Math.max(2, rc - 2), Math.max(1, R - 2)) });
+      defs.push({
+        id: 'funfact', kind: 'nav', labelMax: 5,
+        lines: deckOpen ? [] : LINES.funfact,
+        spanFrac: deckOpen ? deckShape().open : deckShape().closed
+      });
       defs.push({ id: 'contact', kind: 'nav', lines: LINES.contact, spanFrac: cells(rc - 1, 1, 2, 1) });
       defs.push({ id: 'resume', kind: 'nav', lines: LINES.resume, spanFrac: cells(rc, Math.min(2, R - 1), 1, 1) });
       defs.push({ id: 'linkedin', kind: 'nav', lines: LINES.linkedin, spanFrac: cells(rc - 1, Math.min(3, R - 1), 1, 1) });
@@ -186,16 +231,26 @@
       // full-width bands on integer rows with an artwork row between each
       // (adjacent black bands would fuse: ink borders vanish on ink);
       // photos are dropped. Engine forces R >= 8 here (3 nav tiles).
-      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 5) / R } });
+      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 6) / R } });
       defs.push({ id: 'contact', kind: 'nav', lines: LINES.contact, spanFrac: { x0: 0, y0: (R - 5) / R, x1: 1, y1: (R - 4) / R } });
       defs.push({ id: 'resume', kind: 'nav', lines: LINES.resume, spanFrac: { x0: 0, y0: (R - 3) / R, x1: 1, y1: (R - 2) / R } });
       defs.push({ id: 'linkedin', kind: 'nav', lines: LINES.linkedin, spanFrac: { x0: 0, y0: (R - 1) / R, x1: 1, y1: 1 } });
+      defs.push({
+        id: 'funfact', kind: 'nav', labelMax: 5,
+        lines: deckOpen ? [] : LINES.funfact,
+        spanFrac: deckOpen ? deckShape().open : deckShape().closed
+      });
     } else {
       // narrow desktop window: bio full width, action trio on the last row
-      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 1) / R } });
+      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 2) / R } });
       defs.push({ id: 'contact', kind: 'nav', lines: LINES.contact, spanFrac: { x0: 0, y0: (R - 1) / R, x1: 0.45, y1: 1 } });
       defs.push({ id: 'resume', kind: 'nav', lines: LINES.resume, spanFrac: { x0: 0.45, y0: (R - 1) / R, x1: 0.75, y1: 1 } });
       defs.push({ id: 'linkedin', kind: 'nav', lines: LINES.linkedin, spanFrac: { x0: 0.75, y0: (R - 1) / R, x1: 1, y1: 1 } });
+      defs.push({
+        id: 'funfact', kind: 'nav', labelMax: 5,
+        lines: deckOpen ? [] : LINES.funfact,
+        spanFrac: deckOpen ? deckShape().open : deckShape().closed
+      });
     }
     return defs;
   }
@@ -224,7 +279,8 @@
   function placeCells(rects) {
     var placed = {};
     rects.forEach(function (r) {
-      var el = r.kind === 'nav' ? links[r.id] : overlays[r.id];
+      // the deck is a nav tile but its overlay is a cell, so check both maps
+      var el = links[r.id] || overlays[r.id];
       if (!el) return;
       placed[r.id] = true;
       el.style.transform = 'translate(' + r.x + 'px,' + r.y + 'px)';
@@ -240,6 +296,8 @@
     for (var a = 0; a < rects.length; a++) {
       for (var b = a + 1; b < rects.length; b++) {
         var p = rects[a], q = rects[b];
+        // an open deck covers the bio on purpose: that is the drawer, not a bug
+        if (deckOpen && (p.id === 'funfact' || q.id === 'funfact')) continue;
         if (p.x < q.x + q.w && q.x < p.x + p.w && p.y < q.y + q.h && q.y < p.y + p.h) {
           console.warn('about: tile overlap', p.id, q.id);
         }
@@ -259,6 +317,54 @@
     a.addEventListener('focus', function () { sketch.setTileHover(id); });
     a.addEventListener('blur', function () { sketch.setTileHover(null); });
   });
+
+  /* ---- fun-fact deck: the tile grows open, the drawer appears --------- */
+  (function deck() {
+    var cell = overlays.funfact;
+    if (!cell) return;
+    var toggle = cell.querySelector('.ff-toggle');
+    var body = cell.querySelector('.ff-body');
+    var close = cell.querySelector('.ff-close');
+    var GROW_MS = 420; // the page transition's cadence, at cell scale
+
+    function setState(open) {
+      deckOpen = open;
+      // content state (visibility, aria, counter) lives in the deck module
+      if (window.__deck) window.__deck.setOpen(open);
+      else if (body) body.hidden = !open;
+      // the pixel-face title belongs to the closed tile only
+      var shape = deckShape();
+      sketch.setTileState('funfact', {
+        spanFrac: open ? shape.open : shape.closed,
+        lines: open ? [] : LINES.funfact,
+        animateMs: GROW_MS
+      });
+      if (open) {
+        sketch.setTileHover(null);
+        var first = body && body.querySelector('.ff-step');
+        if (first) first.focus();
+      } else {
+        toggle.focus();
+      }
+    }
+
+    toggle.addEventListener('click', function () { setState(!deckOpen); });
+    if (close) close.addEventListener('click', function () { setState(false); });
+
+    // hover polarity only while closed: an open drawer holds content
+    if (!coarse) {
+      toggle.addEventListener('pointerenter', function () { if (!deckOpen) sketch.setTileHover('funfact'); });
+      toggle.addEventListener('pointerleave', function () { sketch.setTileHover(null); });
+    }
+    toggle.addEventListener('focus', function () { if (!deckOpen) sketch.setTileHover('funfact'); });
+    toggle.addEventListener('blur', function () { sketch.setTileHover(null); });
+
+    cell.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && deckOpen) { ev.stopPropagation(); setState(false); }
+    });
+
+    setState(false); // authored open (no-JS readable), closed once wired
+  })();
 
   // photo cells: hover/focus reveal is pure CSS; click toggles a pinned
   // state, which is also the whole interaction on touch

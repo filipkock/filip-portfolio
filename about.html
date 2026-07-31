@@ -47,13 +47,18 @@
         <p>In my spare time, I enjoy doing a bit of creative coding and exploring ways to make fun interactive art. I'm still learning, but it's really fun! Something I want to get into more is the intersection between interactive art and sound design.</p>
         <p>Another hobby I've had for some time is playing guitar. I still haven't tried playing an electric guitar, but hopefully at some point! I'd also love to try playing the contrabass; I've tried it briefly, but definitely want to learn more. PS: it's a beautiful thing to have a hobby even though you're poor at it, so expect nothing fancy :-D</p>
 
-        <!-- fun facts: authored as a plain list, turned into a click-through
-             deck by js/about.js. Without JS every fact just stays visible. -->
-        <section class="fun-deck" aria-labelledby="ff-title">
+
+      </div>
+    </section>
+
+    <!-- fun facts: a black lattice tile like RESUME / LINKEDIN. Clicking it
+         grows the cell open (js/about.js drives the engine's tile animation)
+         to reveal the deck. Without JS every fact just stays visible. -->
+    <section class="grid-cell-overlay cell-funfact fun-deck" data-cell="funfact" aria-labelledby="ff-title">
           <h2 class="ff-head" id="ff-title">
             <button type="button" class="ff-toggle" aria-expanded="false" aria-controls="ff-body">
-              <span class="label">Some fun facts about me</span>
-              <span class="ff-cue label" aria-hidden="true">REVEAL</span>
+              <span class="tl-a" aria-hidden="true">FUN FACTS</span>
+              <span class="visually-hidden">Some fun facts about me - reveal</span>
             </button>
           </h2>
           <div class="ff-body" id="ff-body">
@@ -105,12 +110,11 @@
               <button type="button" class="ff-step" data-step="-1">PREVIOUS</button>
               <div class="ff-ticks" role="group" aria-label="Jump to fact"></div>
               <button type="button" class="ff-step" data-step="1">NEXT</button>
+              <button type="button" class="ff-close">CLOSE</button>
             </div>
           </div>
-        </section>
-
-      </div>
     </section>
+
 
     <nav class="tile-nav" aria-label="Actions">
       <a class="tile-link" href="mailto:hello@example.com" data-tile="contact" aria-label="Contact me by email">
