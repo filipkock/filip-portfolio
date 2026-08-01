@@ -23,9 +23,10 @@
   });
 
   // mirrors the engine's own sizing so spans can be whole lattice cells.
-  // This page always runs density 'low', so the cell target is scaled.
+  // Same target as the other sheets: the chrome cells must not change size
+  // when you move between pages.
   var WIDE_MIN = 1240;
-  var CELL_TARGET = 190 * 1.2;
+  var CELL_TARGET = 190;
   function predict() {
     return {
       cols: Math.min(16, Math.max(2, Math.round(window.innerWidth / CELL_TARGET))),
@@ -77,7 +78,6 @@
     sketch = window.createGridSketch(host, {
       mode: 'landing',
       seed: 1101, // the project's own seed: same identity as its row thumb
-      density: 'low', // calmer behind long-form text
       tiles: tileDefs,
       touch: coarse,
       reducedMotion: reduced,
@@ -155,7 +155,7 @@
     setTimeout(alignSoon, 260); // again after the engine's debounced rebuild
   });
 
-  /* ---- section index: scroll-spy + progress ------------------------- */
+  /* ---- section index: scroll-spy ------------------------------------ */
   (function buildIndex() {
     var host = document.getElementById('case-index');
     var panels = Array.prototype.slice.call(document.querySelectorAll('.case-panel[data-nav]'));
@@ -181,13 +181,6 @@
     });
     host.appendChild(list);
 
-    var meter = document.createElement('div');
-    meter.className = 'ci-meter';
-    meter.innerHTML = '<span class="ci-bar"><span class="ci-fill"></span></span>' +
-      '<span class="ci-pct">0%</span>';
-    host.appendChild(meter);
-    var fill = meter.querySelector('.ci-fill');
-    var pct = meter.querySelector('.ci-pct');
     host.classList.add('is-ready');
 
     // the section whose top is closest to a line ~a third down the viewport
@@ -210,10 +203,6 @@
           else a.removeAttribute('aria-current');
         });
       }
-      var max = document.documentElement.scrollHeight - window.innerHeight;
-      var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 1;
-      fill.style.setProperty('--p', p.toFixed(4));
-      pct.textContent = Math.round(p * 100) + '%';
     }
 
     var queued = false;

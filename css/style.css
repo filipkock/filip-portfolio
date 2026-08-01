@@ -1207,22 +1207,7 @@ body.tiles-ready .case-index:not(.is-placed) .ci-list::-webkit-scrollbar {
   display: none;
 }
 
-body.tiles-ready .case-index:not(.is-placed) .ci-meter {
-  border-top: none;
-  border-left: var(--hair) solid var(--ink);
-}
-
-body.tiles-ready .case-index:not(.is-placed) .ci-bar {
-  width: 44px;
-  height: 6px;
-}
-
-body.tiles-ready .case-index:not(.is-placed) .ci-fill {
-  transform: scaleX(var(--p, 0));
-  transform-origin: left center;
-}
-
-.case-cell .wordmark {
+body.tiles-ready .case-index:not(.is-placed) body.tiles-ready .case-index:not(.is-placed) .case-cell .wordmark {
   font-size: var(--text-s);
   letter-spacing: var(--track-wide);
 }
@@ -1304,39 +1289,7 @@ body.tiles-ready .case-index:not(.is-placed) .ci-fill {
   color: var(--gray-2);
 }
 
-/* reading meter: an ink column that fills as you go */
-.ci-meter {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  border-top: var(--hair) solid var(--ink);
-  padding: var(--space-2);
-  flex-shrink: 0;
-}
-
-.ci-bar {
-  position: relative;
-  width: 6px;
-  height: 44px;
-  border: var(--hair) solid var(--ink);
-}
-
 /* JS writes --p (0..1); each breakpoint picks the axis it fills along */
-.ci-fill {
-  position: absolute;
-  inset: 0;
-  background: var(--ink);
-  transform: scaleY(var(--p, 0));
-  transform-origin: top center;
-}
-
-.ci-pct {
-  font-size: var(--text-xs);
-  letter-spacing: var(--track);
-  color: var(--gray-3);
-  font-variant-numeric: tabular-nums;
-}
-
 /* the reading column continues the lattice: its edges sit on column lines
    (js/case.js writes --doc-x / --doc-w from the engine's own geometry) */
 .case-doc {
