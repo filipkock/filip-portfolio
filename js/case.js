@@ -153,6 +153,42 @@
     alignDocument();          // immediate, using the current lattice
     alignTries = 0;
     setTimeout(alignSoon, 260); // again after the engine's debounced rebuild
+    setTimeout(sizeIndex, 280);
+  });
+
+  // the index keeps the lattice column's width and left edge, but only the
+  // height its list needs - a full cell left a tall empty box beneath it
+  function sizeIndex() {
+    var el = overlays.index;
+    if (!el || !el.classList.contains('is-placed')) return;
+    if (!el.querySelector('.ci-list')) return;
+    // measure with the list at its natural height: while the cell has a
+    // fixed height the list is a flex child and collapses to nothing
+    el.classList.add('is-measuring');
+    el.style.height = 'auto';
+    var h = Math.ceil(el.getBoundingClientRect().height);
+    el.style.height = h + 'px';
+    el.classList.remove('is-measuring');
+    // paint the canvas cell at the same height, so the two stay one object
+    try { sketch.setTileHeight('index', h); } catch (e) { /* no-op */ }
+  }
+
+  /* ---- media slots: real files when present, placeholder when not ----- */
+  document.querySelectorAll('.img-slot').forEach(function (slot) {
+    var media = slot.querySelector('img, video');
+    // placeholder is the default: a lazy image that never enters the
+    // viewport fires neither load nor error, and an empty box would be
+    // worse than the labelled checker
+    slot.classList.add('is-empty');
+    if (!media) return;
+    function filled() { slot.classList.remove('is-empty'); }
+    if (media.tagName === 'VIDEO') {
+      media.addEventListener('loadedmetadata', filled);
+      if (media.readyState >= 1) filled();
+    } else {
+      media.addEventListener('load', filled);
+      if (media.complete && media.naturalWidth) filled();
+    }
   });
 
   /* ---- section index: scroll-spy ------------------------------------ */
@@ -182,6 +218,7 @@
     host.appendChild(list);
 
     host.classList.add('is-ready');
+    sizeIndex();
 
     // the section whose top is closest to a line ~a third down the viewport
     var current = -1;

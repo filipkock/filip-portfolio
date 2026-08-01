@@ -164,6 +164,10 @@
     ]
   };
 
+  // the bio panel's column run, shared with the deck so the drawer opens to
+  // exactly the width of the sheet above it and the two can never drift
+  function bioCols(rc) { return Math.max(2, rc - 2); }
+
   // the deck's two shapes, in lattice cells: a small tile that unrolls
   // sideways along its own band - same row, more columns, so opening it never
   // pushes the sheet around. Derived on demand (p5 runs setup asynchronously,
@@ -179,14 +183,12 @@
     };
     if (window.innerWidth >= 900 && C >= 5) {
       var rc = Math.min(C - 1, Math.max(3, Math.round(C * 0.72)));
-      // the band runs to whatever shares the bottom row: photo-3 always, and
-      // linkedin too on short viewports. Capped so wide screens get a drawer,
-      // not a rule across the whole sheet.
-      var photoC0 = Math.min(Math.round(C * 0.9), C - 1);
-      var end = Math.min(3, R - 1) === R - 1 ? Math.min(rc - 1, photoC0) : photoC0;
+      // open to exactly the bio's column run: the drawer reads as the foot of
+      // the sheet above it, flush on both edges
+      var wide = bioCols(rc);
       return {
-        closed: cells(1, R - 1, 2, 1),
-        open: cells(0, R - 1, Math.max(3, Math.min(end, 6)), 1)
+        closed: cells(1, R - 1, wide > 2 ? 2 : 1, 1),
+        open: cells(1, R - 1, wide, 1)
       };
     }
     if (L.stacked) {
@@ -224,7 +226,7 @@
       // (never straight under resume - they would read as one button)
       var rc = Math.min(C - 1, Math.max(3, Math.round(C * 0.72)));
       // the bio ends one row short so the deck tile has its own band below
-      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: cells(1, 1, Math.max(2, rc - 2), Math.max(1, R - 2)) });
+      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: cells(1, 1, bioCols(rc), Math.max(1, R - 2)) });
       defs.push({
         id: 'funfact', kind: 'nav', labelMax: 5,
         lines: deckOpen ? [] : LINES.funfact,

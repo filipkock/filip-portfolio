@@ -49,7 +49,6 @@
     INK: '#111111',
     PANEL: '#ffffff',         // content panels lift slightly off the field
     STROKE_PX: 1,
-    PANEL_STROKE_PX: 2,
 
     // lattice
     CELL_TARGET_PX: 190,      // super-cell size the lattice aims for
@@ -755,14 +754,11 @@
     p.strokeWeight(T.STROKE_PX);
     if (tile.kind === 'text') {
       if (tile.panel) {
-        // separation from the field: white fill, heavy border, inner hairline
+        // no special chrome: a content panel is just another lattice box, a
+        // hairline and a fill, so it sits in the artwork instead of on top
         p.stroke(C.ink);
-        p.strokeWeight(T.PANEL_STROKE_PX);
         p.fill(C.panel);
-        p.rect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
-        p.strokeWeight(T.STROKE_PX);
-        p.noFill();
-        p.rect(r.x + 5, r.y + 5, r.w - 10, r.h - 10);
+        p.rect(r.x, r.y, r.w, r.h);
       } else {
         p.stroke(C.ink);
         p.fill(C.paper);
@@ -1301,6 +1297,22 @@
         }
         if (!S.looping && !S.hidden) { S.looping = true; S.p.loop(); }
         if (S.reducedMotion || S.animate === false) safeRedraw();
+      },
+
+      // paint a cell shorter than its span: a list that hugs its content
+      // should not leave an empty box below it. Width/x stay lattice-true.
+      setTileHeight: function (id, px) {
+        if (S.dead || !S.p || !(px > 0)) return;
+        for (var i = 0; i < S.tiles.length; i++) {
+          if (S.tiles[i].id !== id) continue;
+          var t = S.tiles[i];
+          if (t.rect.h === Math.round(px)) return;
+          t.rect = { x: t.rect.x, y: t.rect.y, w: t.rect.w, h: Math.round(px) };
+          t.anim = null;
+          fireTiles();
+          if (!S.looping) safeRedraw();
+          return;
+        }
       },
 
       setTileHover: function (id) {

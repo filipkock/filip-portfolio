@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI JOURNALING ASSISTANT · FILIP KOCKENDAL</title>
-  <meta name="description" content="Case study: an embedded AI scribe that drafts clinical notes from session audio, so therapists spend less time writing and more time with patients.">
+  <meta name="description" content="Case study: an embedded AI scribe that drafts clinical notes from session audio, so practitioners spend less time writing and more time with patients.">
   <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
@@ -55,53 +55,46 @@
         <div><dt>TIMELINE</dt><dd>6 weeks, 2025</dd></div>
         <div><dt>PLATFORM</dt><dd>Web app</dd></div>
       </dl>
-      <p class="case-lede">Therapists told us documentation was the one thing standing between them and better patient care: every session ended in unpaid minutes of typing. I designed and helped build an AI assistant that listens to the session and drafts the clinical note, inside the journal they already use.</p>
+      <p class="case-lede">I helped launch the product's first AI initiative, the one meant to lead our AI growth, and led the research, design, and front-end development on it. What we built is an assistant that helps practitioners write their journal notes: it listens to the session and drafts the note inside the journal they already use.</p>
       <figure class="case-figure">
         <!-- IMAGE: hero - the AI assistant panel inside the journal (wide crop) -->
         <div class="img-slot" data-slot="hero" style="--slot-ratio: 16 / 9">
+          <img src="assets/img/case-ai/hero.jpg" alt="The AI assistant panel inside the patient journal" loading="lazy" decoding="async">
           <span class="slot-label">IMAGE · HERO · ASSISTANT INSIDE THE JOURNAL</span>
         </div>
       </figure>
     </section>
 
-    <!-- TL;DR -->
-    <section class="case-panel" id="tldr" data-nav="TL;DR">
-      <h2 class="case-h">TL;DR</h2>
-      <p>Clinical documentation was the top time sink for therapists on our platform, and AI-first startups were circling the workflow. In six weeks we shipped an MVP that records a session, transcribes it, and drafts a structured SOAP note the therapist reviews before saving. Usage tripled to 1,500 generated notes a day, 500+ customers across Norway, Finland, and Denmark now pay for it, and a Norway pilot showed 92.9% positive sentiment toward AI in journaling.</p>
-      <ul class="case-metrics">
-        <li><strong>1,500</strong><span>AI notes per day, up from 550</span></li>
-        <li><strong>500+</strong><span>paying customers in 3 markets</span></li>
-        <li><strong>92.9%</strong><span>positive sentiment, Norway pilot</span></li>
-      </ul>
-    </section>
 
     <!-- THE PROBLEM -->
     <section class="case-panel" id="problem" data-nav="THE PROBLEM">
       <h2 class="case-h">THE PROBLEM</h2>
-      <p>A psychologist finishes a heavy 50-minute session. Before the next patient arrives, they reconstruct it from memory into a compliant journal entry, then maybe an epicrisis and a sick note from the same material. Customers named this their number one time sink, and worse than the time itself: it pulled attention away from the patient in the room.</p>
-      <p>For the business the stakes were commercial. Documentation drag limited clinic capacity, and standalone AI scribes threatened to own this high-value workflow first, then expand into ours. An embedded assistant could make the platform more compelling, support migrations, reduce churn, and open a new paid add-on. Winning meant real daily usage, not a demo feature.</p>
+      <p>A psychologist finishes a heavy 50-minute session. Before the next patient arrives, they have a few minutes to turn it into a compliant journal entry. Practitioners named this their number one time sink, and it takes away from what they actually want to do, which is spend time with patients. A fun analogy: practitioners see our system as toilet paper. Something they need and have to use, but not something they enjoy - the quicker it is done, the better. So the goal was to make all the admin work as easy and quick as possible.</p>
+      <p>The AI startups were moving quickly, and standalone scribes threatened to own this workflow before we did. To stay competitive, and to catch this new segment, it was important that we started moving AI-integrated solutions into our own product.</p>
     </section>
 
     <!-- DISCOVERY & INSIGHT -->
     <section class="case-panel" id="discovery" data-nav="DISCOVERY">
       <h2 class="case-h">DISCOVERY &amp; INSIGHT</h2>
-      <p>I interviewed therapists, mapped their documentation workflows end to end, mined existing customer feedback, and audited the AI-first competitors. The pattern was clear: those tools produced decent text but lived outside the therapist's world, so every note meant switching apps, copying, and reformatting.</p>
+      <p>Discovery combined user pain points, competitor analysis, and internal product and workflow exploration. The pain points came mainly from user interviews and from support conversations turned into feedback tickets, all analysed in Dovetail. Journaling, epicrises, and other clinical documentation came out as practitioners' biggest time sinks.</p>
+      <p>It was also clear that many users had already adopted external AI tools to speed up this part of their workflow: Noteless, Notathuset, Tandem. Because those are standalone tools, every note meant copy-paste, manual stitching, and context switching to get the text into a patient management system that is legally compliant in their country.</p>
       <blockquote class="case-quote">We didn't need a better transcription tool. We needed no tool at all.</blockquote>
-      <p>We already ran the calendar, the journal, and the billing. So the assistant had to feel embedded, fast, editable, and unmistakably under the therapist's control - and the transcript should be a reusable asset, not a one-shot output.</p>
+      <p>The insight followed from that: we already ran the complete patient management system - appointments, billing, and compliant storage of patient records - so we were the ones who could make this integrated and seamless instead of one more tool to stitch in.</p>
       <figure class="case-figure">
         <!-- IMAGE: discovery - workflow map, journey sketch, or Figma exploration -->
         <div class="img-slot" data-slot="discovery" style="--slot-ratio: 3 / 2">
+          <img src="assets/img/case-ai/discovery.jpg" alt="Workflow map from the discovery phase" loading="lazy" decoding="async">
           <span class="slot-label">IMAGE · WORKFLOW MAP / EXPLORATION</span>
         </div>
-        <figcaption>Mapping where documentation actually happens in a therapist's day.</figcaption>
+        <figcaption>Mapping where documentation actually happens in a practitioner's day.</figcaption>
       </figure>
     </section>
 
     <!-- THE APPROACH -->
     <section class="case-panel" id="approach" data-nav="THE APPROACH">
       <h2 class="case-h">THE APPROACH</h2>
-      <p>We had a hard MVP deadline, legacy journal workflows we couldn't break, GDPR and consent requirements, and real limits around audio capture, transcription quality, latency, and browser support. So I cut ruthlessly: embedded note generation with editable SOAP summaries first. Patient-history context, confidence highlighting, speaker diarization, and multi-document workflows were designed as directions, not deliverables.</p>
-      <p>I also designed a standalone version of the same engine, so the assistant could be sold on its own and grow into later features without rework.</p>
+      <p>We wanted to move fast, so we set a hard MVP deadline with an instant follow-up once we could see user sentiment and whether we could convert them. On top of that came legacy journal workflows we couldn't break, plus GDPR and consent requirements. So we cut a lot of good features our competitors had and our users had asked for - speaker diarization, custom templates, confidence highlighting, patient-history context - and shipped embedded note generation with editable SOAP summaries first.</p>
+      <p>I designed it as both an embedded workflow inside the rest of our patient management system and a standalone version of the same engine, so the assistant could be sold on its own and grow into later features without rework.</p>
     </section>
 
     <!-- THE SOLUTION / USER JOURNEY -->
@@ -111,6 +104,8 @@
       <figure class="case-figure case-figure--video">
         <!-- VIDEO: full workflow walkthrough - calendar -> record -> transcript -> SOAP draft -> save -->
         <div class="img-slot" data-slot="walkthrough" style="--slot-ratio: 16 / 9">
+          <video src="assets/video/case-ai/walkthrough.mp4" controls preload="metadata" playsinline
+                 poster="assets/img/case-ai/walkthrough-poster.jpg"></video>
           <span class="slot-label">VIDEO · FULL WALKTHROUGH · CALENDAR → RECORD → DRAFT → SAVE</span>
         </div>
         <figcaption>The whole loop, start to saved note.</figcaption>
@@ -118,9 +113,10 @@
 
       <div class="case-step">
         <h3><span class="idx">01</span> START WHERE THE DAY STARTS</h3>
-        <p>The therapist opens the appointment in the calendar and starts a session in one action. No separate app, no setup ritual.</p>
+        <p>The practitioner opens the appointment in the calendar and starts a session inside our product. No separate app, no copy-pasting, no context switching.</p>
         <!-- IMAGE: starting a transcription session from the calendar/appointment -->
         <div class="img-slot" data-slot="step-1" style="--slot-ratio: 16 / 10">
+          <img src="assets/img/case-ai/step-1.jpg" alt="Starting a transcription session from the calendar" loading="lazy" decoding="async">
           <span class="slot-label">IMAGE · START SESSION FROM CALENDAR</span>
         </div>
       </div>
@@ -130,24 +126,27 @@
         <p>While the session runs, the UI shows exactly what is happening: recording state, transcription progress, and clear controls to pause or stop. Nothing happens silently to patient audio.</p>
         <!-- IMAGE: recording + transcription feedback states -->
         <div class="img-slot" data-slot="step-2" style="--slot-ratio: 16 / 10">
+          <img src="assets/img/case-ai/step-2.jpg" alt="Recording and transcription progress states" loading="lazy" decoding="async">
           <span class="slot-label">IMAGE · RECORDING + TRANSCRIPTION STATES</span>
         </div>
       </div>
 
       <div class="case-step">
         <h3><span class="idx">03</span> A DRAFT, NOT A VERDICT</h3>
-        <p>When the session ends, the assistant drafts a structured SOAP note. It arrives as an editable draft the therapist reviews, corrects, and approves. The clinician signs the note, not the model.</p>
+        <p>When the session ends, the assistant drafts a structured SOAP note. It arrives as an editable draft the practitioner reviews, corrects, and approves. The clinician signs the note, not the model.</p>
         <!-- IMAGE: generated SOAP note in review/edit mode -->
         <div class="img-slot" data-slot="step-3" style="--slot-ratio: 16 / 10">
+          <img src="assets/img/case-ai/step-3.jpg" alt="The generated SOAP note in review and edit mode" loading="lazy" decoding="async">
           <span class="slot-label">IMAGE · SOAP DRAFT IN REVIEW / EDIT MODE</span>
         </div>
       </div>
 
       <div class="case-step">
-        <h3><span class="idx">04</span> ONE SESSION, MANY DOCUMENTS</h3>
-        <p>The transcript stays available, so the same session can produce the journal entry, an epicrisis, or a sick note without re-dictating anything.</p>
+        <h3><span class="idx">04</span> ONE SESSION, MANY ENTRIES</h3>
+        <p>The transcript stays available, so the same session can produce several journal entries without re-dictating anything. It is also what let us expand after the MVP to other document types, like an epicrisis: the summary of a completed treatment course, written for whoever referred the patient.</p>
         <!-- IMAGE: creating a second document from the same transcript -->
         <div class="img-slot" data-slot="step-4" style="--slot-ratio: 16 / 10">
+          <img src="assets/img/case-ai/step-4.jpg" alt="Creating a second document from the same transcript" loading="lazy" decoding="async">
           <span class="slot-label">IMAGE · SECOND DOCUMENT FROM THE SAME TRANSCRIPT</span>
         </div>
       </div>
@@ -158,20 +157,20 @@
       <h2 class="case-h">DESIGN DECISIONS</h2>
       <dl class="case-decisions">
         <div>
-          <dt>Live inside the journal</dt>
-          <dd>Therapists should never leave their primary workflow mid-session. Embedding the assistant where notes already live removed the switching cost that made competitors feel like homework.</dd>
-        </div>
-        <div>
-          <dt>Spend clicks like money</dt>
-          <dd>The product's entire value was time. Every step from calendar to saved note was audited; anything that didn't build trust or control was cut.</dd>
+          <dt>All inside our product</dt>
+          <dd>Practitioners should never have to leave our product mid-session. Embedding the assistant where notes already live means nothing has to be copy-pasted: the note is created straight into the patient's journal.</dd>
         </div>
         <div>
           <dt>Editable by default</dt>
-          <dd>Clinical accuracy is the therapist's legal responsibility. Output always lands as a draft in an open editor, which turned skeptics into users: the AI proposes, the clinician disposes.</dd>
+          <dd>Clinical accuracy is the practitioner's legal responsibility, so the output always arrives as a draft in an open editor. Nothing reaches the record until they have read it, corrected it, and approved it. That is what turned skeptics into users.</dd>
+        </div>
+        <div>
+          <dt>A page of its own, then back into the calendar</dt>
+          <dd>A session is more than a journal entry - transcript, practitioner notes, appointment context, and several possible outputs - which is more than a journal editor can hold, so it got its own page. The follow-up moved that workspace into the calendar, where practitioners already spend their day, so nobody has to navigate to it.</dd>
         </div>
         <div>
           <dt>SOAP first</dt>
-          <dd>One familiar, structured format gave the MVP a shape every therapist recognized, kept scope shippable in six weeks, and left custom templates as a natural next step.</dd>
+          <dd>One familiar, structured format gave the MVP a shape every practitioner recognized, kept scope shippable in six weeks, and left custom templates as a natural next step.</dd>
         </div>
       </dl>
     </section>
@@ -188,6 +187,7 @@
       <figure class="case-figure">
         <!-- IMAGE: adoption graph - notes per day over time (optional) -->
         <div class="img-slot" data-slot="adoption" style="--slot-ratio: 2 / 1">
+          <img src="assets/img/case-ai/adoption.jpg" alt="AI-generated notes per day over time" loading="lazy" decoding="async">
           <span class="slot-label">IMAGE · ADOPTION OVER TIME (OPTIONAL)</span>
         </div>
       </figure>
@@ -196,7 +196,7 @@
     <!-- REFLECTION -->
     <section class="case-panel" id="reflection" data-nav="REFLECTION">
       <h2 class="case-h">REFLECTION</h2>
-      <p>The need was real, and shipping fast proved it. But the first version was rushed, and it showed: we launched before proper validation, and early feedback called out weak AI output and too many clicks to start a session - exactly what deeper research would have caught. The lesson I carry forward is that an MVP still has to be genuinely viable, and shipping is the start of the research, not the end of it.</p>
+      <p>The need was real, and shipping fast proved it. But the first version was rushed and very limited: we launched before proper validation, and early feedback called out weak AI output and too many clicks to start a session - exactly what deeper research would have caught. The lesson I carry forward is that an MVP still has to be genuinely viable, not an unfinished product. And when the first version is simple, it is on us to manage expectations and show that improvements are coming.</p>
       <p>Since then the assistant has outgrown its MVP: a standalone experience, dictation, an AI co-pilot for journaling, broader templates, handwritten note digitization, and more markets. Custom templates and deeper contextual assistance are next, currently paused for other priorities but expected to resume.</p>
     </section>
 
