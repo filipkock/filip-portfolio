@@ -262,6 +262,9 @@
       if (a.getAttribute('aria-current') === 'page') { ev.preventDefault(); return; }
       ev.preventDefault();
       document.body.classList.add('leaving');
+      // the destination reads this and starts fully consumed, so the mold
+      // retreats there instead of the page just appearing
+      try { sessionStorage.setItem('grid-mold', '1'); } catch (e) { /* fine */ }
       // origin: the clicked link, so the ink spreads from where you pressed
       var r = a.getBoundingClientRect();
       sketch.sweepOut({ x: r.left + r.width / 2, y: r.top + r.height / 2 }, function () {
