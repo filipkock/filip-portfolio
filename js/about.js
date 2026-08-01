@@ -164,9 +164,11 @@
     ]
   };
 
-  // the deck's two shapes, in lattice cells: a small tile that grows into a
-  // wide drawer. Derived on demand (p5 runs setup asynchronously, so this
-  // must not depend on a build having happened yet) and re-derived on resize.
+  // the deck's two shapes, in lattice cells: a small tile that unrolls
+  // sideways along its own band - same row, more columns, so opening it never
+  // pushes the sheet around. Derived on demand (p5 runs setup asynchronously,
+  // so this must not depend on a build having happened yet) and re-derived on
+  // resize.
   var deckOpen = false;
 
   function deckShape() {
@@ -177,21 +179,28 @@
     };
     if (window.innerWidth >= 900 && C >= 5) {
       var rc = Math.min(C - 1, Math.max(3, Math.round(C * 0.72)));
+      // the band runs to whatever shares the bottom row: photo-3 always, and
+      // linkedin too on short viewports. Capped so wide screens get a drawer,
+      // not a rule across the whole sheet.
+      var photoC0 = Math.min(Math.round(C * 0.9), C - 1);
+      var end = Math.min(3, R - 1) === R - 1 ? Math.min(rc - 1, photoC0) : photoC0;
       return {
         closed: cells(1, R - 1, 2, 1),
-        open: cells(1, Math.max(1, R - 2), Math.max(3, rc - 2), Math.min(2, R - 1))
+        open: cells(0, R - 1, Math.max(3, Math.min(end, 6)), 1)
       };
     }
     if (L.stacked) {
-      // a band above the actions, opening upward over the bio
+      // a phone has no width to unroll into, so this band opens upward over
+      // the bio instead - the one place the deck grows vertically
       return {
         closed: { x0: 0, y0: (R - 6) / R, x1: 1, y1: (R - 5) / R },
         open: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 5) / R }
       };
     }
+    // narrow desktop: half the row, opening across the whole of it
     return {
       closed: { x0: 0, y0: (R - 2) / R, x1: 0.5, y1: (R - 1) / R },
-      open: { x0: 0, y0: (R - 3) / R, x1: 1, y1: (R - 1) / R }
+      open: { x0: 0, y0: (R - 2) / R, x1: 1, y1: (R - 1) / R }
     };
   }
 

@@ -61,11 +61,11 @@
         id: 'channel', kind: 'text',
         spanFrac: { x0: C.start / C.cols, x1: (C.start + C.span) / C.cols, y0: 0, y1: 1 }
       });
-      // the index sits in the right chrome column, under the menu
+      // the index sits in the left chrome column, under the wordmark
       defs.push({
         id: 'index', kind: 'text',
         spanFrac: {
-          x0: (C.cols - SIDE) / C.cols, x1: 1,
+          x0: 0, x1: SIDE / C.cols,
           y0: 1 / L.rows, y1: Math.min(L.rows, 3) / L.rows
         }
       });

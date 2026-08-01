@@ -782,13 +782,15 @@ html.js .cell-funfact .tl-a {
   clip: rect(0 0 0 0);
 }
 
-/* the drawer: fact + controls, with the image slot at the far end */
+/* the drawer: fact + controls, with the image slot at the far end. It lives
+   in a single lattice row, so the padding and gaps stay tight - the width is
+   what the tile spends when it opens, never the height. */
 html.js .cell-funfact .ff-body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--space-3);
-  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
 }
 
 html.js .cell-funfact .ff-body[hidden] {
@@ -912,8 +914,11 @@ html.js .cell-funfact .ff-fact a:hover {
   color: var(--ink);
 }
 
+/* one row tall: the slot is sized by the band's height, not a fixed width */
 html.js .cell-funfact .ff-shot {
-  align-self: start;
+  align-self: stretch;
+  width: auto;
+  height: 100%;
   border-color: var(--paper);
   background:
     repeating-conic-gradient(var(--gray-3) 0% 25%, var(--ink) 0% 50%) 0 0 / 14px 14px;
@@ -926,6 +931,7 @@ html.js .cell-funfact .ff-shot-label {
 }
 
 html.js .cell-funfact .ff-bar {
+  margin-top: 0; /* the drawer's own gap already separates it */
   border-top: var(--hair) solid var(--gray-3);
   padding-top: var(--space-2);
 }
@@ -1708,6 +1714,14 @@ html.js body:not(.page-index) .head-strip {
 
   .site-head nav a {
     padding: 0 var(--space-2);
+  }
+}
+
+/* a short band on a narrow screen: the image slot would eat the sentence,
+   so the drawer spends its width on the fact instead */
+@media (max-width: 1199px) {
+  html.js .cell-funfact .ff-shot {
+    display: none;
   }
 }
 
