@@ -372,10 +372,14 @@ html.js body.tiles-ready .grid-cell-overlay.is-placed {
   visibility: visible;
 }
 
-/* page exit: chrome vanishes as the mold starts consuming the artwork */
+/* page exit: chrome vanishes as the mold starts consuming the artwork.
+   The mold is painted on the canvas, which sits under every overlay, so
+   anything left visible would float above the transition. */
 body.leaving .tile-nav,
 body.leaving .grid-cell-overlay,
-body.leaving .hover-img {
+body.leaving .hover-img,
+body.leaving .case-cell,
+body.leaving .case-doc {
   visibility: hidden !important;
 }
 
@@ -387,7 +391,9 @@ html.arriving body {
 
 html.arriving .tile-nav,
 html.arriving .grid-cell-overlay,
-html.arriving .hover-img {
+html.arriving .hover-img,
+html.arriving .case-cell,
+html.arriving .case-doc {
   visibility: hidden !important;
 }
 
@@ -1220,7 +1226,7 @@ body.tiles-ready .case-index:not(.is-placed) .ci-list::-webkit-scrollbar {
   display: none;
 }
 
-body.tiles-ready .case-index:not(.is-placed) body.tiles-ready .case-index:not(.is-placed) .case-cell .wordmark {
+.case-cell .wordmark {
   font-size: var(--text-s);
   letter-spacing: var(--track-wide);
 }
@@ -1323,13 +1329,14 @@ body.tiles-ready .case-index:not(.is-placed) body.tiles-ready .case-index:not(.i
   flex-direction: column;
 }
 
-/* sections stack flush into one ruled column of cells - the shared 2px
-   rules are the grid's lines, not card edges floating in space */
+/* sections stack flush into one ruled column of cells - the shared rules
+   are the grid's lines, not card edges floating in space. Every rule on
+   this page is one hairline, matching the canvas stroke. */
 .case-panel {
   /* a length, not a percentage: full-bleed children cancel it exactly */
   --pad-x: clamp(var(--space-4), 2.5vw, var(--space-6));
   background: var(--panel);
-  border: 2px solid var(--ink);
+  border: var(--hair) solid var(--ink);
   padding: var(--space-5) var(--pad-x);
 }
 
@@ -1375,7 +1382,7 @@ body.has-channel .case-index.is-placed {
   color: var(--gray-3);
   padding-bottom: var(--space-2);
   margin-bottom: var(--space-4);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: var(--hair) solid var(--ink);
 }
 
 /* hero */
@@ -1467,7 +1474,7 @@ body.has-channel .case-index.is-placed {
 }
 
 .case-quote {
-  border-left: 3px solid var(--ink);
+  border-left: var(--hair) solid var(--ink);
   padding: var(--space-3) 0 var(--space-3) var(--space-4);
   font-size: clamp(1.05rem, 1.8vw, 1.3rem);
   line-height: 1.45;
