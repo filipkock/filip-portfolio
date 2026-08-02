@@ -1713,53 +1713,59 @@ html.has-dot canvas {
   height: 22px;
 }
 
-/* the sound switch: same corner on every page (inside the wordmark cell) */
+/* the sound switch: an icon, nothing else. Same corner on every page
+   (inside the wordmark cell), with a hit area larger than the mark. */
 .sound-toggle {
   display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+  align-items: flex-end;
   align-self: flex-start;
-  margin-top: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  border: var(--hair) solid var(--ink);
-  background: var(--panel);
-  font-size: var(--text-xs);
-  letter-spacing: var(--track-wide);
-  text-transform: uppercase;
-  color: var(--gray-3);
+  margin: var(--space-2) 0 0 calc(-1 * var(--space-2));
+  padding: var(--space-2);
+  background: none;
+  border: 0;
   pointer-events: auto;
 }
 
-.sound-glyph {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: var(--hair) solid var(--gray-3);
+.sound-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
 }
 
-.sound-toggle:hover {
-  color: var(--ink);
+.sound-bars i {
+  display: block;
+  width: 2px;
+  background: var(--gray-2);
 }
 
-.sound-toggle:hover .sound-glyph {
-  border-color: var(--ink);
+/* off: three short, still bars */
+.sound-bars i:nth-child(1) { height: 4px; }
+.sound-bars i:nth-child(2) { height: 7px; }
+.sound-bars i:nth-child(3) { height: 5px; }
+
+.sound-toggle:hover .sound-bars i {
+  background: var(--ink);
 }
 
-/* on: the dot fills with the accent and quietly pulses, so the state is
-   readable without a word of explanation */
-.sound-toggle.is-on {
-  color: var(--ink);
-}
-
-.sound-toggle.is-on .sound-glyph {
+/* on: the accent, and the bars move - state readable without a label */
+.sound-toggle.is-on .sound-bars i {
   background: var(--accent);
-  border-color: var(--accent);
-  animation: sound-pulse 1.8s ease-in-out infinite;
+  animation: sound-bar 900ms ease-in-out infinite alternate;
 }
 
-@keyframes sound-pulse {
-  50% {
-    opacity: 0.35;
+.sound-toggle.is-on .sound-bars i:nth-child(2) { animation-delay: 150ms; }
+.sound-toggle.is-on .sound-bars i:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes sound-bar {
+  from { height: 3px; }
+  to { height: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-toggle.is-on .sound-bars i {
+    animation: none;
+    height: 11px;
   }
 }
 

@@ -99,6 +99,52 @@
       return BASE * Math.pow(2, SCALE[i] / 12);
     }
 
+    /* the wipe's voice: filtered noise sweeping up and travelling left to
+       right, so a tile flipping polarity sounds like the ink crossing it */
+    var noise = null;
+    function noiseBuffer() {
+      if (noise) return noise;
+      var n = Math.floor(ctx.sampleRate * 0.5);
+      noise = ctx.createBuffer(1, n, ctx.sampleRate);
+      var d = noise.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      return noise;
+    }
+
+    function swish(dur) {
+      var t = ctx.currentTime;
+      var end = t + (dur || 0.34);
+
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer();
+
+      // a band opening upward reads as movement rather than static hiss
+      var band = ctx.createBiquadFilter();
+      band.type = 'bandpass';
+      band.Q.value = 1.1;
+      band.frequency.setValueAtTime(380, t);
+      band.frequency.exponentialRampToValueAtTime(2400, end);
+
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.22, t + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, end);
+
+      var out = g;
+      if (ctx.createStereoPanner) {
+        var p = ctx.createStereoPanner();
+        p.pan.setValueAtTime(-0.5, t);       // travels with the wipe
+        p.pan.linearRampToValueAtTime(0.5, end);
+        g.connect(p);
+        out = p;
+      }
+      src.connect(band);
+      band.connect(g);
+      out.connect(master);
+      src.start(t);
+      src.stop(end + 0.02);
+    }
+
     function pluck(freq, pan) {
       var t = ctx.currentTime;
       var g = ctx.createGain();
@@ -131,9 +177,18 @@
       osc.stop(t + 0.6); air.stop(t + 0.6);
     }
 
+    function ready(ev) {
+      if (!on || !ctx || ctx.state !== 'running') return false;
+      return !(ev.pointerType && ev.pointerType !== 'mouse');
+    }
+
+    /* cells sound only over bare artwork: a tile has its own voice, and
+       hearing both at once just muddles them */
+    var WIPES = '.tile-link, .w-row, .ff-toggle';
+
     function hover(ev) {
-      if (!on || !ctx || ctx.state !== 'running') return;
-      if (ev.pointerType && ev.pointerType !== 'mouse') return;
+      if (!ready(ev)) return;
+      if (ev.target.closest && ev.target.closest(WIPES)) return;
       var now = performance.now();
       if (now - lastAt < MIN_GAP_MS) return;
       var grid = window.__grid;
@@ -151,6 +206,28 @@
 
     document.addEventListener('pointermove', hover, { passive: true });
 
+    // one swish per wiping element entered (delegated: rows and tiles are
+    // created or re-placed after this script runs)
+    var lastWipe = null;
+    document.addEventListener('pointerover', function (ev) {
+      if (!ready(ev)) return;
+      var el = ev.target.closest && ev.target.closest(WIPES);
+      if (!el || el === lastWipe) return;
+      lastWipe = el;
+      swish();
+    }, { passive: true });
+
+    document.addEventListener('pointerout', function (ev) {
+      var el = ev.target.closest && ev.target.closest(WIPES);
+      if (el && el === lastWipe && !el.contains(ev.relatedTarget)) lastWipe = null;
+    }, { passive: true });
+
+    // keyboard focus wipes the same way, so it should sound the same
+    document.addEventListener('focusin', function (ev) {
+      if (!on || !ctx || ctx.state !== 'running') return;
+      if (ev.target.closest && ev.target.closest(WIPES)) swish();
+    });
+
     /* the toggle: same corner on every page, inside the wordmark cell */
     var slot = document.querySelector('[data-cell="wordmark"]') ||
       document.querySelector('.site-head');
@@ -159,8 +236,8 @@
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'sound-toggle';
-    btn.innerHTML = '<span class="sound-glyph" aria-hidden="true"></span>' +
-      '<span class="sound-text">SOUND</span>';
+    // icon only: three bars that light and move when sound is on
+    btn.innerHTML = '<span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>';
     slot.appendChild(btn);
 
     function paint() {
