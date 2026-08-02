@@ -1647,27 +1647,15 @@ html.js .case-hero-3d .scene.is-held {
 }
 
 .case-hero-3d .scene-desktop {
-  width: min(78%, 760px);
+  width: min(88%, 940px);
   transform: translateZ(0);
 }
 
 /* the phone sits in front of the desktop, so turning the scene parallaxes */
 .case-hero-3d .scene-phone {
-  width: clamp(78px, 13%, 132px);
-  margin-left: clamp(-56px, -4vw, -20px);
-  transform: translateZ(70px);
-}
-
-.scene-hint {
-  display: none;
-}
-
-html.js .scene-hint {
-  display: inline;
-  margin-right: var(--space-2);
-  padding: 2px var(--space-1);
-  border: var(--hair) solid var(--gray-2);
-  color: var(--gray-3);
+  width: clamp(92px, 15%, 164px);
+  margin-left: clamp(-64px, -4vw, -24px);
+  transform: translateZ(80px);
 }
 
 /* two shots side by side: the wide one carries, the phone sits beside it */
@@ -1798,6 +1786,28 @@ html.has-dot canvas {
   height: 10px;
 }
 
+/* over something that names itself (the hero scene), the dot becomes the
+   word: no icon to decode, and it keeps the one accent colour */
+.cursor-dot.has-label {
+  width: auto;
+  height: auto;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 999px;
+  background: var(--accent);
+  border: 0;
+  color: #fff;
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* the label replaces the grab cursor entirely */
+html.has-dot .case-hero-3d .scene,
+html.has-dot .case-hero-3d .scene.is-held {
+  cursor: none;
+}
+
 .cursor-dot.is-link.is-down {
   width: 22px;
   height: 22px;
@@ -1826,46 +1836,58 @@ html.has-dot canvas {
   border-color: var(--accent);
 }
 
-.sound-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 11px;
-}
-
-.sound-bars i {
+/* a speaker: crossed out when muted, waves when playing */
+.sound-icon {
   display: block;
-  width: 2px;
-  background: var(--gray-2);
+  color: var(--gray-2);
 }
 
-/* off: three short, still bars */
-.sound-bars i:nth-child(1) { height: 4px; }
-.sound-bars i:nth-child(2) { height: 7px; }
-.sound-bars i:nth-child(3) { height: 5px; }
-
-.sound-toggle:hover .sound-bars i {
-  background: var(--ink);
+.si-body {
+  fill: currentColor;
 }
 
-/* on: the accent, and the bars move - state readable without a label */
-.sound-toggle.is-on .sound-bars i {
-  background: var(--accent);
-  animation: sound-bar 900ms ease-in-out infinite alternate;
+.si-wave,
+.si-mute {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
 }
 
-.sound-toggle.is-on .sound-bars i:nth-child(2) { animation-delay: 150ms; }
-.sound-toggle.is-on .sound-bars i:nth-child(3) { animation-delay: 300ms; }
+.sound-toggle:hover .sound-icon {
+  color: var(--ink);
+}
 
-@keyframes sound-bar {
-  from { height: 3px; }
-  to { height: 11px; }
+.sound-toggle .si-wave {
+  display: none; /* muted by default: no waves */
+}
+
+.sound-toggle.is-on .si-mute {
+  display: none;
+}
+
+.sound-toggle.is-on .si-wave {
+  display: block;
+}
+
+.sound-toggle.is-on .sound-icon {
+  color: var(--accent);
+}
+
+/* the outer wave breathes, so "on" is legible at a glance */
+.sound-toggle.is-on .si-wave-2 {
+  animation: sound-wave 1.6s ease-in-out infinite;
+}
+
+@keyframes sound-wave {
+  50% {
+    opacity: 0.25;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sound-toggle.is-on .sound-bars i {
+  .sound-toggle.is-on .si-wave-2 {
     animation: none;
-    height: 11px;
   }
 }
 

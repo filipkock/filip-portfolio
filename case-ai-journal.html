@@ -60,14 +60,13 @@
       <!-- the two screens float together and can be grabbed and spun
            (js/case.js). Without JS they are simply two screenshots. -->
       <figure class="case-figure case-hero-3d">
-        <div class="scene" data-scene tabindex="0" role="img"
+        <div class="scene" data-scene tabindex="0" role="img" data-cursor="GRAB TO TURN"
              aria-label="The AI Assistant on desktop and on a phone. Drag, or use the arrow keys, to turn them.">
           <div class="scene-stage" data-stage>
             <img class="scene-desktop" src="assets/img/case-ai/standalone.jpg" alt="" decoding="async">
             <img class="scene-phone" src="assets/img/case-ai/phone.jpg" alt="" decoding="async">
           </div>
         </div>
-        <figcaption><span class="scene-hint">Drag to turn</span> The assistant as a standalone page, and the same session on a phone.</figcaption>
       </figure>
     </section>
 
@@ -75,7 +74,7 @@
     <!-- THE PROBLEM -->
     <section class="case-panel" id="problem" data-nav="THE PROBLEM">
       <h2 class="case-h">THE PROBLEM</h2>
-      <p>A psychologist finishes a heavy 50-minute session. Before the next patient arrives, they have a few minutes to turn it into a compliant journal entry. Practitioners named this their number one time sink, and it takes away from what they actually want to do, which is spend time with patients. A fun analogy: practitioners see our system as toilet paper. Something they need and have to use, but not something they enjoy - the quicker it is done, the better. So the goal was to make all the admin work as easy and quick as possible.</p>
+      <p>A psychologist finishes a heavy 50-minute session. Before the next patient arrives, they have a few minutes to turn it into a compliant journal entry. Practitioners named this their number one time sink, and it takes away from what they actually want to do, which is spend time with patients. A fun analogy: practitioners see our system as toilet paper. Something they need and have to use, but not something they enjoy. The quicker it is done, the better. So the goal was to make all the admin work as easy and quick as possible.</p>
       <p>The AI startups were moving quickly, and standalone scribes threatened to own this workflow before we did. To stay competitive, and to catch this new segment, it was important that we started moving AI-integrated solutions into our own product.</p>
     </section>
 
@@ -85,7 +84,7 @@
       <p>Discovery combined user pain points, competitor analysis, and internal product and workflow exploration. The pain points came mainly from user interviews and from support conversations turned into feedback tickets, all analysed in Dovetail. Journaling, epicrises, and other clinical documentation came out as practitioners' biggest time sinks.</p>
       <p>It was also clear that many users had already adopted external AI tools to speed up this part of their workflow: Noteless, Notathuset, Tandem. Because those are standalone tools, every note meant copy-paste, manual stitching, and context switching to get the text into a patient management system that is legally compliant in their country.</p>
       <blockquote class="case-quote">We didn't need a better transcription tool. We needed no tool at all.</blockquote>
-      <p>The insight followed from that: we already ran the complete patient management system - appointments, billing, and compliant storage of patient records - so we were the ones who could make this integrated and seamless instead of one more tool to stitch in.</p>
+      <p>The insight followed from that: we already ran the complete patient management system, including appointments, billing, and compliant storage of patient records. That made us the ones who could keep this integrated and seamless instead of one more tool to stitch in.</p>
       <figure class="case-figure">
         <!-- IMAGE: discovery - workflow map, journey sketch, or Figma exploration -->
         <div class="img-slot" data-slot="discovery" style="--slot-ratio: 1700 / 1977">
@@ -100,7 +99,7 @@
     <!-- THE APPROACH -->
     <section class="case-panel" id="approach" data-nav="THE APPROACH">
       <h2 class="case-h">THE APPROACH</h2>
-      <p>We wanted to move fast, so we set a hard MVP deadline with an instant follow-up once we could see user sentiment and whether we could convert them. On top of that came legacy journal workflows we couldn't break, plus GDPR and consent requirements. So we cut a lot of good features our competitors had and our users had asked for - speaker diarization, custom templates, confidence highlighting, patient-history context - and shipped embedded note generation with editable SOAP summaries first.</p>
+      <p>We wanted to move fast, so we set a hard MVP deadline with an instant follow-up once we could see user sentiment and whether we could convert them. On top of that came legacy journal workflows we couldn't break, plus GDPR and consent requirements. So we cut a lot of good features our competitors had and our users had asked for, among them speaker diarization, custom templates, confidence highlighting, and patient-history context. We shipped embedded note generation with editable SOAP summaries first.</p>
       <p>I designed it as both an embedded workflow inside the rest of our patient management system and a standalone version of the same engine, so the assistant could be sold on its own and grow into later features without rework.</p>
 
     </section>
@@ -169,7 +168,7 @@
         </div>
         <div>
           <dt>A page of its own, then back into the calendar</dt>
-          <dd>A session is more than a journal entry - transcript, practitioner notes, appointment context, and several possible outputs - which is more than a journal editor can hold, so it got its own page. The follow-up moved that workspace into the calendar, where practitioners already spend their day, so nobody has to navigate to it.</dd>
+          <dd>A session is more than a journal entry. It holds the transcript, the practitioner's own notes, appointment context, and several possible outputs, which is more than a journal editor can hold, so it got its own page. The follow-up moved that workspace into the calendar, where practitioners already spend their day, so nobody has to navigate to it.</dd>
         </div>
         <div>
           <dt>SOAP first</dt>
@@ -192,7 +191,7 @@
     <!-- REFLECTION -->
     <section class="case-panel" id="reflection" data-nav="REFLECTION">
       <h2 class="case-h">REFLECTION</h2>
-      <p>The need was real, and shipping fast proved it. But the first version was rushed and very limited: we launched before proper validation, and early feedback called out weak AI output and too many clicks to start a session - exactly what deeper research would have caught. The lesson I carry forward is that an MVP still has to be genuinely viable, not an unfinished product. And when the first version is simple, it is on us to manage expectations and show that improvements are coming.</p>
+      <p>The need was real, and shipping fast proved it. But the first version was rushed and very limited: we launched before proper validation, and early feedback called out weak AI output and too many clicks to start a session, exactly what deeper research would have caught. The lesson I carry forward is that an MVP still has to be genuinely viable, not an unfinished product. And when the first version is simple, it is on us to manage expectations and show that improvements are coming.</p>
       <p>Since then the assistant has outgrown its MVP: a standalone experience, dictation, an AI co-pilot for journaling, broader templates, handwritten note digitization, and more markets. Custom templates and deeper contextual assistance are next, currently paused for other priorities but expected to resume.</p>
     </section>
 

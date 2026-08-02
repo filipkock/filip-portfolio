@@ -41,6 +41,17 @@
       y = ev.clientY;
       place();
       if (!shown) { shown = true; dot.classList.add('is-live'); }
+      var near = ev.target.closest ? ev.target.closest('[data-cursor]') : null;
+      // an element can name what it does; the dot becomes that word
+      if (near) {
+        var text = near.getAttribute('data-cursor');
+        if (dot.textContent !== text) dot.textContent = text;
+        dot.classList.add('has-label');
+        dot.classList.remove('is-link');
+        return;
+      }
+      if (dot.textContent) dot.textContent = '';
+      dot.classList.remove('has-label');
       dot.classList.toggle('is-link', !!(ev.target.closest && ev.target.closest(HIT)));
     }, { passive: true });
 
@@ -208,8 +219,14 @@
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'sound-toggle';
-    // icon only: three bars that light and move when sound is on
-    btn.innerHTML = '<span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>';
+    // icon only: a speaker, waves when on, crossed out when off
+    btn.innerHTML =
+      '<svg class="sound-icon" viewBox="0 0 20 16" width="18" height="15" aria-hidden="true" focusable="false">' +
+      '<path class="si-body" d="M2 6h3.2L9.5 2.6v10.8L5.2 10H2z"/>' +
+      '<path class="si-wave si-wave-1" d="M12.4 6.2a3.4 3.4 0 0 1 0 3.6"/>' +
+      '<path class="si-wave si-wave-2" d="M14.7 4a6.4 6.4 0 0 1 0 8"/>' +
+      '<path class="si-mute" d="M12.6 6.2 16.4 9.8M16.4 6.2 12.6 9.8"/>' +
+      '</svg>';
     slot.appendChild(btn);
 
     function paint() {
