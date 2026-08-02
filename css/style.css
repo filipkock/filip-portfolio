@@ -1607,6 +1607,69 @@ body.has-channel .case-index.is-placed {
   background: var(--panel);
 }
 
+/* the hero: two screens floating in a shallow 3D space, grabbable.
+   Without JS it degrades to the same two images, flat and side by side. */
+.case-hero-3d .scene {
+  perspective: 1400px;
+  padding: clamp(var(--space-4), 5%, var(--space-6)) var(--space-4);
+  background: var(--panel);
+  border-block: var(--hair) solid var(--ink);
+  touch-action: pan-y; /* vertical scroll still belongs to the page */
+}
+
+html.js .case-hero-3d .scene {
+  cursor: grab;
+}
+
+html.js .case-hero-3d .scene.is-held {
+  cursor: grabbing;
+}
+
+.case-hero-3d .scene:focus-visible {
+  outline: var(--hair) solid var(--ink);
+  outline-offset: -1px;
+}
+
+.case-hero-3d .scene-stage {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(-40px, -3vw, 0px);
+  transform-style: preserve-3d;
+  /* js writes these; the defaults are the resting three-quarter view */
+  transform: rotateX(var(--rx, 4deg)) rotateY(var(--ry, -14deg));
+}
+
+.case-hero-3d img {
+  border: var(--hair) solid var(--ink);
+  background: var(--panel);
+}
+
+.case-hero-3d .scene-desktop {
+  width: min(78%, 760px);
+  transform: translateZ(0);
+}
+
+/* the phone sits in front of the desktop, so turning the scene parallaxes */
+.case-hero-3d .scene-phone {
+  width: clamp(78px, 13%, 132px);
+  margin-left: clamp(-56px, -4vw, -20px);
+  transform: translateZ(70px);
+}
+
+.scene-hint {
+  display: none;
+}
+
+html.js .scene-hint {
+  display: inline;
+  margin-right: var(--space-2);
+  padding: 2px var(--space-1);
+  border: var(--hair) solid var(--gray-2);
+  color: var(--gray-3);
+}
+
 /* two shots side by side: the wide one carries, the phone sits beside it */
 .case-figure--pair {
   display: grid;

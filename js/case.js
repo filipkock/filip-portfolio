@@ -141,9 +141,18 @@
     var C = columns(L);
     root.setProperty('--doc-x', Math.round(C.start * L.cw) + 'px');
     root.setProperty('--doc-w', Math.round(C.span * L.cw) + 'px');
-    // clear the chrome: a full lattice row when it is canvas-drawn cells,
-    // or just the thin flush row of the fallback layout
-    root.setProperty('--doc-top', (C.channel ? Math.round(L.ch) : 72) + 'px');
+    // clear the chrome: a full lattice row when it is canvas-drawn cells.
+    // The fallback row is measured, not assumed - anything added to it (the
+    // sound switch, a second line) would otherwise sit over the document.
+    var top = Math.round(L.ch);
+    if (!C.channel) {
+      var wm = overlays.wordmark, mn = overlays.menu;
+      var h = 0;
+      if (wm) h = Math.max(h, wm.getBoundingClientRect().height);
+      if (mn) h = Math.max(h, mn.getBoundingClientRect().height);
+      top = Math.ceil(h) + 12;
+    }
+    root.setProperty('--doc-top', top + 'px');
     root.setProperty('--lat-ch', Math.round(L.ch) + 'px');
     document.body.classList.toggle('has-channel', C.channel);
     return true;
@@ -172,6 +181,93 @@
     // paint the canvas cell at the same height, so the two stay one object
     try { sketch.setTileHeight('index', h); } catch (e) { /* no-op */ }
   }
+
+  /* ---- the hero: grab the screens and turn them ----------------------
+     A shallow 3D scene, not a model: drag (or arrow keys) rotates it, it
+     eases back toward rest when released, and it drifts very slightly on
+     its own until first touched, which is what advertises the affordance. */
+  (function heroScene() {
+    var scene = document.querySelector('[data-scene]');
+    var stage = document.querySelector('[data-stage]');
+    if (!scene || !stage) return;
+
+    var REST_X = 4, REST_Y = -14;   // the resting three-quarter view
+    var MAX_X = 22, MAX_Y = 38;     // never turn so far the screens read edge-on
+    var rx = REST_X, ry = REST_Y, held = false, touched = false, id = null;
+    var px = 0, py = 0, raf = 0;
+
+    function paint() {
+      stage.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+      stage.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+    }
+
+    function clamp2(v, m) { return v < -m ? -m : v > m ? m : v; }
+
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      if (held) return;
+      if (!touched && !reduced) {
+        // idle drift: slow, small, and it stops for good once you grab it
+        rx = REST_X + Math.sin(now / 2600) * 1.6;
+        ry = REST_Y + Math.sin(now / 1900) * 3.2;
+      } else {
+        rx += (REST_X - rx) * 0.06; // ease home
+        ry += (REST_Y - ry) * 0.06;
+      }
+      paint();
+    }
+
+    scene.addEventListener('pointerdown', function (ev) {
+      held = true;
+      touched = true;
+      id = ev.pointerId;
+      px = ev.clientX;
+      py = ev.clientY;
+      scene.classList.add('is-held');
+      scene.setPointerCapture(id);
+    });
+
+    scene.addEventListener('pointermove', function (ev) {
+      if (!held || ev.pointerId !== id) return;
+      ry = clamp2(ry + (ev.clientX - px) * 0.35, MAX_Y);
+      rx = clamp2(rx - (ev.clientY - py) * 0.25, MAX_X);
+      px = ev.clientX;
+      py = ev.clientY;
+      paint();
+    });
+
+    function release(ev) {
+      if (!held || (ev && ev.pointerId !== id)) return;
+      held = false;
+      scene.classList.remove('is-held');
+      if (id !== null && scene.hasPointerCapture && scene.hasPointerCapture(id)) {
+        scene.releasePointerCapture(id);
+      }
+      id = null;
+    }
+    scene.addEventListener('pointerup', release);
+    scene.addEventListener('pointercancel', release);
+
+    scene.addEventListener('keydown', function (ev) {
+      var step = 6;
+      if (ev.key === 'ArrowLeft') ry = clamp2(ry - step, MAX_Y);
+      else if (ev.key === 'ArrowRight') ry = clamp2(ry + step, MAX_Y);
+      else if (ev.key === 'ArrowUp') rx = clamp2(rx + step, MAX_X);
+      else if (ev.key === 'ArrowDown') rx = clamp2(rx - step, MAX_X);
+      else return;
+      ev.preventDefault();
+      touched = true;
+      paint();
+    });
+
+    paint();
+    if (reduced) return; // static under reduced motion, still draggable
+    raf = requestAnimationFrame(frame);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
+      else if (!raf) raf = requestAnimationFrame(frame);
+    });
+  })();
 
   /* ---- clips play only while on screen -------------------------------
      Four silent loops running at once is wasted work and a distraction;

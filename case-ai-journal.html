@@ -57,12 +57,17 @@
         <div><dt>PLATFORM</dt><dd>Web app</dd></div>
       </dl>
       <p class="case-lede">I helped launch the product's first AI initiative, the one meant to lead our AI growth, and led the research, design, and front-end development on it. What we built is an assistant that helps practitioners write their journal notes: it listens to the session and drafts the note inside the journal they already use.</p>
-      <figure class="case-figure">
-        <!-- IMAGE: hero - the AI assistant panel inside the journal (wide crop) -->
-        <div class="img-slot" data-slot="hero" style="--slot-ratio: 16 / 9">
-          <img src="assets/img/case-ai/hero.jpg" alt="The AI assistant panel inside the patient journal" decoding="async">
-          <span class="slot-label">IMAGE · HERO · ASSISTANT INSIDE THE JOURNAL</span>
+      <!-- the two screens float together and can be grabbed and spun
+           (js/case.js). Without JS they are simply two screenshots. -->
+      <figure class="case-figure case-hero-3d">
+        <div class="scene" data-scene tabindex="0" role="img"
+             aria-label="The AI Assistant on desktop and on a phone. Drag, or use the arrow keys, to turn them.">
+          <div class="scene-stage" data-stage>
+            <img class="scene-desktop" src="assets/img/case-ai/standalone.jpg" alt="" decoding="async">
+            <img class="scene-phone" src="assets/img/case-ai/phone.jpg" alt="" decoding="async">
+          </div>
         </div>
+        <figcaption><span class="scene-hint">Drag to turn</span> The assistant as a standalone page, and the same session on a phone.</figcaption>
       </figure>
     </section>
 
@@ -83,12 +88,12 @@
       <p>The insight followed from that: we already ran the complete patient management system - appointments, billing, and compliant storage of patient records - so we were the ones who could make this integrated and seamless instead of one more tool to stitch in.</p>
       <figure class="case-figure">
         <!-- IMAGE: discovery - workflow map, journey sketch, or Figma exploration -->
-        <div class="img-slot" data-slot="discovery" style="--slot-ratio: 1700 / 3144">
+        <div class="img-slot" data-slot="discovery" style="--slot-ratio: 1700 / 1977">
           <img src="assets/img/case-ai/flow-map.jpg" loading="lazy" decoding="async"
-               alt="Flow map of ten practitioner journeys, from starting a session in the calendar to sharing feedback">
+               alt="Flow map of the practitioner journeys: from the calendar, from the AI Scribe page, dictation, regenerating an entry, more entries from one transcription, and navigating away mid-recording">
           <span class="slot-label">IMAGE</span>
         </div>
-        <figcaption>Ten journeys mapped end to end: what the practitioner does, what the system does, and every decision between.</figcaption>
+        <figcaption>Every journey mapped end to end: what the practitioner does, what the system does, and each decision between.</figcaption>
       </figure>
     </section>
 
@@ -98,40 +103,16 @@
       <p>We wanted to move fast, so we set a hard MVP deadline with an instant follow-up once we could see user sentiment and whether we could convert them. On top of that came legacy journal workflows we couldn't break, plus GDPR and consent requirements. So we cut a lot of good features our competitors had and our users had asked for - speaker diarization, custom templates, confidence highlighting, patient-history context - and shipped embedded note generation with editable SOAP summaries first.</p>
       <p>I designed it as both an embedded workflow inside the rest of our patient management system and a standalone version of the same engine, so the assistant could be sold on its own and grow into later features without rework.</p>
 
-      <figure class="case-figure case-figure--pair">
-        <div class="img-slot" data-slot="standalone" style="--slot-ratio: 2000 / 1250">
-          <img src="assets/img/case-ai/standalone.jpg" loading="lazy" decoding="async"
-               alt="The standalone AI Assistant page: session list beside a session's transcription and journal entries">
-          <span class="slot-label">IMAGE</span>
-        </div>
-        <div class="img-slot img-slot--phone" data-slot="phone" style="--slot-ratio: 590 / 1278">
-          <img src="assets/img/case-ai/phone.jpg" loading="lazy" decoding="async"
-               alt="The same session on a phone, with transcription, journal entry and documents">
-          <span class="slot-label">IMAGE</span>
-        </div>
-        <figcaption>The same engine as a standalone page, and the same session on a phone.</figcaption>
-      </figure>
     </section>
 
     <!-- THE SOLUTION / USER JOURNEY -->
     <section class="case-panel" id="flow" data-nav="THE FLOW">
       <h2 class="case-h">THE FLOW</h2>
 
-      <figure class="case-figure case-figure--video">
-        <!-- VIDEO: full workflow walkthrough - calendar -> record -> transcript -> SOAP draft -> save -->
-        <div class="img-slot" data-slot="walkthrough" style="--slot-ratio: 1716 / 947">
-          <video src="assets/video/case-ai/walkthrough.mp4"
-                 poster="assets/img/case-ai/walkthrough-poster.jpg"
-                 controls preload="none" playsinline
-                 aria-label="Full walkthrough: calendar to a locked journal entry"></video>
-          <span class="slot-label">VIDEO</span>
-        </div>
-        <figcaption>The whole loop, start to saved note.</figcaption>
-      </figure>
 
       <div class="case-step">
         <h3><span class="idx">01</span> START WHERE THE DAY STARTS</h3>
-        <p>The practitioner opens the appointment in the calendar and starts a session inside our product. No separate app, no copy-pasting, no context switching.</p>
+        <p>From an appointment in the calendar the practitioner is one step from the AI Assistant, or they can start a session on the AI page themselves. No separate app, no copy-pasting, no context switching.</p>
         <!-- IMAGE: starting a transcription session from the calendar/appointment -->
         <div class="img-slot" data-slot="step-1" style="--slot-ratio: 1600 / 883">
           <video src="assets/video/case-ai/clip-1.mp4" poster="assets/img/case-ai/clip-1-poster.jpg" muted loop playsinline preload="none"
