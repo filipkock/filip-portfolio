@@ -16,6 +16,9 @@
   --gray-1: #e4e4e4;
   --gray-2: #9c9c9c;
   --gray-3: #5c5c5c; /* darkest gray allowed for text: >= 4.5:1 on paper */
+  /* the one non-monochrome mark on the site: the pointer. A Nothing-ish
+     signal red, used for the cursor and the sound state, nothing else. */
+  --accent: #d71921;
 
   --hair: 1px;
   --space-1: 0.25rem;
@@ -1658,6 +1661,105 @@ html.js body:not(.page-index) .head-strip {
 @media (prefers-reduced-motion: no-preference) {
   @view-transition {
     navigation: auto;
+  }
+}
+
+/* 6h. pointer + sound (js/interactions.js) ------------------------------- */
+
+/* the red dot replaces the arrow; the native cursor only comes back where
+   text is selected, so reading and copying still feel normal */
+html.has-dot,
+html.has-dot a,
+html.has-dot button,
+html.has-dot canvas {
+  cursor: none;
+}
+
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: width 120ms ease, height 120ms ease, opacity 120ms linear;
+  will-change: transform;
+}
+
+.cursor-dot.is-live {
+  opacity: 1;
+}
+
+/* over anything clickable the dot opens into a ring: the site's polarity
+   trick, in the one accent colour */
+.cursor-dot.is-link {
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: 2px solid var(--accent);
+}
+
+.cursor-dot.is-down {
+  width: 10px;
+  height: 10px;
+}
+
+.cursor-dot.is-link.is-down {
+  width: 22px;
+  height: 22px;
+}
+
+/* the sound switch: same corner on every page (inside the wordmark cell) */
+.sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: var(--hair) solid var(--ink);
+  background: var(--panel);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--gray-3);
+  pointer-events: auto;
+}
+
+.sound-glyph {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: var(--hair) solid var(--gray-3);
+}
+
+.sound-toggle:hover {
+  color: var(--ink);
+}
+
+.sound-toggle:hover .sound-glyph {
+  border-color: var(--ink);
+}
+
+/* on: the dot fills with the accent and quietly pulses, so the state is
+   readable without a word of explanation */
+.sound-toggle.is-on {
+  color: var(--ink);
+}
+
+.sound-toggle.is-on .sound-glyph {
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: sound-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes sound-pulse {
+  50% {
+    opacity: 0.35;
   }
 }
 
