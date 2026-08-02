@@ -1595,13 +1595,40 @@ body.has-channel .case-index.is-placed {
   border-inline-width: 0;
 }
 
+/* screenshots and screen recordings are shown whole: cropping a UI to
+   fill a box loses the very thing the shot is there to show */
 .img-slot img,
 .img-slot video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--panel);
+}
+
+/* two shots side by side: the wide one carries, the phone sits beside it */
+.case-figure--pair {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--hair);
+  background: var(--ink);
+  border-block: var(--hair) solid var(--ink);
+}
+
+.case-figure--pair .img-slot {
+  border: 0;
+}
+
+.case-figure--pair figcaption {
+  grid-column: 1 / -1;
+  background: var(--panel);
+  padding-block: var(--space-2);
+}
+
+.img-slot--phone {
+  width: clamp(120px, 20vw, 180px);
 }
 
 .slot-label {
@@ -1792,6 +1819,13 @@ html.has-dot canvas {
 @media (max-width: 1239px) {
   .case-doc {
     padding-bottom: calc(var(--space-6) + 52px);
+  }
+}
+
+@media (max-width: 700px) {
+  .case-figure--pair {
+    grid-template-columns: 1fr;
+    justify-items: center;
   }
 }
 

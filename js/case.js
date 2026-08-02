@@ -173,22 +173,42 @@
     try { sketch.setTileHeight('index', h); } catch (e) { /* no-op */ }
   }
 
+  /* ---- clips play only while on screen -------------------------------
+     Four silent loops running at once is wasted work and a distraction;
+     each one starts when it scrolls into view and pauses when it leaves.
+     Under reduced motion they stay paused and keep their poster.        */
+  (function inViewClips() {
+    var clips = [].slice.call(document.querySelectorAll('video[data-autoplay]'));
+    if (!clips.length) return;
+    if (reduced || typeof IntersectionObserver !== 'function') {
+      clips.forEach(function (v) { v.setAttribute('controls', ''); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var v = e.target;
+        if (e.isIntersecting) {
+          if (v.preload === 'none') v.preload = 'auto';
+          var p = v.play();
+          if (p && p.catch) p.catch(function () { v.setAttribute('controls', ''); });
+        } else if (!v.paused) {
+          v.pause();
+        }
+      });
+    }, { threshold: 0.35 });
+    clips.forEach(function (v) { io.observe(v); });
+  })();
+
   /* ---- media slots: real files when present, placeholder when not ----- */
   document.querySelectorAll('.img-slot').forEach(function (slot) {
     var media = slot.querySelector('img, video');
-    // placeholder is the default: a lazy image that never enters the
-    // viewport fires neither load nor error, and an empty box would be
-    // worse than the labelled checker
-    slot.classList.add('is-empty');
-    if (!media) return;
-    function filled() { slot.classList.remove('is-empty'); }
-    if (media.tagName === 'VIDEO') {
-      media.addEventListener('loadedmetadata', filled);
-      if (media.readyState >= 1) filled();
-    } else {
-      media.addEventListener('load', filled);
-      if (media.complete && media.naturalWidth) filled();
-    }
+    // only a real failure falls back to the labelled checker: a lazy image
+    // or a preload="none" clip simply has not fetched yet, which is not the
+    // same as missing (the clip shows its poster meanwhile)
+    if (!media) { slot.classList.add('is-empty'); return; }
+    function empty() { slot.classList.add('is-empty'); }
+    media.addEventListener('error', empty, true);
+    if (media.tagName === 'IMG' && media.complete && !media.naturalWidth) empty();
   });
 
   /* ---- section index: scroll-spy ------------------------------------ */

@@ -60,7 +60,7 @@
       <figure class="case-figure">
         <!-- IMAGE: hero - the AI assistant panel inside the journal (wide crop) -->
         <div class="img-slot" data-slot="hero" style="--slot-ratio: 16 / 9">
-          <img src="assets/img/case-ai/ai-scribe-main-page.png" alt="The AI assistant panel inside the patient journal" loading="lazy" decoding="async">
+          <img src="assets/img/case-ai/hero.jpg" alt="The AI assistant panel inside the patient journal" decoding="async">
           <span class="slot-label">IMAGE · HERO · ASSISTANT INSIDE THE JOURNAL</span>
         </div>
       </figure>
@@ -83,11 +83,12 @@
       <p>The insight followed from that: we already ran the complete patient management system - appointments, billing, and compliant storage of patient records - so we were the ones who could make this integrated and seamless instead of one more tool to stitch in.</p>
       <figure class="case-figure">
         <!-- IMAGE: discovery - workflow map, journey sketch, or Figma exploration -->
-        <div class="img-slot" data-slot="discovery" style="--slot-ratio: 3 / 2">
-          <img src="assets/img/case-ai/discovery.jpg" alt="Workflow map from the discovery phase" loading="lazy" decoding="async">
-          <span class="slot-label">IMAGE · WORKFLOW MAP / EXPLORATION</span>
+        <div class="img-slot" data-slot="discovery" style="--slot-ratio: 1700 / 3144">
+          <img src="assets/img/case-ai/flow-map.jpg" loading="lazy" decoding="async"
+               alt="Flow map of ten practitioner journeys, from starting a session in the calendar to sharing feedback">
+          <span class="slot-label">IMAGE</span>
         </div>
-        <figcaption>Mapping where documentation actually happens in a practitioner's day.</figcaption>
+        <figcaption>Ten journeys mapped end to end: what the practitioner does, what the system does, and every decision between.</figcaption>
       </figure>
     </section>
 
@@ -96,6 +97,20 @@
       <h2 class="case-h">THE APPROACH</h2>
       <p>We wanted to move fast, so we set a hard MVP deadline with an instant follow-up once we could see user sentiment and whether we could convert them. On top of that came legacy journal workflows we couldn't break, plus GDPR and consent requirements. So we cut a lot of good features our competitors had and our users had asked for - speaker diarization, custom templates, confidence highlighting, patient-history context - and shipped embedded note generation with editable SOAP summaries first.</p>
       <p>I designed it as both an embedded workflow inside the rest of our patient management system and a standalone version of the same engine, so the assistant could be sold on its own and grow into later features without rework.</p>
+
+      <figure class="case-figure case-figure--pair">
+        <div class="img-slot" data-slot="standalone" style="--slot-ratio: 2000 / 1250">
+          <img src="assets/img/case-ai/standalone.jpg" loading="lazy" decoding="async"
+               alt="The standalone AI Assistant page: session list beside a session's transcription and journal entries">
+          <span class="slot-label">IMAGE</span>
+        </div>
+        <div class="img-slot img-slot--phone" data-slot="phone" style="--slot-ratio: 590 / 1278">
+          <img src="assets/img/case-ai/phone.jpg" loading="lazy" decoding="async"
+               alt="The same session on a phone, with transcription, journal entry and documents">
+          <span class="slot-label">IMAGE</span>
+        </div>
+        <figcaption>The same engine as a standalone page, and the same session on a phone.</figcaption>
+      </figure>
     </section>
 
     <!-- THE SOLUTION / USER JOURNEY -->
@@ -104,10 +119,12 @@
 
       <figure class="case-figure case-figure--video">
         <!-- VIDEO: full workflow walkthrough - calendar -> record -> transcript -> SOAP draft -> save -->
-        <div class="img-slot" data-slot="walkthrough" style="--slot-ratio: 16 / 9">
-          <video src="assets/video/case-ai/walkthrough.mp4" controls preload="metadata" playsinline
-                 poster="assets/img/case-ai/walkthrough-poster.jpg"></video>
-          <span class="slot-label">VIDEO · FULL WALKTHROUGH · CALENDAR → RECORD → DRAFT → SAVE</span>
+        <div class="img-slot" data-slot="walkthrough" style="--slot-ratio: 1716 / 947">
+          <video src="assets/video/case-ai/walkthrough.mp4"
+                 poster="assets/img/case-ai/walkthrough-poster.jpg"
+                 controls preload="none" playsinline
+                 aria-label="Full walkthrough: calendar to a locked journal entry"></video>
+          <span class="slot-label">VIDEO</span>
         </div>
         <figcaption>The whole loop, start to saved note.</figcaption>
       </figure>
@@ -116,9 +133,10 @@
         <h3><span class="idx">01</span> START WHERE THE DAY STARTS</h3>
         <p>The practitioner opens the appointment in the calendar and starts a session inside our product. No separate app, no copy-pasting, no context switching.</p>
         <!-- IMAGE: starting a transcription session from the calendar/appointment -->
-        <div class="img-slot" data-slot="step-1" style="--slot-ratio: 16 / 10">
-          <img src="assets/img/case-ai/step-1.jpg" alt="Starting a transcription session from the calendar" loading="lazy" decoding="async">
-          <span class="slot-label">IMAGE · START SESSION FROM CALENDAR</span>
+        <div class="img-slot" data-slot="step-1" style="--slot-ratio: 1600 / 883">
+          <video src="assets/video/case-ai/clip-1.mp4" poster="assets/img/case-ai/clip-1-poster.jpg" muted loop playsinline preload="none"
+                 data-autoplay aria-label="Creating a session: client, appointment, language and microphone"></video>
+          <span class="slot-label">VIDEO</span>
         </div>
       </div>
 
@@ -126,9 +144,10 @@
         <h3><span class="idx">02</span> TRUST THROUGH VISIBILITY</h3>
         <p>While the session runs, the UI shows exactly what is happening: recording state, transcription progress, and clear controls to pause or stop. Nothing happens silently to patient audio.</p>
         <!-- IMAGE: recording + transcription feedback states -->
-        <div class="img-slot" data-slot="step-2" style="--slot-ratio: 16 / 10">
-          <img src="assets/img/case-ai/step-2.jpg" alt="Recording and transcription progress states" loading="lazy" decoding="async">
-          <span class="slot-label">IMAGE · RECORDING + TRANSCRIPTION STATES</span>
+        <div class="img-slot" data-slot="step-2" style="--slot-ratio: 1600 / 883">
+          <video src="assets/video/case-ai/clip-2.mp4" poster="assets/img/case-ai/clip-2-poster.jpg" muted loop playsinline preload="none"
+                 data-autoplay aria-label="A session recording live, with the practitioner typing their own notes"></video>
+          <span class="slot-label">VIDEO</span>
         </div>
       </div>
 
@@ -136,9 +155,10 @@
         <h3><span class="idx">03</span> A DRAFT, NOT A VERDICT</h3>
         <p>When the session ends, the assistant drafts a structured SOAP note. It arrives as an editable draft the practitioner reviews, corrects, and approves. The clinician signs the note, not the model.</p>
         <!-- IMAGE: generated SOAP note in review/edit mode -->
-        <div class="img-slot" data-slot="step-3" style="--slot-ratio: 16 / 10">
-          <img src="assets/img/case-ai/step-3.jpg" alt="The generated SOAP note in review and edit mode" loading="lazy" decoding="async">
-          <span class="slot-label">IMAGE · SOAP DRAFT IN REVIEW / EDIT MODE</span>
+        <div class="img-slot" data-slot="step-3" style="--slot-ratio: 1600 / 883">
+          <video src="assets/video/case-ai/clip-3.mp4" poster="assets/img/case-ai/clip-3-poster.jpg" muted loop playsinline preload="none"
+                 data-autoplay aria-label="Choosing a template and generating the journal draft from the transcript"></video>
+          <span class="slot-label">VIDEO</span>
         </div>
       </div>
 
@@ -146,9 +166,10 @@
         <h3><span class="idx">04</span> ONE SESSION, MANY ENTRIES</h3>
         <p>The transcript stays available, so the same session can produce several journal entries without re-dictating anything. It is also what let us expand after the MVP to other document types, like an epicrisis: the summary of a completed treatment course, written for whoever referred the patient.</p>
         <!-- IMAGE: creating a second document from the same transcript -->
-        <div class="img-slot" data-slot="step-4" style="--slot-ratio: 16 / 10">
-          <img src="assets/img/case-ai/step-4.jpg" alt="Creating a second document from the same transcript" loading="lazy" decoding="async">
-          <span class="slot-label">IMAGE · SECOND DOCUMENT FROM THE SAME TRANSCRIPT</span>
+        <div class="img-slot" data-slot="step-4" style="--slot-ratio: 1600 / 883">
+          <video src="assets/video/case-ai/clip-4.mp4" poster="assets/img/case-ai/clip-4-poster.jpg" muted loop playsinline preload="none"
+                 data-autoplay aria-label="Saving and locking the entry, then adding another from the same session"></video>
+          <span class="slot-label">VIDEO</span>
         </div>
       </div>
     </section>
@@ -185,13 +206,6 @@
         <li><strong>500+ paying customers</strong> across Norway, Finland, and Denmark, validating the paid add-on model.</li>
         <li><strong>92.9% positive sentiment</strong> toward AI in journaling in the Norway pilot survey.</li>
       </ul>
-      <figure class="case-figure">
-        <!-- IMAGE: adoption graph - notes per day over time (optional) -->
-        <div class="img-slot" data-slot="adoption" style="--slot-ratio: 2 / 1">
-          <img src="assets/img/case-ai/adoption.jpg" alt="AI-generated notes per day over time" loading="lazy" decoding="async">
-          <span class="slot-label">IMAGE · ADOPTION OVER TIME (OPTIONAL)</span>
-        </div>
-      </figure>
     </section>
 
     <!-- REFLECTION -->
