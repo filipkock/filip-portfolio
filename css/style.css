@@ -1713,17 +1713,27 @@ html.has-dot canvas {
   height: 22px;
 }
 
-/* the sound switch: an icon, nothing else. Same corner on every page
-   (inside the wordmark cell), with a hit area larger than the mark. */
+/* the sound switch: an icon, nothing else, pinned to the bottom-left of
+   the wordmark cell. A hairline box marks it as a control; the hit area
+   is larger than the mark. */
 .sound-toggle {
   display: inline-flex;
   align-items: flex-end;
   align-self: flex-start;
-  margin: var(--space-2) 0 0 calc(-1 * var(--space-2));
+  margin-top: auto; /* the cell is a column: this drops it to the floor */
   padding: var(--space-2);
-  background: none;
-  border: 0;
+  background: var(--panel);
+  border: var(--hair) solid var(--gray-2);
   pointer-events: auto;
+}
+
+.sound-toggle:hover,
+.sound-toggle:focus-visible {
+  border-color: var(--ink);
+}
+
+.sound-toggle.is-on {
+  border-color: var(--accent);
 }
 
 .sound-bars {
