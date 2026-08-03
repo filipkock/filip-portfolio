@@ -182,43 +182,33 @@
     try { sketch.setTileHeight('index', h); } catch (e) { /* no-op */ }
   }
 
-  /* ---- the hero: the product, marked up like a redline ----------------
-     Four marks sit on the screenshot in image coordinates. Point at one (or
-     tab to it) and the shot is ruled through that point while its line in
-     the key lights; point at a line in the key and the same thing happens
-     from the other end. Arrows walk the marks. The marks are an enhancement
-     only: without JS they are hidden and the key reads on its own.        */
+  /* ---- the hero: one screen at a time, desktop or phone ---------------
+     The switch swaps which frame is mounted; the band holds its height, so
+     nothing below it moves. The marks need no script of their own: the red
+     cursor dot reads their data-cursor, and CSS shows the pill to whoever
+     has no dot. Without JS the switch is hidden and both screens stack.  */
   (function heroShot() {
     var shot = document.querySelector('[data-shot]');
-    if (!shot) return;
-    var marks = [].slice.call(shot.querySelectorAll('.shot-mark'));
-    var keys = [].slice.call(document.querySelectorAll('.shot-key li'));
-    if (!marks.length) return;
+    var group = document.querySelector('.shot-switch');
+    if (!shot || !group) return;
+    var frames = [].slice.call(shot.querySelectorAll('.shot-frame'));
+    var buttons = [].slice.call(group.querySelectorAll('button'));
+    if (frames.length < 2 || !buttons.length) return;
 
-    function light(n) {
-      marks.forEach(function (m) { m.classList.toggle('is-on', m.dataset.mark === n); });
-      keys.forEach(function (k) { k.classList.toggle('is-on', k.dataset.key === n); });
+    function show(view) {
+      frames.forEach(function (f) { f.hidden = f.dataset.view !== view; });
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.view === view));
+      });
+      // the phone gets air around it; the desktop shot stays flush
+      shot.classList.toggle('is-phone', view === 'mobile');
     }
 
-    marks.forEach(function (mark, i) {
-      mark.addEventListener('pointerenter', function () { light(mark.dataset.mark); });
-      mark.addEventListener('pointerleave', function () { light(null); });
-      mark.addEventListener('focus', function () { light(mark.dataset.mark); });
-      mark.addEventListener('blur', function () { light(null); });
-      // the marks are one widget, so the arrows walk them like a toolbar
-      mark.addEventListener('keydown', function (ev) {
-        var step = (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') ? 1
-          : (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 0;
-        if (!step) return;
-        ev.preventDefault();
-        marks[(i + step + marks.length) % marks.length].focus();
-      });
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { show(b.dataset.view); });
     });
 
-    keys.forEach(function (key) {
-      key.addEventListener('pointerenter', function () { light(key.dataset.key); });
-      key.addEventListener('pointerleave', function () { light(null); });
-    });
+    show('desktop'); // authored with both mounted, so no-JS reads them both
   })();
 
   /* ---- clips play only while on screen -------------------------------

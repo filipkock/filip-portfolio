@@ -17,8 +17,10 @@
   --gray-2: #9c9c9c;
   --gray-3: #5c5c5c; /* darkest gray allowed for text: >= 4.5:1 on paper */
   /* the one non-monochrome mark on the site: the pointer. A Nothing-ish
-     signal red, used for the cursor and the sound state, nothing else. */
+     signal red, used for the cursor, the sound state, and the marks that
+     annotate a case study's screenshots. Nothing else. */
   --accent: #d71921;
+  --accent-wash: rgba(215, 25, 33, 0.14); /* --accent, laid over a screenshot */
 
   --hair: 1px;
   --space-1: 0.25rem;
@@ -1607,42 +1609,69 @@ body.has-channel .case-index.is-placed {
   background: var(--panel);
 }
 
-/* the hero: the product itself, annotated like a redline. The marks are
-   placed in image coordinates (--x / --y), so they hold their spot at every
-   width; pointing at one rules the shot through it and lights its line in
-   the key below. Without JS the marks are hidden and the key reads alone. */
+/* the hero: the product, one screen at a time. The band keeps its height
+   when you switch, so the page never jumps; the phone is centred in it.
+   Marks are placed in image coordinates (--x / --y) and hold their spot at
+   every width. On a fine pointer the red dot carries the note; keyboard and
+   touch get the same words as a pill. Without JS both screens stack. */
 .case-shot .shot {
   position: relative;
-  overflow: hidden; /* clips the registration rules to the shot */
-  line-height: 0; /* no baseline gap under the image */
+  display: grid;
+  /* the row is the band, never the image: a tall phone must fit, not stretch */
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
   background: var(--panel);
   border-block: var(--hair) solid var(--ink);
 }
 
-.case-shot .shot img {
+html:not(.js) .case-shot .shot {
+  display: block;
+  aspect-ratio: auto;
+}
+
+/* the frame shrink-wraps its image, so the marks sit in image coordinates */
+.shot-frame {
+  position: relative;
+  grid-area: 1 / 1;
+  line-height: 0;
+}
+
+.shot-frame[data-view="desktop"],
+.shot-frame[data-view="desktop"] img {
   width: 100%;
   height: auto;
 }
 
+/* the phone stands in the band at its own scale, framed like a screen. The
+   air around it is the band's padding, so the frame stays exactly the image
+   and the marks keep their coordinates. */
+html.js .shot.is-phone {
+  padding-block: var(--space-4);
+}
+
+.shot-frame--phone {
+  align-self: stretch;
+}
+
+.shot-frame--phone img {
+  width: auto;
+  height: 100%;
+  border: var(--hair) solid var(--ink);
+}
+
+/* the marks leave no trace on the shot: they are just the areas that have
+   something to say. Cross one and the pointer says it, over a faint red
+   wash that shows how far the note reaches. */
 .shot-mark {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  transform: translate(-50%, -50%);
-  border: var(--hair) solid var(--ink);
-  background: var(--paper);
-  font-size: var(--text-xs);
-  line-height: 1;
-  letter-spacing: 0.04em;
-}
-
-html:not(.js) .shot-mark {
-  display: none; /* a mark that cannot answer is just a dot on a screenshot */
+  width: var(--w);
+  height: var(--h);
+  border: 0;
+  background: none;
 }
 
 .shot-mark:focus-visible {
@@ -1650,73 +1679,66 @@ html:not(.js) .shot-mark {
 }
 
 .shot-mark:hover,
-.shot-mark:focus-visible,
-.shot-mark.is-on {
-  background: var(--ink);
-  color: var(--paper);
+.shot-mark:focus-visible {
+  background: var(--accent-wash);
 }
 
-/* registration rules: a plotter's crosshair, drawn only while a mark is live */
-.shot-mark::before,
-.shot-mark::after {
-  content: "";
+/* the dot's stand-in, for pointers that have no dot: same pill, same red */
+.shot-tip {
   position: absolute;
   left: 50%;
-  top: 50%;
-  z-index: -1;
-  background: var(--ink);
+  bottom: calc(100% + 7px);
+  transform: translateX(-50%);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  line-height: 1;
+  white-space: nowrap;
   opacity: 0;
-  transform: translate(-50%, -50%);
-  transition: opacity 120ms steps(2, end);
   pointer-events: none;
 }
 
-.shot-mark::before {
-  width: 300vw;
-  height: var(--hair);
+/* marks near the right edge hang their pill inward, or it would be clipped */
+.shot-mark--end .shot-tip {
+  left: auto;
+  right: -2px;
+  transform: none;
 }
 
-.shot-mark::after {
-  width: var(--hair);
-  height: 300vh;
-}
-
-.shot-mark:hover::before,
-.shot-mark:hover::after,
-.shot-mark:focus-visible::before,
-.shot-mark:focus-visible::after,
-.shot-mark.is-on::before,
-.shot-mark.is-on::after {
+html:not(.has-dot) .shot-mark:hover .shot-tip,
+.shot-mark:focus-visible .shot-tip {
   opacity: 1;
 }
 
-/* the key: one hairline cell per mark, lit from either end */
-.shot-key {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+/* the switch sits on the band's top rule, aligned with the text column */
+.shot-switch {
+  display: none; /* switching screens is a JS feature, like the tag row */
+}
+
+html.js .shot-switch {
+  display: flex;
+  width: max-content;
+  margin-left: var(--pad-x);
   gap: var(--hair);
   background: var(--ink);
-  border-bottom: var(--hair) solid var(--ink);
+  border: var(--hair) solid var(--ink);
+  border-bottom-width: 0;
 }
 
-.shot-key li {
-  background: var(--panel);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-s);
-  line-height: 1.5;
+.shot-switch button {
+  padding: var(--space-1) var(--space-3);
+  background: var(--paper);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
 }
 
-.shot-key li.is-on {
+.shot-switch button:hover,
+.shot-switch button[aria-pressed="true"] {
   background: var(--ink);
   color: var(--paper);
-}
-
-.shot-key .idx {
-  margin-right: var(--space-2);
-}
-
-.shot-key li.is-on .idx {
-  color: var(--gray-2);
 }
 
 /* two shots side by side: the wide one carries, the phone sits beside it */
@@ -2234,9 +2256,24 @@ html.has-dot canvas {
   }
 
   .case-facts,
-  .case-metrics,
-  .shot-key {
+  .case-metrics {
     grid-template-columns: 1fr;
+  }
+
+  /* on a phone a fixed band would shrink the phone shot to a stamp: let each
+     view take the height it needs instead */
+  .case-shot .shot {
+    aspect-ratio: auto;
+    grid-template-rows: auto;
+  }
+
+  html.js .shot.is-phone {
+    padding-block: var(--space-3);
+  }
+
+  .shot-frame--phone img {
+    width: min(62vw, 240px);
+    height: auto;
   }
 
   .case-sub {
