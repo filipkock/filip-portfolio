@@ -1607,55 +1607,116 @@ body.has-channel .case-index.is-placed {
   background: var(--panel);
 }
 
-/* the hero: two screens floating in a shallow 3D space, grabbable.
-   Without JS it degrades to the same two images, flat and side by side. */
-.case-hero-3d .scene {
-  perspective: 1400px;
-  padding: clamp(var(--space-4), 5%, var(--space-6)) var(--space-4);
+/* the hero: the product itself, annotated like a redline. The marks are
+   placed in image coordinates (--x / --y), so they hold their spot at every
+   width; pointing at one rules the shot through it and lights its line in
+   the key below. Without JS the marks are hidden and the key reads alone. */
+.case-shot .shot {
+  position: relative;
+  overflow: hidden; /* clips the registration rules to the shot */
+  line-height: 0; /* no baseline gap under the image */
   background: var(--panel);
   border-block: var(--hair) solid var(--ink);
-  touch-action: pan-y; /* vertical scroll still belongs to the page */
 }
 
-html.js .case-hero-3d .scene {
-  cursor: grab;
+.case-shot .shot img {
+  width: 100%;
+  height: auto;
 }
 
-html.js .case-hero-3d .scene.is-held {
-  cursor: grabbing;
-}
-
-.case-hero-3d .scene:focus-visible {
-  outline: var(--hair) solid var(--ink);
-  outline-offset: -1px;
-}
-
-.case-hero-3d .scene-stage {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: clamp(-40px, -3vw, 0px);
-  transform-style: preserve-3d;
-  /* js writes these; the defaults are the resting three-quarter view */
-  transform: rotateX(var(--rx, 4deg)) rotateY(var(--ry, -14deg));
-}
-
-.case-hero-3d img {
+.shot-mark {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
   border: var(--hair) solid var(--ink);
+  background: var(--paper);
+  font-size: var(--text-xs);
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+html:not(.js) .shot-mark {
+  display: none; /* a mark that cannot answer is just a dot on a screenshot */
+}
+
+.shot-mark:focus-visible {
+  outline: none;
+}
+
+.shot-mark:hover,
+.shot-mark:focus-visible,
+.shot-mark.is-on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* registration rules: a plotter's crosshair, drawn only while a mark is live */
+.shot-mark::before,
+.shot-mark::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  background: var(--ink);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 120ms steps(2, end);
+  pointer-events: none;
+}
+
+.shot-mark::before {
+  width: 300vw;
+  height: var(--hair);
+}
+
+.shot-mark::after {
+  width: var(--hair);
+  height: 300vh;
+}
+
+.shot-mark:hover::before,
+.shot-mark:hover::after,
+.shot-mark:focus-visible::before,
+.shot-mark:focus-visible::after,
+.shot-mark.is-on::before,
+.shot-mark.is-on::after {
+  opacity: 1;
+}
+
+/* the key: one hairline cell per mark, lit from either end */
+.shot-key {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--hair);
+  background: var(--ink);
+  border-bottom: var(--hair) solid var(--ink);
+}
+
+.shot-key li {
   background: var(--panel);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-s);
+  line-height: 1.5;
 }
 
-.case-hero-3d .scene-desktop {
-  width: min(88%, 940px);
-  transform: translateZ(0);
+.shot-key li.is-on {
+  background: var(--ink);
+  color: var(--paper);
 }
 
-/* the phone sits in front of the desktop, so turning the scene parallaxes */
-.case-hero-3d .scene-phone {
-  width: clamp(92px, 15%, 164px);
-  margin-left: clamp(-64px, -4vw, -24px);
-  transform: translateZ(80px);
+.shot-key .idx {
+  margin-right: var(--space-2);
+}
+
+.shot-key li.is-on .idx {
+  color: var(--gray-2);
 }
 
 /* two shots side by side: the wide one carries, the phone sits beside it */
@@ -1802,12 +1863,6 @@ html.has-dot canvas {
   line-height: 1;
 }
 
-/* the label replaces the grab cursor entirely */
-html.has-dot .case-hero-3d .scene,
-html.has-dot .case-hero-3d .scene.is-held {
-  cursor: none;
-}
-
 .cursor-dot.is-link.is-down {
   width: 22px;
   height: 22px;
@@ -1891,6 +1946,223 @@ html.has-dot .case-hero-3d .scene.is-held {
   }
 }
 
+/* 6i. process case study: diagrams drawn in the page's own language ------
+   All four blocks are CSS only, so they stay crisp at any size and need no
+   asset. They exist to make a process scannable without reading every word. */
+
+/* the reframing, as polarity: the old question struck out on paper, the
+   new one set in ink */
+.shift {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--hair);
+  background: var(--ink);
+  border: var(--hair) solid var(--ink);
+}
+
+.shift p {
+  margin: 0;
+  background: var(--panel);
+  padding: var(--space-3);
+  font-size: var(--text-m);
+}
+
+.shift .label {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--gray-3);
+}
+
+.shift-from {
+  color: var(--gray-3);
+  text-decoration: line-through;
+  text-decoration-thickness: var(--hair);
+}
+
+.shift-from .label {
+  text-decoration: none;
+}
+
+.shift-to {
+  background: var(--ink) !important;
+  color: var(--paper);
+}
+
+.shift-to .label {
+  color: var(--gray-2);
+}
+
+/* the two week rhythm: a lattice of days, filled where the work happens */
+.cadence {
+  display: grid;
+  grid-template-columns: 5.5rem repeat(5, 1fr);
+  gap: var(--hair);
+  background: var(--ink);
+  border: var(--hair) solid var(--ink);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+}
+
+.cadence-head,
+.cadence-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: var(--hair);
+}
+
+.cadence-head > span,
+.cadence-week,
+.cadence-cell {
+  background: var(--panel);
+  padding: var(--space-2);
+  min-height: 2.6rem;
+}
+
+.cadence-head > span {
+  color: var(--gray-3);
+  min-height: 0;
+  padding-block: var(--space-1);
+}
+
+.cadence-week {
+  display: flex;
+  align-items: center;
+  letter-spacing: var(--track-wide);
+}
+
+.cadence-cell {
+  display: flex;
+  align-items: center;
+}
+
+.cadence-cell em {
+  font-style: normal;
+}
+
+/* sessions run: solid ink. Processing: the engine's own hatch, so the two
+   halves of the cycle read as different kinds of work */
+.cadence-cell.is-on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.cadence-cell.is-soft {
+  background:
+    repeating-linear-gradient(45deg, var(--gray-1) 0 2px, var(--panel) 2px 6px);
+}
+
+/* the loop: six cells and a bar that sends you back to the first */
+.loop {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--hair);
+  background: var(--ink);
+  border: var(--hair) solid var(--ink);
+}
+
+.loop-step {
+  background: var(--panel);
+  padding: var(--space-3);
+}
+
+.loop-step h3 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-s);
+}
+
+.loop-step p {
+  margin-top: var(--space-2);
+  font-size: var(--text-s);
+  color: var(--gray-3);
+  max-width: none;
+}
+
+.loop-return {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--ink);
+  color: var(--paper);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+}
+
+.loop-return::before {
+  content: "";
+  width: 1.5rem;
+  height: 0;
+  border-top: 2px solid var(--paper);
+}
+
+/* the four standing risks */
+.themes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--hair);
+  background: var(--ink);
+  border: var(--hair) solid var(--ink);
+}
+
+.themes li {
+  background: var(--panel);
+  padding: var(--space-3);
+  font-size: var(--text-s);
+}
+
+.themes .idx {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+}
+
+/* a worked example, and the one line only Filip can fill */
+.example {
+  border: var(--hair) solid var(--ink);
+  padding: var(--space-4);
+}
+
+.example .label {
+  color: var(--gray-3);
+}
+
+.example p {
+  margin-top: var(--space-3);
+}
+
+.example-todo {
+  border: var(--hair) dashed var(--gray-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--gray-3);
+}
+
+@media (max-width: 700px) {
+  .shift,
+  .loop,
+  .themes {
+    grid-template-columns: 1fr;
+  }
+
+  .cadence {
+    grid-template-columns: 4.5rem repeat(5, 1fr);
+    font-size: 0.5rem;
+  }
+
+  .cadence-cell em {
+    display: none; /* the prose carries the detail at this size */
+  }
+}
+
 /* 7. media + preferences + fallbacks (keep last) -------------------------- */
 @media (min-width: 901px) {
   .case-facts {
@@ -1962,7 +2234,8 @@ html.has-dot .case-hero-3d .scene.is-held {
   }
 
   .case-facts,
-  .case-metrics {
+  .case-metrics,
+  .shot-key {
     grid-template-columns: 1fr;
   }
 

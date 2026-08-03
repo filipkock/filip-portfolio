@@ -182,90 +182,42 @@
     try { sketch.setTileHeight('index', h); } catch (e) { /* no-op */ }
   }
 
-  /* ---- the hero: grab the screens and turn them ----------------------
-     A shallow 3D scene, not a model: drag (or arrow keys) rotates it, it
-     eases back toward rest when released, and it drifts very slightly on
-     its own until first touched, which is what advertises the affordance. */
-  (function heroScene() {
-    var scene = document.querySelector('[data-scene]');
-    var stage = document.querySelector('[data-stage]');
-    if (!scene || !stage) return;
+  /* ---- the hero: the product, marked up like a redline ----------------
+     Four marks sit on the screenshot in image coordinates. Point at one (or
+     tab to it) and the shot is ruled through that point while its line in
+     the key lights; point at a line in the key and the same thing happens
+     from the other end. Arrows walk the marks. The marks are an enhancement
+     only: without JS they are hidden and the key reads on its own.        */
+  (function heroShot() {
+    var shot = document.querySelector('[data-shot]');
+    if (!shot) return;
+    var marks = [].slice.call(shot.querySelectorAll('.shot-mark'));
+    var keys = [].slice.call(document.querySelectorAll('.shot-key li'));
+    if (!marks.length) return;
 
-    var REST_X = 4, REST_Y = -14;   // the resting three-quarter view
-    var MAX_X = 22, MAX_Y = 38;     // never turn so far the screens read edge-on
-    var rx = REST_X, ry = REST_Y, held = false, touched = false, id = null;
-    var px = 0, py = 0, raf = 0;
-
-    function paint() {
-      stage.style.setProperty('--rx', rx.toFixed(2) + 'deg');
-      stage.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+    function light(n) {
+      marks.forEach(function (m) { m.classList.toggle('is-on', m.dataset.mark === n); });
+      keys.forEach(function (k) { k.classList.toggle('is-on', k.dataset.key === n); });
     }
 
-    function clamp2(v, m) { return v < -m ? -m : v > m ? m : v; }
-
-    function frame(now) {
-      raf = requestAnimationFrame(frame);
-      if (held) return;
-      if (!touched && !reduced) {
-        // idle drift: slow, small, and it stops for good once you grab it
-        rx = REST_X + Math.sin(now / 2600) * 1.6;
-        ry = REST_Y + Math.sin(now / 1900) * 3.2;
-      } else {
-        rx += (REST_X - rx) * 0.06; // ease home
-        ry += (REST_Y - ry) * 0.06;
-      }
-      paint();
-    }
-
-    scene.addEventListener('pointerdown', function (ev) {
-      held = true;
-      touched = true;
-      id = ev.pointerId;
-      px = ev.clientX;
-      py = ev.clientY;
-      scene.classList.add('is-held');
-      scene.setPointerCapture(id);
+    marks.forEach(function (mark, i) {
+      mark.addEventListener('pointerenter', function () { light(mark.dataset.mark); });
+      mark.addEventListener('pointerleave', function () { light(null); });
+      mark.addEventListener('focus', function () { light(mark.dataset.mark); });
+      mark.addEventListener('blur', function () { light(null); });
+      // the marks are one widget, so the arrows walk them like a toolbar
+      mark.addEventListener('keydown', function (ev) {
+        var step = (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') ? 1
+          : (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 0;
+        if (!step) return;
+        ev.preventDefault();
+        marks[(i + step + marks.length) % marks.length].focus();
+      });
     });
 
-    scene.addEventListener('pointermove', function (ev) {
-      if (!held || ev.pointerId !== id) return;
-      ry = clamp2(ry + (ev.clientX - px) * 0.35, MAX_Y);
-      rx = clamp2(rx - (ev.clientY - py) * 0.25, MAX_X);
-      px = ev.clientX;
-      py = ev.clientY;
-      paint();
-    });
-
-    function release(ev) {
-      if (!held || (ev && ev.pointerId !== id)) return;
-      held = false;
-      scene.classList.remove('is-held');
-      if (id !== null && scene.hasPointerCapture && scene.hasPointerCapture(id)) {
-        scene.releasePointerCapture(id);
-      }
-      id = null;
-    }
-    scene.addEventListener('pointerup', release);
-    scene.addEventListener('pointercancel', release);
-
-    scene.addEventListener('keydown', function (ev) {
-      var step = 6;
-      if (ev.key === 'ArrowLeft') ry = clamp2(ry - step, MAX_Y);
-      else if (ev.key === 'ArrowRight') ry = clamp2(ry + step, MAX_Y);
-      else if (ev.key === 'ArrowUp') rx = clamp2(rx + step, MAX_X);
-      else if (ev.key === 'ArrowDown') rx = clamp2(rx - step, MAX_X);
-      else return;
-      ev.preventDefault();
-      touched = true;
-      paint();
-    });
-
-    paint();
-    if (reduced) return; // static under reduced motion, still draggable
-    raf = requestAnimationFrame(frame);
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
-      else if (!raf) raf = requestAnimationFrame(frame);
+    keys.forEach(function (key) {
+      key.addEventListener('pointerenter', function () { light(key.dataset.key); });
+      key.addEventListener('pointerleave', function () { light(null); });
     });
   })();
 

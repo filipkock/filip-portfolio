@@ -57,14 +57,56 @@
         <div><dt>PLATFORM</dt><dd>Web app</dd></div>
       </dl>
       <p class="case-lede">I helped launch the product's first AI initiative, the one meant to lead our AI growth, and led the research, design, and front-end development on it. What we built is an assistant that helps practitioners write their journal notes: it listens to the session and drafts the note inside the journal they already use.</p>
-      <!-- the two screens float together and can be grabbed and spun
-           (js/case.js). Without JS they are simply two screenshots. -->
-      <figure class="case-figure case-hero-3d">
-        <div class="scene" data-scene tabindex="0" role="img" data-cursor="GRAB TO TURN"
-             aria-label="The AI Assistant on desktop and on a phone. Drag, or use the arrow keys, to turn them.">
-          <div class="scene-stage" data-stage>
-            <img class="scene-desktop" src="assets/img/case-ai/standalone.jpg" alt="" decoding="async">
-            <img class="scene-phone" src="assets/img/case-ai/phone.jpg" alt="" decoding="async">
+      <!-- the hero is the product: one screen at a time, desktop or phone.
+           Small marks sit on the interface; on a fine pointer the red dot
+           becomes the note it carries (data-cursor), and for keyboard and
+           touch the same words appear as a pill beside the mark.
+           Without JS the switch goes and both screens simply stack. -->
+      <figure class="case-figure case-shot">
+        <div class="shot-switch" role="group" aria-label="Screen">
+          <button type="button" data-view="desktop" aria-pressed="true">DESKTOP</button>
+          <button type="button" data-view="mobile" aria-pressed="false">MOBILE</button>
+        </div>
+        <div class="shot" data-shot>
+          <div class="shot-frame" data-view="desktop">
+            <img src="assets/img/case-ai/standalone.jpg" decoding="async"
+                 alt="The assistant on desktop: a list of sessions, transcription and journal tabs, and a drafted note waiting to be reviewed.">
+            <button type="button" class="shot-mark" style="--x: 28.5%; --y: 14%"
+                    data-cursor="EVERY SESSION IN ONE LIST" aria-label="Every session in one list">
+              <span class="shot-tip" aria-hidden="true">EVERY SESSION IN ONE LIST</span>
+            </button>
+            <button type="button" class="shot-mark" style="--x: 47.6%; --y: 24%"
+                    data-cursor="TRANSCRIPT BESIDE THE NOTE" aria-label="The transcript sits beside the note">
+              <span class="shot-tip" aria-hidden="true">TRANSCRIPT BESIDE THE NOTE</span>
+            </button>
+            <button type="button" class="shot-mark" style="--x: 64%; --y: 31.5%"
+                    data-cursor="A DRAFT, NOT A FILED NOTE" aria-label="It arrives as a draft, not a filed note">
+              <span class="shot-tip" aria-hidden="true">A DRAFT, NOT A FILED NOTE</span>
+            </button>
+            <button type="button" class="shot-mark shot-mark--end" style="--x: 93%; --y: 14%"
+                    data-cursor="ONE SESSION, MANY DOCUMENTS" aria-label="One session, many documents">
+              <span class="shot-tip" aria-hidden="true">ONE SESSION, MANY DOCUMENTS</span>
+            </button>
+          </div>
+          <div class="shot-frame shot-frame--phone" data-view="mobile">
+            <img src="assets/img/case-ai/phone.jpg" decoding="async"
+                 alt="The same assistant on a phone: a session with transcription, journal entry, and documents.">
+            <button type="button" class="shot-mark shot-mark--end" style="--x: 71%; --y: 4.2%"
+                    data-cursor="START A SESSION ANYWHERE" aria-label="Start a session anywhere">
+              <span class="shot-tip" aria-hidden="true">START A SESSION ANYWHERE</span>
+            </button>
+            <button type="button" class="shot-mark shot-mark--end" style="--x: 71%; --y: 21%"
+                    data-cursor="GENERATE IT ON THE PHONE" aria-label="Generate the note on the phone">
+              <span class="shot-tip" aria-hidden="true">GENERATE IT ON THE PHONE</span>
+            </button>
+            <button type="button" class="shot-mark" style="--x: 50%; --y: 26%"
+                    data-cursor="THE SAME THREE VIEWS" aria-label="The same three views as on desktop">
+              <span class="shot-tip" aria-hidden="true">THE SAME THREE VIEWS</span>
+            </button>
+            <button type="button" class="shot-mark shot-mark--end" style="--x: 76%; --y: 34%"
+                    data-cursor="LOCKED ONCE SIGNED" aria-label="Locked once the clinician signs it">
+              <span class="shot-tip" aria-hidden="true">LOCKED ONCE SIGNED</span>
+            </button>
           </div>
         </div>
       </figure>

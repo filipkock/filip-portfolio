@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONTINUOUS USER RESEARCH · FILIP KOCKENDAL</title>
+  <meta name="description" content="Case study: a standing research loop with practitioners that turned a technical platform migration into a workflow readiness question, and fed roadmap and release decisions every two weeks.">
+  <meta name="theme-color" content="#fafafa">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    document.documentElement.className += ' js';
+    // arriving from a mold exit: start black, the engine retreats it.
+    // The timeout is the last-resort un-hide if scripts stall.
+    try {
+      if (sessionStorage.getItem('grid-mold') === '1') {
+        document.documentElement.className += ' arriving';
+        setTimeout(function () { document.documentElement.classList.remove('arriving'); }, 1500);
+      }
+    } catch (e) { /* private mode */ }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="js/grid-engine.js"></script>
+  <script defer src="js/case.js"></script>
+  <script defer src="js/interactions.js"></script>
+</head>
+<body class="page-case">
+  <!-- the living lattice sits behind the document; content scrolls over it -->
+  <div id="grid-host" class="case-bg" aria-hidden="true"></div>
+
+  <header class="case-cell" data-cell="wordmark">
+    <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
+    <p class="tagline label">P-02 · CASE STUDY</p>
+  </header>
+
+  <nav class="case-cell" data-cell="menu" aria-label="Primary">
+    <a href="work.html" aria-current="true">01 WORK</a>
+    <a href="art.html">02 ART</a>
+    <a href="about.html">03 ABOUT</a>
+  </nav>
+
+  <!-- section list built by js/case.js from [data-nav] panels -->
+  <nav class="case-cell case-index" data-cell="index" id="case-index" aria-label="On this page"></nav>
+
+  <main class="case-doc">
+
+    <!-- HERO -->
+    <section class="case-panel case-hero" id="hero" data-nav="INTRO">
+      <h1>CONTINUOUS USER RESEARCH</h1>
+      <p class="case-sub">The research loop that turned a technical migration into a workflow readiness question.</p>
+      <dl class="case-facts">
+        <div><dt>ROLE</dt><dd>Senior product designer, financial workflows lead</dd></div>
+        <div><dt>TEAM</dt><dd>Co-owned with Sandra, PM support from Ninon and Christian</dd></div>
+        <div><dt>CADENCE</dt><dd>A two week cycle, still running</dd></div>
+        <div><dt>CONTEXT</dt><dd>Unified Platform migration</dd></div>
+      </dl>
+      <p class="case-lede">Nordhealth was migrating therapy customers from legacy Desktop products to a newer web platform. The migration dashboard could tell us whether records moved. It could not tell us whether a practitioner could still run a full clinical day without losing speed, confidence, or context. So we built a standing research loop with two practitioners to surface workflow risk before it became a rollout blocker.</p>
+
+      <!-- the reframing, as the page's own polarity: struck out, then set -->
+      <div class="shift" aria-label="The question the loop changed">
+        <p class="shift-from"><span class="label">The old question</span> Did the data migrate?</p>
+        <p class="shift-to"><span class="label">The question we shipped on</span> Can practitioners still do their work?</p>
+      </div>
+    </section>
+
+    <!-- THE PROBLEM -->
+    <section class="case-panel" id="problem" data-nav="THE PROBLEM">
+      <h2 class="case-h">WHAT A DASHBOARD CANNOT SHOW</h2>
+      <p>A migration looks binary from the inside. Accounts and records either moved or they did not. From a treatment room it feels nothing like that. Appointments, documentation, patient context, invoicing, and follow-up all still have to happen between patients, at the same speed as yesterday.</p>
+      <p>That is where the risk hides. A practitioner can accept the idea of a new platform and still lose confidence the moment a familiar task takes longer, sits somewhere new, or uses a word they do not recognise. Small gaps compound into frustration, support tickets, and stalled adoption. Every one of those is a migration that slows down, or a customer who starts looking elsewhere.</p>
+    </section>
+
+    <!-- DISCOVERY -->
+    <section class="case-panel" id="discovery" data-nav="DISCOVERY">
+      <h2 class="case-h">TWO PRACTITIONERS, ON PURPOSE</h2>
+      <p>We set up recurring sessions with two practitioner profiles who represent very different clinical days: Andre, a physiotherapist, and Eyvind, a psychologist. Each cycle took the current product questions to them: what was about to change, what had just shipped, and where we suspected a gap.</p>
+      <p>The goal was never statistical representation. It was continuity. Returning to the same two people every cycle let us watch confidence move: whether a workflow that confused them in March had settled by May, and whether each new wave of migrated work made their day better or worse.</p>
+      <blockquote class="case-quote">Migration risk lives in the details, not the decision.</blockquote>
+      <p>Neither practitioner objected to moving platforms in principle. Confidence dropped around specifics: a shortcut that no longer existed, a field that had moved, a task that now took four clicks instead of one. Those are invisible in migration metrics and obvious within thirty seconds of watching someone work.</p>
+    </section>
+
+    <!-- THE APPROACH -->
+    <section class="case-panel" id="approach" data-nav="THE APPROACH">
+      <h2 class="case-h">A RHYTHM, NOT A STUDY</h2>
+      <p>A one-off validation study gives you a snapshot, and migration is not a snapshot. Workflows land in the new platform in waves, so a session in March cannot tell you about the risk arriving in May. We designed an operating rhythm instead, and protected half of it for thinking.</p>
+
+      <!-- VISUALISATION: the two week rhythm, drawn as lattice cells -->
+      <figure class="case-figure">
+        <!-- decorative: the paragraph below states the same rhythm in prose,
+             so the diagram stays out of the accessibility tree -->
+        <div class="cadence" aria-hidden="true">
+          <div class="cadence-head">
+            <span></span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span>
+          </div>
+          <div class="cadence-row">
+            <span class="cadence-week">WEEK A</span>
+            <span class="cadence-cell is-on"><em>Plan topics</em></span>
+            <span class="cadence-cell is-on"><em>Finalise</em></span>
+            <span class="cadence-cell"></span>
+            <span class="cadence-cell is-on"><em>Sessions</em></span>
+            <span class="cadence-cell is-on"><em>Sessions</em></span>
+          </div>
+          <div class="cadence-row">
+            <span class="cadence-week">WEEK B</span>
+            <span class="cadence-cell is-soft"><em>Synthesis</em></span>
+            <span class="cadence-cell is-soft"><em>Share out</em></span>
+            <span class="cadence-cell is-soft"><em>Follow-ups</em></span>
+            <span class="cadence-cell is-soft"><em>Backlog</em></span>
+            <span class="cadence-cell"></span>
+          </div>
+        </div>
+        <figcaption>Week A runs. Week B is not prep time, it is processing time: the reason findings reach a decision while it is still a decision.</figcaption>
+      </figure>
+
+      <p>In week A the team reviews the topic backlog and picks the most urgent questions. Sandra and I prepare lightweight material and share it with the practitioners in advance, then run the sessions later that week, each of us leading the part closest to our domain. Week B is synthesis in Dovetail, a short summary to product and design, async follow-ups in Slack, and new questions going back into the backlog.</p>
+    </section>
+
+    <!-- THE LOOP -->
+    <section class="case-panel" id="loop" data-nav="THE LOOP">
+      <h2 class="case-h">HOW THE LOOP WORKED</h2>
+
+      <!-- VISUALISATION: six steps, the last returning to the first -->
+      <ol class="loop">
+        <li class="loop-step">
+          <h3><span class="idx">01</span> CAPTURE UNCERTAINTY</h3>
+          <p>Topics arrive from support tickets, onboarding surveys, PostHog, previous sessions, roadmap gaps in Linear, and CS or sales conversations.</p>
+        </li>
+        <li class="loop-step">
+          <h3><span class="idx">02</span> PRIORITISE THE BACKLOG</h3>
+          <p>Every other Monday the team picks one to three topics by urgency and migration risk. Anyone can add to the list.</p>
+        </li>
+        <li class="loop-step">
+          <h3><span class="idx">03</span> PREPARE LIGHTLY</h3>
+          <p>Focused prompts, a prototype, or a staging task, depending on what the question needs. Never a script.</p>
+        </li>
+        <li class="loop-step">
+          <h3><span class="idx">04</span> SIT WITH PRACTITIONERS</h3>
+          <p>Andre and Eyvind walk their real workflows, react to designs, test builds, and say what has annoyed them since last time.</p>
+        </li>
+        <li class="loop-step">
+          <h3><span class="idx">05</span> SYNTHESISE AND SHARE</h3>
+          <p>Analysis in Dovetail, then a short summary to product and design. Decision support, not research theatre.</p>
+        </li>
+        <li class="loop-step">
+          <h3><span class="idx">06</span> FEED THE NEXT CYCLE</h3>
+          <p>Clarifications continue in Slack. New questions become backlog topics, and the loop turns again.</p>
+        </li>
+        <li class="loop-return" aria-hidden="true"><span>BACK TO 01, EVERY TWO WEEKS</span></li>
+      </ol>
+
+      <figure class="case-figure">
+        <!-- IMAGE: the research topics backlog (Notion), finance domain view -->
+        <div class="img-slot" data-slot="backlog" style="--slot-ratio: 2 / 1">
+          <img src="assets/img/case-research/backlog.png" loading="lazy" decoding="async"
+               alt="The research topics backlog: topics with domain, notes, priority, and which practitioner they are relevant for.">
+          <span class="slot-label">IMAGE · RESEARCH TOPICS BACKLOG</span>
+        </div>
+        <figcaption>The backlog is the engine of the loop: every topic carries a domain, a priority, and the practitioner it belongs to.</figcaption>
+      </figure>
+    </section>
+
+    <!-- WHAT WE ASKED -->
+    <section class="case-panel" id="asked" data-nav="WHAT WE ASKED">
+      <h2 class="case-h">FOUR RISKS, SIX WAYS TO ASK</h2>
+      <p>Every session pointed at one of four risks, so findings could be compared across cycles rather than collected as anecdotes.</p>
+
+      <!-- VISUALISATION: the four standing themes -->
+      <ul class="themes">
+        <li><span class="idx">MIGRATION GAPS</span> What is missing, broken, or harder to complete than it was in Physica or Psykbase?</li>
+        <li><span class="idx">WORKFLOW FIT</span> Can practitioners still finish their core work at clinical speed?</li>
+        <li><span class="idx">FEATURE READINESS</span> Does upcoming work match real needs before we spend engineering on it?</li>
+        <li><span class="idx">ADOPTION FRICTION</span> Where do people get stuck, confused, or pushed into extra effort?</li>
+      </ul>
+
+      <p>The backlog let us move between strategic and tactical questions. One cycle asked whether the new sidebar supported daily navigation. Another tested group appointment scoping, booking statuses, invoice creation, or the split between clinical and accounting reports before those decisions hardened.</p>
+
+      <p>The session format followed the question rather than a template: workflow walkthroughs to see real work, discovery conversations to surface unknowns, design reviews before engineering investment, feature testing in staging or behind flags, general feedback to track sentiment, and async video when something was easier to record than to describe.</p>
+    </section>
+
+    <!-- DECISIONS -->
+    <section class="case-panel" id="decisions" data-nav="DECISIONS">
+      <h2 class="case-h">DECISIONS BEHIND THE PROCESS</h2>
+      <dl class="case-decisions">
+        <div>
+          <dt>A standing rhythm, not ad hoc research</dt>
+          <dd>Migration risk arrives in instalments as more workflows move. A fixed slot means the team can raise a question on Monday and have practitioner evidence the same week.</dd>
+        </div>
+        <div>
+          <dt>A backlog, not a script</dt>
+          <dd>Anyone can add a topic the moment uncertainty appears. Choosing one to three per cycle keeps sessions aimed at what is live, instead of a plan written weeks ago.</dd>
+        </div>
+        <div>
+          <dt>Domain ownership, shared view</dt>
+          <dd>Sandra led clinical workflows, I led financial ones, each of us owning prep, facilitation, and synthesis in our area. Splitting the depth kept the sessions sharp while the whole team still saw one user journey.</dd>
+        </div>
+        <div>
+          <dt>Processing time is part of the system</dt>
+          <dd>Week B exists so synthesis is not something that happens if there is time. It is why findings land while product and migration decisions are still open.</dd>
+        </div>
+        <div>
+          <dt>Lightweight outputs, fast</dt>
+          <dd>Dovetail notes, a short summary, a Slack thread. A polished report that arrives after the call has been made is worth nothing.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- IMPACT -->
+    <section class="case-panel" id="impact" data-nav="IMPACT">
+      <h2 class="case-h">WHAT CHANGED</h2>
+      <p>The loop moved migration readiness from a technical question to a workflow question. Instead of asking only whether data had moved, the team could ask whether a practitioner could still complete the work that matters: appointments, documentation, patient context, invoicing, follow-up, and daily navigation.</p>
+      <ul class="case-list">
+        <li>Workflow gaps surfaced weeks before rollout instead of arriving as support tickets.</li>
+        <li>Roadmap work was validated against real practitioner workflows before engineering spend.</li>
+        <li>Features were tested in staging or behind flags while changes were still cheap.</li>
+        <li>Product decisions arrived with practitioner evidence attached instead of internal opinion.</li>
+        <li>Design, product, CS, and migration teams built one shared picture of the migrated user.</li>
+      </ul>
+
+      <!-- EXAMPLE: fill in the resolution, this is the one thing only you know -->
+      <div class="example">
+        <h3 class="label">FROM FINDING TO DECISION</h3>
+        <p>Invoice status visibility came into the backlog from the financial side as a low priority question: could practitioners see enough about where an insurance invoice stood? In isolation it reads like a small usability gap. In context it decides whether someone trusts that they have been paid, and whether they go hunting through another system to check.</p>
+        <p class="example-todo">TO CONFIRM: what this changed. The design, the migration sequencing, or the support material that came out of it.</p>
+      </div>
+    </section>
+
+    <!-- REFLECTION -->
+    <section class="case-panel" id="reflection" data-nav="REFLECTION">
+      <h2 class="case-h">WHAT I WOULD IMPROVE</h2>
+      <p>Two practitioners is a thin sample, and I would not defend it as representative. It was a deliberate trade: depth and continuity with people who trusted us enough to be blunt, over a broader study that would have arrived once and too late. The next version widens the loop to more practitioner types and tracks each insight from discovery through to resolution, so the process can show its own hit rate.</p>
+      <p>The wider lesson: in a platform migration, design is not only redesigning screens. It is designing the feedback system that tells the organisation whether the change is actually safe to ship.</p>
+    </section>
+
+    <nav class="case-panel case-next" aria-label="Case navigation">
+      <a href="work.html">ALL PROJECTS</a>
+      <a href="mailto:hello@example.com">GET IN TOUCH</a>
+    </nav>
+  </main>
+</body>
+</html>
