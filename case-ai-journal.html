@@ -69,23 +69,27 @@
         </div>
         <div class="shot" data-shot>
           <div class="shot-frame" data-view="desktop">
-            <img src="assets/img/case-ai/standalone.jpg" decoding="async"
-                 alt="The assistant on desktop: a list of sessions, transcription and journal tabs, and a drafted note waiting to be reviewed.">
-            <button type="button" class="shot-mark" style="--x: 19%; --y: 17.2%; --w: 20%; --h: 22.8%"
+            <img src="assets/img/case-ai/nora-hero.jpg" decoding="async"
+                 alt="The assistant at work: a list of sessions on the left, a notice that the assistant is generating notes, and a draft clinical note marked Draft and Pending Review over the panel that starts a recording.">
+            <button type="button" class="shot-mark" style="--x: 9.5%; --y: 16.5%; --w: 24.5%; --h: 40%"
                     data-cursor="EVERY SESSION IN ONE LIST" aria-label="Every session in one list">
               <span class="shot-tip" aria-hidden="true">EVERY SESSION IN ONE LIST</span>
             </button>
-            <button type="button" class="shot-mark" style="--x: 40.9%; --y: 22.6%; --w: 10.9%; --h: 3.4%"
-                    data-cursor="TRANSCRIPT BESIDE THE NOTE" aria-label="The transcript sits beside the note">
-              <span class="shot-tip" aria-hidden="true">TRANSCRIPT BESIDE THE NOTE</span>
+            <button type="button" class="shot-mark" style="--x: 43%; --y: 10.1%; --w: 15.2%; --h: 3.5%"
+                    data-cursor="IT DRAFTS WHILE YOU MOVE ON" aria-label="It drafts while you move on">
+              <span class="shot-tip" aria-hidden="true">IT DRAFTS WHILE YOU MOVE ON</span>
             </button>
-            <button type="button" class="shot-mark" style="--x: 59.7%; --y: 30.6%; --w: 3%; --h: 2.2%"
-                    data-cursor="A DRAFT, NOT A FILED NOTE" aria-label="It arrives as a draft, not a filed note">
-              <span class="shot-tip" aria-hidden="true">A DRAFT, NOT A FILED NOTE</span>
+            <button type="button" class="shot-mark" style="--x: 43.1%; --y: 22%; --w: 10.4%; --h: 2.3%"
+                    data-cursor="A DRAFT, PENDING REVIEW" aria-label="A draft, pending review">
+              <span class="shot-tip" aria-hidden="true">A DRAFT, PENDING REVIEW</span>
             </button>
-            <button type="button" class="shot-mark shot-mark--end" style="--x: 69.3%; --y: 12.6%; --w: 27.7%; --h: 2.9%"
-                    data-cursor="ONE SESSION, MANY DOCUMENTS" aria-label="One session, many documents">
-              <span class="shot-tip" aria-hidden="true">ONE SESSION, MANY DOCUMENTS</span>
+            <button type="button" class="shot-mark shot-mark--end" style="--x: 77.7%; --y: 62.2%; --w: 14.2%; --h: 3.4%"
+                    data-cursor="THE SUMMARY IN THEIR LANGUAGE" aria-label="The summary in their language">
+              <span class="shot-tip" aria-hidden="true">THE SUMMARY IN THEIR LANGUAGE</span>
+            </button>
+            <button type="button" class="shot-mark shot-mark--end" style="--x: 77.8%; --y: 82.8%; --w: 13.3%; --h: 3.6%"
+                    data-cursor="ONE STEP TO START RECORDING" aria-label="One step to start recording">
+              <span class="shot-tip" aria-hidden="true">ONE STEP TO START RECORDING</span>
             </button>
           </div>
           <div class="shot-frame shot-frame--phone" data-view="mobile">
@@ -144,6 +148,20 @@
       <p>We wanted to move fast, so we set a hard MVP deadline with an instant follow-up once we could see user sentiment and whether we could convert them. On top of that came legacy journal workflows we couldn't break, plus GDPR and consent requirements. So we cut a lot of good features our competitors had and our users had asked for, among them speaker diarization, custom templates, confidence highlighting, and patient-history context. We shipped embedded note generation with editable SOAP summaries first.</p>
       <p>I designed it as both an embedded workflow inside the rest of our patient management system and a standalone version of the same engine, so the assistant could be sold on its own and grow into later features without rework.</p>
 
+      <figure class="case-figure case-figure--pair">
+        <!-- IMAGE: the two halves of the MVP, side by side -->
+        <div class="img-slot" data-slot="approach-listen" style="--slot-ratio: 866 / 1154">
+          <img src="assets/img/case-ai/nora-transcription.jpg" loading="lazy" decoding="async"
+               alt="A session recording: the transcript filling in live, a waveform, and a recording indicator with a stop control.">
+          <span class="slot-label">IMAGE</span>
+        </div>
+        <div class="img-slot" data-slot="approach-draft" style="--slot-ratio: 866 / 1154">
+          <img src="assets/img/case-ai/nora-draft.jpg" loading="lazy" decoding="async"
+               alt="The journal tab: a note writing itself into an editable field under Reason for visit and Current status, marked Draft, with cancel and save.">
+          <span class="slot-label">IMAGE</span>
+        </div>
+        <figcaption>The whole MVP in two screens: what the session sounds like, and the draft it becomes.</figcaption>
+      </figure>
     </section>
 
     <!-- THE SOLUTION / USER JOURNEY -->

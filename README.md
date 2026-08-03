@@ -23,15 +23,23 @@ classic scripts, no modules).
 ## Structure
 
 ```
-index.html          landing: full-viewport living grid, tiles = navigation
-work.html           product design projects
-art.html            generative art gallery (tag-filterable)
-about.html          bio, approach, contact
-css/style.css       the single shared stylesheet
-js/grid-engine.js   the generative engine (window.createGridSketch)
-js/landing.js       landing page wiring (tile overlay links)
-js/site.js          subpage wiring (header strips, card thumbs, tag filter)
-dev/engine-test.html  engine playground: seeds, modes, drift stress test, HUD
+index.html                     landing: living grid, tiles = navigation
+work.html                      project index: rows plus a live preview cell
+about.html                     bio panel, action tiles, fun-fact drawer
+art.html                       generative art gallery (tag-filterable)
+case-ai-journal.html           P-01 case study
+case-continuous-research.html  P-02 case study
+css/style.css                  the single shared stylesheet
+js/grid-engine.js              the generative engine (window.createGridSketch)
+js/landing.js                  landing: tile links, mold page exits
+js/work.js                     work page: row wipes, preview, case links
+js/about.js                    about page: cells, photo hovers, fact drawer
+js/case.js                     case pages: paper channel, section index
+js/interactions.js             shared: red dot cursor, hover sound + toggle
+js/site.js                     art page: header strips, thumbs, tag filter
+assets/                        img, video, fonts (some slots still empty)
+dev/engine-test.html           engine playground: seeds, modes, HUD
+dev/serve.py                   the no-cache server used by Run, above
 ```
 
 ## Edit
@@ -50,5 +58,13 @@ dev/engine-test.html  engine playground: seeds, modes, drift stress test, HUD
 - Every generative canvas is a `data-sketch` host; its `data-seed` is the
   piece's stable identity. Seeds are curated by eye - change one and the
   thumbnail changes forever, so pick deliberately (use the playground).
+- Case study media: each `.img-slot` holds a real `<img>` or `<video>` at the
+  path in the markup, and falls back to a checker placeholder until that file
+  exists. Still missing: `assets/img/case-research/backlog.png`, and the
+  invoice example in P-02 carries a visible TO CONFIRM line.
+- Sound and cursor live in `js/interactions.js`. Hovering the artwork sounds
+  one note per lattice cell entered, pitched by cell size; the toggle sits in
+  the wordmark cell and remembers its state. `--accent` in the tokens is the
+  cursor red, the only colour on the site.
 - Composition tunables live in the `TUNE` block at the top of
   `js/grid-engine.js`.
