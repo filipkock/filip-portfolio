@@ -52,8 +52,9 @@
         {
           id: 'art', kind: 'nav',
           lines: [
-            { t: 'ART', h: 'right', v: 'top', row: 0 },
-            { t: '& STUFF', h: 'left', v: 'bottom', row: 0 }
+            { t: 'SIDE', h: 'left', v: 'top', row: 0 },
+            { t: 'QUESTS', h: 'right', v: 'top', row: 1 },
+            { t: '& STUFF', h: 'right', v: 'bottom', row: 0, scale: 0.5 }
           ]
         },
         {

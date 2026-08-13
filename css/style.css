@@ -3,6 +3,9 @@
    Principle: HTML chrome never eases; only the canvas breathes.
    Palette is paper + ink + three grays. No border-radius, no box-shadow,
    no color, anywhere.
+   Type is two voices: Satoshi carries reading text and headlines, the mono
+   stack is the chrome voice (buttons, labels, indexes, captions). Headings
+   press darker than body ink; body copy sits a half step lighter.
    Layers (source order matters, later layers only narrow earlier ones):
    1 tokens / 2 reset+base / 3 utilities / 4 chrome / 5 hairline grid
    6 page sections / 7 media + preferences + fallbacks (always last)
@@ -12,13 +15,17 @@
 :root {
   --paper: #fafafa;
   --ink: #111111;
+  --ink-head: #050505; /* headings press a step darker than ink */
+  --ink-body: #3b3b3b; /* reading text, slightly lighter, still dark (9.9:1) */
   --panel: #ffffff; /* content panels lift slightly off the field */
+  --gray-0: #f0f0f0; /* lightest tint: badge fields */
   --gray-1: #e4e4e4;
   --gray-2: #9c9c9c;
   --gray-3: #5c5c5c; /* darkest gray allowed for text: >= 4.5:1 on paper */
   /* the one non-monochrome mark on the site: the pointer. A Nothing-ish
-     signal red, used for the cursor, the sound state, and the marks that
-     annotate a case study's screenshots. Nothing else. */
+     signal red, used for the cursor, a switch held off its default, the crop
+     tick on the about page's photo cells, and the marks that annotate a case
+     study's screenshots. Nothing else. */
   --accent: #d71921;
   --accent-wash: rgba(215, 25, 33, 0.14); /* --accent, laid over a screenshot */
 
@@ -32,6 +39,7 @@
   --head-h: 3rem;
   --strip-h: 2.5rem;
 
+  --font-sans: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --text-xs: 0.625rem;
   --text-s: 0.75rem;
@@ -58,6 +66,13 @@ svg {
   max-width: 100%;
 }
 
+/* the display above would otherwise beat the hidden attribute */
+img[hidden],
+canvas[hidden],
+svg[hidden] {
+  display: none;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -65,7 +80,7 @@ html {
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-m);
   line-height: 1.55;
 }
@@ -76,6 +91,7 @@ a {
 
 button {
   font: inherit;
+  font-family: var(--font-mono); /* controls speak in the chrome voice */
   color: inherit;
   background: none;
   border: none;
@@ -90,7 +106,8 @@ ol {
 h1,
 h2,
 h3 {
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--ink-head);
   letter-spacing: var(--track);
   text-transform: uppercase;
 }
@@ -136,12 +153,14 @@ html {
 
 /* 3. utilities ----------------------------------------------------------- */
 .label {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
 }
 
 .idx {
+  font-family: var(--font-mono);
   color: var(--gray-3);
   letter-spacing: var(--track);
 }
@@ -164,6 +183,7 @@ html {
 
 /* 4. chrome (subpages) --------------------------------------------------- */
 .site-head {
+  font-family: var(--font-mono);
   display: flex;
   align-items: stretch;
   justify-content: space-between;
@@ -223,6 +243,7 @@ html {
 }
 
 .site-foot {
+  font-family: var(--font-mono);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -276,6 +297,14 @@ html {
   inset: 0;
 }
 
+/* a sheet taller than the screen (the about page on a phone): the page
+   scrolls it as one document. JS owns the exact height in px; putting the
+   stage back in flow is what gives the body its scroll range. */
+body.stage-scroll .stage {
+  position: relative;
+  inset: auto;
+}
+
 .grid-host {
   position: absolute;
   inset: 0;
@@ -294,6 +323,7 @@ html {
    tech (visually hidden once the engine is confirmed alive, below) */
 .tile-link {
   position: relative;
+  font-family: var(--font-mono);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -359,6 +389,13 @@ html.js body.tiles-ready .tile-link .tl-b {
   flex-direction: column;
   padding: var(--space-3);
   pointer-events: none;
+}
+
+/* chrome cells speak mono; content cells (list, preview, bio) read in sans */
+[data-cell="wordmark"],
+[data-cell="contact"],
+[data-cell="menu"] {
+  font-family: var(--font-mono);
 }
 
 .grid-cell-overlay a {
@@ -453,6 +490,17 @@ html.arriving .case-doc {
   color: var(--paper);
 }
 
+/* chrome labels re-set in the tiles' own 5x7 face (js/interactions.js swaps
+   the text for an SVG from the engine's glyph map). Height rides the link's
+   font-size, width follows the viewBox, and the fill is currentColor - so
+   size, hover and aria-current all keep working from the rules above. */
+.px-word {
+  display: inline-block;
+  height: 0.9em;
+  width: auto;
+  vertical-align: -0.05em;
+}
+
 /* hover-images easter egg host (enabled by listing images in landing.js) */
 .hover-img {
   position: absolute;
@@ -478,6 +526,12 @@ html.arriving .case-doc {
   overflow-y: auto;
 }
 
+/* the cell is a flex column: without this a list taller than its cell
+   SHRINKS every row (clipping titles mid-line) instead of scrolling */
+.cell-list > * {
+  flex-shrink: 0;
+}
+
 /* row = a lattice cell that flips sign on hover, like the landing tiles.
    The ::before ink wipe sweeps in; text is white under mix-blend difference,
    so every glyph pixel inverts exactly as the edge passes it. */
@@ -491,6 +545,7 @@ html.arriving .case-doc {
   padding: var(--space-3);
   border-bottom: var(--hair) solid var(--ink);
   text-decoration: none;
+  cursor: pointer; /* ask rows are divs, and every row is an action */
   /* the overlay is a stacking context, so difference-blended text needs an
      in-context backdrop: the row owns its fill (panel white, no seam) */
   background: var(--panel);
@@ -529,11 +584,131 @@ html.arriving .case-doc {
 }
 
 .w-row .year {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
 }
 
 .w-row:focus-visible {
+  outline: none;
+}
+
+/* a project with no case page of its own still reads as one line in the list,
+   exactly like the rest: the preview pane tells it on a wide screen, and on a
+   narrow one tapping the row raises the toast, which carries the same sentence
+   and the same mail link. The note under the title is the stand-in for both,
+   so it appears only where neither can run: without JS, or on a failed engine
+   (work.js bails before it wires the toast). */
+.w-row--ask .w-note {
+  display: none;
+  grid-column: 2 / -1;
+  margin-top: var(--space-2);
+  font-size: var(--text-s);
+}
+
+html:not(.js) .w-row--ask .w-note,
+html.engine-failed .w-row--ask .w-note {
+  display: block;
+}
+
+/* badges: small mono chips on a gray field with an ink rule. Tags and the
+   WIP mark share the one design. */
+.badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  background: var(--gray-0);
+  border: var(--hair) solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.w-badge {
+  margin-left: var(--space-2);
+}
+
+/* inside a work row every pixel goes through the difference blend, so the
+   chip is painted in blend space: #0f renders as gray-0 on a paper row,
+   #fff as ink, and both invert with the row's hover wipe */
+.w-row .w-badge {
+  background: #0f0f0f;
+  border-color: #fff;
+  color: #fff;
+}
+
+html:not(.js) .w-row .w-badge,
+html.engine-failed .w-row .w-badge {
+  background: var(--gray-0);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.w-row--ask .w-ask {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* the index is not finished and says so, in a row's rhythm but without a
+   row's ink wipe: nothing here to open */
+.w-more {
+  padding: var(--space-3);
+  background: var(--panel);
+  font-family: var(--font-mono);
+  color: var(--gray-2);
+}
+
+/* toast: one line of status in an ink tile, low on the sheet. It appears
+   with the same two-frame step as everything else and leaves on its own. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
+  z-index: 9998;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  max-width: min(92vw, 36rem);
+  padding: var(--space-2) var(--space-3);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  visibility: hidden;
+}
+
+.toast.is-live {
+  visibility: visible;
+  animation: boot 200ms steps(2, end) both;
+}
+
+.toast a {
+  color: var(--paper);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.toast a:hover,
+.toast a:focus-visible {
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
   outline: none;
 }
 
@@ -554,15 +729,81 @@ html.arriving .case-doc {
   padding: 1px; /* same inset: keep the hairline visible */
 }
 
+/* the thumb stacks three layers for one project: its shot, the generative
+   card that stands in when there is no shot yet, and the reveal clip that
+   plays over the shot the first time it is previewed. Only one of the first
+   two is ever mounted, so they never fight; the clip sits above both. */
 .cell-preview .pv-thumb {
+  position: relative;
+  overflow: hidden;
+  /* 4:3 always, so every embed is framed against one known ratio instead of a
+     box that reshapes with the window. sizeThumb() in js/work.js writes the
+     real pixel size, fitting the cell on both axes; these are the values that
+     hold until it runs. Centred, since it is often narrower than the cell. */
   aspect-ratio: 4 / 3;
-  max-height: 62%;
+  flex: none;
+  align-self: center;
+  width: 100%;
   border-bottom: var(--hair) solid var(--ink);
 }
 
+.cell-preview .pv-card,
+.cell-preview .pv-hero,
+.cell-preview .pv-hero-clip,
+.cell-preview .pv-reveal {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* a live page as the shot: the frame lays the page out at its own size and
+   js/work.js scales the region worth showing to the cell. Decorative, so it
+   takes neither the pointer nor the tab order. */
+.cell-preview .pv-embed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* a page that sizes itself is simply given the frame: no scaling, so it is
+   pixel-exact at every breakpoint the lattice hands it */
+.cell-preview .pv-embed--fluid {
+  width: 100%;
+  height: 100%;
+}
+
+/* a still is a glance, not a document figure: it fills the cell and crops,
+   where a case study's .img-slot would letterbox it whole */
+.cell-preview .pv-hero {
+  object-fit: cover;
+  background: var(--panel);
+}
+
+/* the clips are shown whole instead. A cropped screenshot still reads as a
+   screenshot; a cropped animation reads as broken, with shapes leaving the
+   cell on every side. Both of Poka's clips are padded to the cell's ratio on
+   their own paper ground, so whole and filled are the same thing here, and a
+   clip of any other shape simply letterboxes onto matching paper. */
+.cell-preview .pv-hero-clip,
+.cell-preview .pv-reveal {
+  object-fit: contain;
+  background: var(--paper);
+}
+
+/* a column: the identity sits at the top and the reference link and tags at
+   the foot, both always in view. Only the description gives way when the
+   cell is short, so nothing that names or links the project is ever lost
+   below a fold with no scrollbar to announce it. */
 .cell-preview .pv-info {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   overflow: hidden;
   padding: var(--space-3);
 }
@@ -572,14 +813,50 @@ html.arriving .case-doc {
   font-size: var(--text-m);
 }
 
+/* shrink-and-scroll, never grow: a short description stays with its title
+   instead of stretching the column to push the tags down */
 .cell-preview .pv-info .desc {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   margin-top: var(--space-2);
   font-size: var(--text-s);
 }
 
-.cell-preview .pv-info .tags {
+/* a reference out of the sheet: plain text, underlined, inverting under the
+   pointer like every other link on the site */
+/* an explicit display would beat the hidden attribute's own display:none,
+   and a project with no reference would keep showing the last one's */
+.cell-preview .pv-info .pv-link[hidden] {
+  display: none;
+}
+
+.cell-preview .pv-info .pv-link {
+  display: inline-block;
+  flex: none;
   margin-top: var(--space-2);
-  color: var(--gray-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  text-underline-offset: 2px;
+}
+
+.cell-preview .pv-info .pv-link:hover,
+.cell-preview .pv-info .pv-link:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  outline: none;
+}
+
+/* tags read as a row of badges under the description */
+.cell-preview .pv-info .tags {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin-top: var(--space-2);
 }
 
 /* 6b. shared subpage title row */
@@ -594,6 +871,7 @@ html.arriving .case-doc {
 
 .title-row h1 {
   font-size: var(--text-xl);
+  font-weight: 900;
 }
 
 .title-row .count {
@@ -626,6 +904,7 @@ html.arriving .case-doc {
 
 .card-tags {
   margin-top: var(--space-2);
+  font-family: var(--font-mono);
   color: var(--gray-3);
 }
 
@@ -656,24 +935,6 @@ html.js .tag-row {
   color: var(--paper);
 }
 
-.art-grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.art-cell .thumb {
-  aspect-ratio: 1;
-  border-bottom: var(--hair) solid var(--ink);
-  overflow: hidden;
-}
-
-.art-cell figcaption {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-xs);
-  letter-spacing: var(--track);
-  text-transform: uppercase;
-  color: var(--gray-3);
-}
-
 /* 6e. about page: bio panel + photo cells inside the artwork ----------- */
 .cell-bio {
   /* stay clear of the panel's canvas-drawn hairline */
@@ -682,11 +943,20 @@ html.js .tag-row {
   overflow-y: auto;
 }
 
+/* the phone's fun-fact drawer opens upward over the bio: the sheet text
+   steps aside while covered, or it would paint across the drawer's ink.
+   (Outweighs the tiles-ready is-placed rule that turns overlays visible.) */
+html.js body.tiles-ready .grid-cell-overlay.cell-bio.is-covered {
+  visibility: hidden;
+}
+
 .cell-bio .bio-body {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  max-width: 62ch;
+  /* no measure cap here: the grid cell is the measure, so the copy runs the
+     full width of the panel it sits in (the no-JS fallback caps it instead,
+     since there the cell has no engine-assigned width) */
   padding: var(--space-4);
 }
 
@@ -694,8 +964,14 @@ html.js .tag-row {
   margin-top: var(--space-3);
 }
 
+.cell-bio p {
+  color: var(--ink-body);
+}
+
 .cell-bio .bio-hey {
   font-size: var(--text-l);
+  font-weight: 700;
+  color: var(--ink-head);
   letter-spacing: var(--track);
   margin-bottom: var(--space-2);
 }
@@ -708,6 +984,7 @@ html.js .tag-row {
 .cell-bio .bio-colophon {
   margin-top: auto;
   padding-top: var(--space-4);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
@@ -810,6 +1087,7 @@ html.js .cell-funfact .ff-body[hidden] {
 
 .ff-cue {
   display: none; /* REVEAL / the counter only mean something under JS */
+  font-family: var(--font-mono);
   color: var(--gray-2);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -849,22 +1127,19 @@ html.js .ff-list:hover::after {
   padding: var(--space-3);
 }
 
-.ff-fact + .ff-fact {
-  border-top: var(--hair) solid var(--gray-1);
-}
-
 /* a floor for the single visible card: stepping must not shuffle the panel */
 html.js .ff-fact {
   min-height: 8.5rem;
 }
 
 .ff-fact h3 {
-  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-m);
 }
 
 .ff-fact p {
   margin-top: var(--space-2);
-  font-size: var(--text-s);
+  font-size: var(--text-m);
   line-height: 1.7;
 }
 
@@ -932,11 +1207,16 @@ html.js .cell-funfact .ff-fact a:hover {
   color: var(--ink);
 }
 
-/* one row tall: the slot is sized by the band's height, not a fixed width */
+/* One row tall and square, sized by the band rather than by the picture. The
+   image is out of flow (above), so width can follow the height through the
+   aspect ratio without the file's own dimensions ever reaching the column. */
 html.js .cell-funfact .ff-shot {
   align-self: stretch;
+  flex: none;
   width: auto;
   height: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
   border-color: var(--paper);
   background:
     repeating-conic-gradient(var(--gray-3) 0% 25%, var(--ink) 0% 50%) 0 0 / 14px 14px;
@@ -950,7 +1230,6 @@ html.js .cell-funfact .ff-shot-label {
 
 html.js .cell-funfact .ff-bar {
   margin-top: 0; /* the drawer's own gap already separates it */
-  border-top: var(--hair) solid var(--gray-3);
   padding-top: var(--space-2);
 }
 
@@ -987,17 +1266,26 @@ html.js .cell-funfact .ff-tick[aria-current="true"]::before {
 }
 
 html.js .ff-shot {
+  position: relative; /* the picture is laid out against this, not inside it */
   display: grid;
   place-items: center;
   align-self: center;
+  flex: none;
   width: 8.5rem;
   aspect-ratio: 1;
+  overflow: hidden;
   border: var(--hair) solid var(--ink);
   background:
     repeating-conic-gradient(var(--gray-1) 0% 25%, var(--panel) 0% 50%) 0 0 / 14px 14px;
 }
 
+/* The slot is the frame: the picture fills it and is cropped to it. Taken out
+   of flow on purpose, so a large file can never contribute its own width to
+   the slot and push the layout open - the frame sizes itself, always. */
 .ff-shot img {
+  position: absolute;
+  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1007,6 +1295,7 @@ html.js .ff-shot {
   padding: 2px var(--space-1);
   background: var(--panel);
   border: var(--hair) solid var(--ink);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   color: var(--gray-3);
@@ -1046,6 +1335,7 @@ html.js .ff-bar {
 .ff-count {
   display: flex;
   align-items: center;
+  font-family: var(--font-mono);
   color: var(--gray-3);
   white-space: nowrap;
 }
@@ -1092,6 +1382,11 @@ html.js .ff-bar {
   inset: 0;
   pointer-events: auto;
   cursor: pointer;
+  /* a spot can be an anchor (the art page: click opens the piece elsewhere):
+     the cell look stays identical to the button spots */
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 
 /* dashed focus ring, tile-link recipe (ink: it sits on a paper cell) */
@@ -1112,7 +1407,7 @@ html.js .ff-bar {
 }
 
 /* hidden until hover/focus/tap; checker backdrop is the placeholder, the
-   real photo (grayscaled) covers it once the asset exists */
+   real photo covers it once the asset exists */
 .photo-reveal {
   position: absolute;
   inset: 0;
@@ -1127,6 +1422,16 @@ html.js .ff-bar {
   visibility: visible;
 }
 
+/* touch has no hover to find the hidden pieces with: placed spots arrive
+   already revealed, and empty boxes never read as broken. Gated on
+   is-placed so a spot dropped by a narrow rebuild stays gone (visibility:
+   visible on the reveal would otherwise beat the hidden overlay above it). */
+@media (hover: none), (pointer: coarse) {
+  html.js body.tiles-ready .grid-cell-overlay.is-placed .photo-reveal {
+    visibility: visible;
+  }
+}
+
 .photo-reveal .ph-label {
   position: absolute;
   left: 50%;
@@ -1134,17 +1439,43 @@ html.js .ff-bar {
   transform: translate(-50%, -50%);
   padding: 2px 6px;
   background: var(--panel);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
 }
 
-.photo-reveal img {
+/* the cell is the frame: the photo fills it edge to edge and is cropped to
+   fit, never letterboxed and never stretched. --crop (set per image in the
+   markup) picks which horizontal band of a tall source survives the crop -
+   these are portrait shots in cells that are rarely portrait.
+   The photos keep their own colour: they are the one place on the sheet where
+   something outside the b&w system is allowed to show through. */
+.photo-reveal img,
+.photo-reveal video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(1) contrast(1.05); /* photos join the b&w system */
+  object-position: 50% var(--crop, 35%);
+}
+
+/* a spot that carries sound says so: the corner mark is the only hint that
+   a click will do more than pin the reveal. It goes quiet once sound is on. */
+.photo-cell[data-sound] .photo-reveal::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.photo-cell.is-sounding .photo-reveal::after {
+  background: var(--panel);
+  box-shadow: 0 0 0 var(--hair) var(--ink);
 }
 
 /* 6g. case study: a document scrolling over the living lattice ---------- */
@@ -1166,6 +1497,7 @@ html.js .ff-bar {
 .case-cell {
   position: fixed;
   z-index: 4;
+  font-family: var(--font-mono);
   top: 0;
   left: 0;
   visibility: hidden;
@@ -1180,28 +1512,32 @@ html.js body.tiles-ready .case-cell.is-placed {
 }
 
 /* fallback when the lattice is too coarse to give a cell its own span
-   (few columns): the chrome becomes one flush top row that CSS owns */
+   (few columns): the chrome becomes the same top row the artwork pages
+   have - wordmark cell left, menu cell right, one lattice row tall, a
+   hairline between them. Part of the document rather than a frame
+   (position absolute), so it scrolls away with the page instead of
+   following the reader down. */
 body.tiles-ready .case-cell[data-cell="wordmark"]:not(.is-placed),
 body.tiles-ready .case-cell[data-cell="menu"]:not(.is-placed) {
   visibility: visible;
+  position: absolute;
   top: 0;
-  height: auto;
+  height: var(--lat-ch, 190px);
+  padding: var(--space-2);
   /* no canvas cell behind an unplaced overlay: it supplies its own paper */
   background: var(--panel);
-  border: var(--hair) solid var(--ink);
-  border-width: 0 0 var(--hair);
-  padding: var(--space-2);
+  border-bottom: var(--hair) solid var(--ink);
 }
 
 body.tiles-ready [data-cell="wordmark"]:not(.is-placed) {
   left: 0;
-  border-right-width: var(--hair);
+  right: 50%;
+  border-right: var(--hair) solid var(--ink);
 }
 
 body.tiles-ready [data-cell="menu"]:not(.is-placed) {
-  left: auto;
+  left: 50%;
   right: 0;
-  padding: 0;
 }
 
 /* same for the index: unplaced means it spans the foot of the viewport */
@@ -1231,8 +1567,10 @@ body.tiles-ready .case-index:not(.is-placed) .ci-list::-webkit-scrollbar {
   display: none;
 }
 
+/* same size as the artwork pages' wordmark cell: navigating into a case
+   study must not resize the chrome */
 .case-cell .wordmark {
-  font-size: var(--text-s);
+  font-size: var(--text-m);
   letter-spacing: var(--track-wide);
 }
 
@@ -1332,35 +1670,29 @@ body.tiles-ready .case-index:not(.is-placed) .ci-list::-webkit-scrollbar {
   padding-bottom: calc(var(--lat-ch, 190px) + var(--space-5));
   display: flex;
   flex-direction: column;
+  gap: var(--space-4); /* the artwork shows through between the boxes */
+  counter-reset: sec; /* numbers the sections, matching the index cell */
 }
 
-/* sections stack flush into one ruled column of cells - the shared rules
-   are the grid's lines, not card edges floating in space. Every rule on
-   this page is one hairline, matching the canvas stroke. */
+/* no channel (phones, small tablets): the document IS the page. Full
+   width, flush under the header row, no artwork in the margins. */
+body:not(.has-channel) .case-doc {
+  width: 100%;
+  margin-left: 0;
+}
+
+/* each section is its own box on the sheet: the gap between boxes does the
+   dividing, so no rules are drawn inside or between them */
 .case-panel {
   /* a length, not a percentage: full-bleed children cancel it exactly */
   --pad-x: clamp(var(--space-4), 2.5vw, var(--space-6));
   background: var(--panel);
   border: var(--hair) solid var(--ink);
-  padding: var(--space-5) var(--pad-x);
+  padding: var(--space-6) var(--pad-x);
+  counter-increment: sec;
 }
 
-.case-panel + .case-panel {
-  border-top-width: 0;
-}
-
-/* with a channel reserved in the lattice, the sections need no boxes of
-   their own: they sit directly on the sheet, separated by hairline rules */
-body.has-channel .case-panel {
-  background: none;
-  border-width: 0 0 var(--hair);
-}
-
-body.has-channel .case-panel:last-of-type {
-  border-bottom-width: 0;
-}
-
-/* the index cell is canvas-drawn too */
+/* the index cell is canvas-drawn */
 body.has-channel .case-index.is-placed {
   background: none;
 }
@@ -1374,20 +1706,40 @@ body.has-channel .case-index.is-placed {
 .case-panel p {
   font-size: 0.9375rem;
   line-height: 1.75;
+  color: var(--ink-body);
 }
 
 .case-panel p + p {
   margin-top: var(--space-4);
 }
 
-/* section label: small, tracked, gray, on its own rule */
+/* emphasis inside reading text presses back to headline black */
+.case-panel p strong {
+  color: var(--ink-head);
+}
+
+/* section header: the type does the dividing now, no rule needed. Big,
+   black, and fronted by a small mono index that echoes the section list. */
 .case-h {
-  font-size: var(--text-xs);
-  letter-spacing: 0.24em;
-  color: var(--gray-3);
-  padding-bottom: var(--space-2);
-  margin-bottom: var(--space-4);
-  border-bottom: var(--hair) solid var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: clamp(1.55rem, 3.4vw, 2.4rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--ink-head);
+  margin-bottom: var(--space-5);
+}
+
+.case-h::before {
+  content: counter(sec, decimal-leading-zero);
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-s);
+  font-weight: 400;
+  letter-spacing: var(--track-wide);
+  color: var(--gray-2);
 }
 
 /* hero */
@@ -1396,9 +1748,10 @@ body.has-channel .case-index.is-placed {
 }
 
 .case-hero h1 {
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  line-height: 1.05;
-  letter-spacing: 0.02em;
+  font-size: clamp(2.25rem, 5.5vw, 3.6rem);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
   margin-top: var(--space-2);
 }
 
@@ -1408,17 +1761,18 @@ body.has-channel .case-index.is-placed {
 }
 
 .case-sub {
-  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  font-weight: 500;
   line-height: 1.35;
   margin-top: var(--space-4);
   color: var(--gray-3);
 }
 
-.case-lede {
-  font-size: 1rem !important;
-  line-height: 1.7 !important;
-  padding-top: var(--space-4);
-  border-top: var(--hair) solid var(--gray-1);
+/* the lede reads a half size up from body copy, no rule above it */
+.case-panel .case-lede {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  font-weight: 500;
 }
 
 /* explicit columns: with auto-fit, an incomplete last row exposes the ink
@@ -1437,6 +1791,7 @@ body.has-channel .case-index.is-placed {
 }
 
 .case-facts dt {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   color: var(--gray-3);
@@ -1445,6 +1800,7 @@ body.has-channel .case-index.is-placed {
 .case-facts dd {
   margin-top: var(--space-1);
   font-size: var(--text-s);
+  font-weight: 500;
 }
 
 /* metric row */
@@ -1464,14 +1820,15 @@ body.has-channel .case-index.is-placed {
 
 .case-metrics strong {
   display: block;
-  font-size: var(--text-xl);
-  font-weight: 500;
-  letter-spacing: var(--track);
+  font-size: clamp(1.75rem, 3.2vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: 0;
 }
 
 .case-metrics span {
   display: block;
   margin-top: var(--space-1);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
@@ -1481,69 +1838,74 @@ body.has-channel .case-index.is-placed {
 .case-quote {
   border-left: var(--hair) solid var(--ink);
   padding: var(--space-3) 0 var(--space-3) var(--space-4);
-  font-size: clamp(1.05rem, 1.8vw, 1.3rem);
-  line-height: 1.45;
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink-head);
 }
 
 .case-list {
   font-size: 0.9375rem;
   line-height: 1.7;
+  color: var(--ink-body);
 }
 
+/* list items carry a lattice-cell bullet instead of a rule below */
 .case-list li {
-  padding-block: var(--space-3);
-  border-bottom: var(--hair) solid var(--gray-1);
+  position: relative;
+  padding-block: var(--space-2);
+  padding-left: var(--space-4);
 }
 
-.case-list li:last-child {
-  border-bottom: none;
+.case-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.95em;
+  width: 8px;
+  height: 8px;
+  background: var(--ink);
 }
 
-/* numbered flow steps */
+/* numbered flow steps: air between them, no rule */
 .case-step + .case-step {
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
-  border-top: var(--hair) solid var(--gray-1);
+  margin-top: var(--space-6);
 }
 
+/* steps are named, not numbered: the heading carries the whole weight */
 .case-step h3 {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  font-size: 1.0625rem;
-  letter-spacing: 0.04em;
-}
-
-.case-step h3 .idx {
-  font-size: var(--text-s);
-  color: var(--gray-2);
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .case-step p {
   margin-top: var(--space-3);
+  margin-bottom: var(--space-5);
 }
 
 .case-step .img-slot {
   margin-top: var(--space-3);
 }
 
-/* decisions: what -> why */
+/* decisions: what -> why, split by air and weight instead of rules */
 .case-decisions > div + div {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: var(--hair) solid var(--gray-1);
+  margin-top: var(--space-5);
 }
 
 .case-decisions dt {
-  font-size: 1.0625rem;
-  letter-spacing: 0.04em;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+  color: var(--ink-head);
 }
 
 .case-decisions dd {
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
   font-size: 0.9375rem;
   line-height: 1.75;
+  color: var(--ink-body);
 }
 
 /* image + video slots: checker placeholder in the engine's language,
@@ -1578,6 +1940,14 @@ body.has-channel .case-index.is-placed {
   object-fit: contain;
 }
 
+/* a clip answers a click by holding still (js/case.js), so it is a control:
+   focusable, and it says so on focus in the same dashed hairline the tiles
+   and photo cells use. Paper, because it sits on the clip's ink ground. */
+.img-slot video[data-autoplay]:focus-visible {
+  outline: var(--hair) dashed var(--paper);
+  outline-offset: -6px;
+}
+
 /* the label is the empty state only */
 .img-slot:not(.is-empty) .slot-label {
   display: none;
@@ -1591,6 +1961,18 @@ body.has-channel .case-index.is-placed {
 .case-figure,
 .case-step .img-slot {
   margin-inline: calc(-1 * var(--pad-x));
+}
+
+/* a figure that is drawn rather than photographed keeps the text column: a
+   screenshot earns the extra width, a diagram set in the page's own type
+   only loses its alignment with the prose it belongs to. Its caption has no
+   bleed left to pad back out of, so that cancels too. */
+.case-figure--inset {
+  margin-inline: 0;
+}
+
+.case-figure--inset figcaption {
+  padding-inline: 0;
 }
 
 .case-panel .img-slot {
@@ -1620,7 +2002,10 @@ body.has-channel .case-index.is-placed {
   /* the row is the band, never the image: a tall phone must fit, not stretch */
   grid-template-rows: minmax(0, 1fr);
   place-items: center;
-  aspect-ratio: 16 / 10;
+  /* 16/9 is a desktop case's band: its widest shot fills it. A case whose
+     shots are all portrait (a phone app) declares a taller band instead, or
+     every frame in it would stand as a stamp between two grey margins. */
+  aspect-ratio: var(--band-ratio, 16 / 9);
   overflow: hidden;
   background: var(--panel);
   border-block: var(--hair) solid var(--ink);
@@ -1638,10 +2023,23 @@ html:not(.js) .case-shot .shot {
   line-height: 0;
 }
 
-.shot-frame[data-view="desktop"],
-.shot-frame[data-view="desktop"] img {
+/* a wide shot stands at the band's full height and takes the width its own
+   ratio asks for (--shot-ratio, the way an .img-slot declares one). A shot
+   that is not the band's 16/9 therefore sits narrower instead of being
+   cropped or stretched, and the frame still measures exactly the image, so
+   the marks keep their coordinates. contain is the belt and braces: an
+   ultra-wide shot clamped by max-width letterboxes rather than distorts. */
+.shot-frame:not(.shot-frame--phone) {
+  aspect-ratio: var(--shot-ratio, 16 / 9);
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+.shot-frame:not(.shot-frame--phone) img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* the phone stands in the band at its own scale, framed like a screen. The
@@ -1693,6 +2091,7 @@ html.js .shot.is-phone {
   border-radius: 999px;
   background: var(--accent);
   color: #fff;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   line-height: 1;
@@ -1741,14 +2140,19 @@ html.js .shot-switch {
   color: var(--paper);
 }
 
-/* two shots side by side: the wide one carries, the phone sits beside it */
+/* two shots side by side, sharing one hairline: either two equal screens or
+   a wide one with a phone beside it (.img-slot--phone sizes that second cell) */
 .case-figure--pair {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: repeat(2, 1fr);
   align-items: start;
   gap: var(--hair);
   background: var(--ink);
   border-block: var(--hair) solid var(--ink);
+}
+
+.case-figure--pair:has(.img-slot--phone) {
+  grid-template-columns: 1fr auto;
 }
 
 .case-figure--pair .img-slot {
@@ -1765,10 +2169,82 @@ html.js .shot-switch {
   width: clamp(120px, 20vw, 180px);
 }
 
+/* a band of phone screens, in the hero shot's language: a panel strip with
+   air, each phone capped at hand size and framed by its own hairline. Never
+   full column width: a phone is a column, not a banner. Phones wrap into a
+   stack when the band gets narrow. */
+.case-figure--phones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--pad-x);
+  background: var(--panel);
+  border-block: var(--hair) solid var(--ink);
+}
+
+/* --phone-w is the hand size: a band of two takes the default, a band of
+   three sets it narrower so the set reads as one row instead of a pair and
+   an orphan. Shrink still applies, so a narrow column wraps as before. */
+.case-figure--phones .img-slot {
+  flex: 0 1 var(--phone-w, 300px);
+  margin-inline: 0; /* undo the band bleed .case-step slots inherit */
+  border: var(--hair) solid var(--ink);
+}
+
+.case-figure--phones figcaption {
+  flex-basis: 100%;
+  padding-top: var(--space-2);
+  text-align: center;
+}
+
+/* text with a small looping figure at its side: the media illustrates, it
+   does not interrupt the reading. On narrow screens it drops below. */
+.case-aside {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(160px, 22vw, 230px);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.case-aside .aside-media {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.case-aside .img-slot {
+  margin-inline: 0;
+  border: var(--hair) solid var(--ink);
+}
+
+.case-aside figcaption {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--gray-3);
+}
+
+@media (max-width: 700px) {
+  .case-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .case-aside .aside-media {
+    justify-items: center;
+  }
+
+  .case-aside .img-slot {
+    width: min(230px, 100%);
+  }
+}
+
 .slot-label {
   padding: var(--space-1) var(--space-2);
   background: var(--panel);
   border: var(--hair) solid var(--ink);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-align: center;
@@ -1779,10 +2255,28 @@ html.js .shot-switch {
 .case-figure figcaption {
   margin-top: var(--space-2);
   padding-inline: var(--pad-x);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
   color: var(--gray-3);
+}
+
+/* a link out of the prose, in the page's own polarity: ink and underlined
+   while it reads as text, inverted the moment it is the thing under the
+   pointer. The global rule only inherits colour, so without this a live
+   project link would arrive as browser blue on a monochrome sheet. */
+.case-link {
+  text-decoration-thickness: from-font;
+  text-underline-offset: 2px;
+}
+
+.case-link:hover,
+.case-link:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  outline: none;
 }
 
 .case-next {
@@ -1793,6 +2287,7 @@ html.js .shot-switch {
 }
 
 .case-next a {
+  font-family: var(--font-mono);
   font-size: var(--text-s);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
@@ -1841,13 +2336,18 @@ html.has-dot canvas {
   top: 0;
   left: 0;
   z-index: 9999;
+  display: grid;
+  place-items: center; /* the label centres, so the pill grows both ways */
   width: 14px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--accent);
   opacity: 0;
   pointer-events: none;
-  transition: width 120ms ease, height 120ms ease, opacity 120ms linear;
+  overflow: hidden; /* the word is clipped until the pill has grown round it */
+  transition: width 240ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    height 240ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    opacity 120ms linear;
   will-change: transform;
 }
 
@@ -1869,20 +2369,38 @@ html.has-dot canvas {
   height: 10px;
 }
 
-/* over something that names itself (the hero scene), the dot becomes the
-   word: no icon to decode, and it keeps the one accent colour */
+/* over something that names itself (a hero scene, an art page spot), the dot
+   grows into the word: the pill opens out of the dot around the pointer and
+   the label rises inside it. No icon to decode, and the one accent colour.
+   --label-w / --label-h are measured in js/interactions.js: the pill cannot
+   ease towards `auto`, so it eases towards the label's own box. */
 .cursor-dot.has-label {
-  width: auto;
-  height: auto;
-  padding: var(--space-1) var(--space-2);
-  border-radius: 999px;
+  width: var(--label-w, auto);
+  height: var(--label-h, auto);
   background: var(--accent);
   border: 0;
+}
+
+.cursor-label {
+  padding: var(--space-1) var(--space-2);
   color: #fff;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
-  white-space: nowrap;
   line-height: 1;
+  white-space: nowrap; /* its natural width is what the pill grows to */
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 130ms linear,
+    transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* the word waits for the pill to be on its way before it arrives; leaving,
+   it goes at once, so the pill never shrinks around visible text */
+.cursor-dot.has-label .cursor-label {
+  opacity: 1;
+  transform: none;
+  transition-delay: 70ms;
 }
 
 .cursor-dot.is-link.is-down {
@@ -1890,36 +2408,54 @@ html.has-dot canvas {
   height: 22px;
 }
 
-/* the sound switch: an icon, nothing else, pinned to the bottom-left of
-   the wordmark cell. A hairline box marks it as a control; the hit area
-   is larger than the mark. */
-.sound-toggle {
-  display: inline-flex;
-  align-items: flex-end;
+/* the switches (sound, motion): icons, nothing else, pinned to the
+   bottom-left of the wordmark cell. A hairline box marks each as a control;
+   the hit area is larger than the mark. Accent means the visitor has moved
+   the switch off its default - sound on, or motion stopped. */
+.cell-switches {
+  display: flex;
+  flex-wrap: wrap; /* a narrow cell stacks them rather than squashing them */
+  gap: var(--space-1);
   align-self: flex-start;
   margin-top: auto; /* the cell is a column: this drops it to the floor */
+}
+
+.cell-switch {
+  display: inline-flex;
+  flex: none; /* the box is the hit area: it never shrinks to fit */
+  align-items: center;
   padding: var(--space-2);
   background: var(--panel);
   border: var(--hair) solid var(--gray-2);
   pointer-events: auto;
 }
 
-.sound-toggle:hover,
-.sound-toggle:focus-visible {
+.cell-switch:hover,
+.cell-switch:focus-visible {
   border-color: var(--ink);
 }
 
-.sound-toggle.is-on {
+.cell-switch[aria-pressed="true"] {
   border-color: var(--accent);
 }
 
-/* a speaker: crossed out when muted, waves when playing */
-.sound-icon {
+.switch-icon {
   display: block;
   color: var(--gray-2);
 }
 
-.si-body {
+.cell-switch:hover .switch-icon {
+  color: var(--ink);
+}
+
+.cell-switch[aria-pressed="true"] .switch-icon {
+  color: var(--accent);
+}
+
+/* a speaker: crossed out when muted, waves when playing */
+.si-body,
+.mi-pause,
+.mi-play {
   fill: currentColor;
 }
 
@@ -1931,28 +2467,20 @@ html.has-dot canvas {
   stroke-linecap: round;
 }
 
-.sound-toggle:hover .sound-icon {
-  color: var(--ink);
-}
-
 .sound-toggle .si-wave {
   display: none; /* muted by default: no waves */
 }
 
-.sound-toggle.is-on .si-mute {
+.sound-toggle[aria-pressed="true"] .si-mute {
   display: none;
 }
 
-.sound-toggle.is-on .si-wave {
+.sound-toggle[aria-pressed="true"] .si-wave {
   display: block;
 }
 
-.sound-toggle.is-on .sound-icon {
-  color: var(--accent);
-}
-
 /* the outer wave breathes, so "on" is legible at a glance */
-.sound-toggle.is-on .si-wave-2 {
+.sound-toggle[aria-pressed="true"] .si-wave-2 {
   animation: sound-wave 1.6s ease-in-out infinite;
 }
 
@@ -1962,9 +2490,66 @@ html.has-dot canvas {
   }
 }
 
+/* the nudge: a hairline note beside the speaker, only while the switch says
+   "on" and the browser is still holding the audio back. It waits for the
+   first click, then leaves for good, so it is never chrome the visitor has
+   to dismiss. Built in js/interactions.js. */
+.switch-nudge {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: var(--space-1) var(--space-2);
+  background: var(--panel);
+  border: var(--hair) solid var(--accent);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--track-wide);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none; /* a label, not a third control */
+  animation: switch-nudge-in 240ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes switch-nudge-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
+/* dismissed: it fades where it stands, then leaves the DOM */
+.switch-nudge.is-gone {
+  opacity: 0;
+  animation: none;
+  transition: opacity 200ms linear;
+}
+
+/* the motion switch shows where it stands, like the speaker: a play mark
+   while the artwork runs, bars once it is frozen */
+.motion-toggle .mi-play {
+  display: none;
+}
+
+.motion-toggle[aria-pressed="true"] .mi-pause {
+  display: none;
+}
+
+.motion-toggle[aria-pressed="true"] .mi-play {
+  display: block;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .sound-toggle.is-on .si-wave-2 {
+  .sound-toggle[aria-pressed="true"] .si-wave-2 {
     animation: none;
+  }
+
+  /* the note still fades, it just does not slide in */
+  @keyframes switch-nudge-in {
+    from {
+      opacity: 0;
+    }
   }
 }
 
@@ -1995,7 +2580,8 @@ html.has-dot canvas {
   color: var(--gray-3);
 }
 
-.shift-from {
+/* the p selectors outweigh the reading-copy colour set on .case-panel p */
+.shift p.shift-from {
   color: var(--gray-3);
   text-decoration: line-through;
   text-decoration-thickness: var(--hair);
@@ -2005,7 +2591,7 @@ html.has-dot canvas {
   text-decoration: none;
 }
 
-.shift-to {
+.shift p.shift-to {
   background: var(--ink) !important;
   color: var(--paper);
 }
@@ -2021,6 +2607,7 @@ html.has-dot canvas {
   gap: var(--hair);
   background: var(--ink);
   border: var(--hair) solid var(--ink);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track);
   text-transform: uppercase;
@@ -2090,9 +2677,7 @@ html.has-dot canvas {
 }
 
 .loop-step h3 {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
+  font-family: var(--font-mono);
   font-size: var(--text-s);
 }
 
@@ -2111,6 +2696,7 @@ html.has-dot canvas {
   background: var(--ink);
   color: var(--paper);
   padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
 }
@@ -2162,6 +2748,7 @@ html.has-dot canvas {
 .example-todo {
   border: var(--hair) dashed var(--gray-2);
   padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
@@ -2202,7 +2789,8 @@ html.has-dot canvas {
 }
 
 @media (max-width: 700px) {
-  .case-figure--pair {
+  .case-figure--pair,
+  .case-figure--pair:has(.img-slot--phone) {
     grid-template-columns: 1fr;
     justify-items: center;
   }
@@ -2210,36 +2798,31 @@ html.has-dot canvas {
 
 /* narrow type + spacing (the flush-row fallback itself is width-agnostic) */
 @media (max-width: 760px) {
-  .case-cell .wordmark {
-    font-size: var(--text-xs);
-  }
-
-  /* the project line lives in the hero on small screens */
-  .case-cell .tagline {
-    display: none;
-  }
-
   [data-cell="menu"] a {
     padding: var(--space-2) var(--space-1);
     letter-spacing: var(--track);
   }
 
-  .case-hero {
-    padding-block: var(--space-5);
+  /* the fallback menu cell reads like the artwork pages' menu on a phone:
+     links stacked down its right edge, from the top of the cell (the base
+     rule's justify-content means bottom once the axis turns vertical). The
+     gap outweighs the links' negative hit-area margins, or the column
+     collapses onto itself. */
+  body.tiles-ready [data-cell="menu"]:not(.is-placed) {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: var(--space-4);
   }
 
-  .case-doc {
-    padding-top: calc(var(--space-6) + var(--space-2));
+  .case-hero {
+    padding-block: var(--space-5);
   }
 }
 
 @media (max-width: 900px) {
   .card-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .art-grid {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -2251,7 +2834,6 @@ html.has-dot canvas {
   }
 
   .case-doc {
-    width: calc(100% - 2 * var(--space-2));
     gap: var(--space-4);
   }
 
@@ -2276,6 +2858,19 @@ html.has-dot canvas {
     height: auto;
   }
 
+  /* space-between pins the ends of a line, so a nav that wraps on a phone
+     staggers left, right, left. Narrow, the links just read down the margin. */
+  .case-next {
+    justify-content: flex-start;
+  }
+
+  /* a stacked phone is alone on its line, so a band that narrowed its phones
+     to fit three across has nothing left to fit: every band stacks at the
+     same hand size */
+  .case-figure--phones .img-slot {
+    flex-basis: 300px;
+  }
+
   .case-sub {
     font-size: var(--text-m);
   }
@@ -2284,16 +2879,23 @@ html.has-dot canvas {
     grid-template-columns: 1fr;
   }
 
-  .art-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .grid-cell-overlay {
     padding: var(--space-2);
   }
 
-  .grid-cell-overlay .wordmark {
+  .grid-cell-overlay .wordmark,
+  .case-cell .wordmark {
     font-size: var(--text-s);
+  }
+
+  /* on a phone the menu cell is one lattice column wide: the links read
+     down its right edge instead of wrapping mid-label. The gap has to
+     outweigh the links' negative hit-area margins (-space-2 vertical), or
+     the column collapses onto itself. */
+  .grid-cell-overlay[data-cell="menu"] nav {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-4);
   }
 
   /* the fun-facts control row has to fit a narrow panel: tighter everything */
@@ -2435,6 +3037,7 @@ html.engine-failed .cell-bio {
 html:not(.js) .cell-bio .bio-body,
 html.engine-failed .cell-bio .bio-body {
   min-height: auto;
+  max-width: 62ch;
 }
 
 html:not(.js) .cell-bio .bio-colophon,

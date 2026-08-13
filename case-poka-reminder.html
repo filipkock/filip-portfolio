@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POKA REMINDER · FILIP KOCKENDAL</title>
+  <meta name="description" content="Case study: Poka Reminder, a medication reminder app with a mascot you do not want to let down. A solo founder project: research, design, React Native development, and an App Store launch.">
+  <meta name="theme-color" content="#fafafa">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,500,700,900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    document.documentElement.className += ' js';
+    // arriving from a mold exit: start black, the engine retreats it.
+    // The timeout is the last-resort un-hide if scripts stall.
+    try {
+      if (sessionStorage.getItem('grid-mold') === '1') {
+        document.documentElement.className += ' arriving';
+        setTimeout(function () { document.documentElement.classList.remove('arriving'); }, 1500);
+      }
+    } catch (e) { /* private mode */ }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="js/grid-engine.js"></script>
+  <script defer src="js/case.js"></script>
+  <script defer src="js/interactions.js"></script>
+</head>
+<body class="page-case">
+  <!-- the living lattice sits behind the document; content scrolls over it -->
+  <div id="grid-host" class="case-bg" aria-hidden="true"></div>
+
+  <header class="case-cell" data-cell="wordmark">
+    <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
+    <p class="tagline label">P-03 · CASE STUDY</p>
+  </header>
+
+  <nav class="case-cell" data-cell="menu" aria-label="Primary">
+    <a href="work.html" aria-current="true">01 WORK</a>
+    <a href="art.html">02 SIDE QUESTS</a>
+    <a href="about.html">03 ABOUT</a>
+  </nav>
+
+  <!-- section list built by js/case.js from [data-nav] panels -->
+  <nav class="case-cell case-index" data-cell="index" id="case-index" aria-label="On this page"></nav>
+
+  <main class="case-doc">
+
+    <!-- HERO -->
+    <section class="case-panel case-hero" id="hero" data-nav="INTRO">
+      <h1>POKA REMINDER</h1>
+      <p class="case-sub">Meds are easy to forget. Poka is hard to ignore.</p>
+      <dl class="case-facts">
+        <div><dt>ROLE</dt><dd>Founder, designer, developer. All of it</dd></div>
+        <div><dt>TEAM</dt><dd>Solo, with my father and a close friend as the users</dd></div>
+        <div><dt>TIMELINE</dt><dd>8 months to launch, 2025</dd></div>
+        <div><dt>PLATFORM</dt><dd>iOS, built cross platform in React Native</dd></div>
+      </dl>
+      <p class="case-lede">Poka started with two people who kept missing their medication: my father, whose prescriptions run on odd intervals, and a close friend with ADHD. Both had tried alarms and reminder apps. Every one worked for a week, then became noise. So I built them a reminder with someone at the centre: a small creature that nudges you when it is time, relaxes when you check off a dose, and cheers you on as you unlock a deck of collectible cards. I started a company and did everything myself, research to App Store review, on my first app built end to end.</p>
+
+      <!-- the reframing, as the page's own polarity: struck out, then set -->
+      <div class="shift" aria-label="The two kinds of reminder">
+        <p class="shift-from"><span class="label">A reminder, as usually built</span> An alarm that fires at 22:00 and is swiped away at 22:01.</p>
+        <p class="shift-to"><span class="label">The reminder I designed</span> A character that waits for you, and notices when you show up.</p>
+      </div>
+
+      <!-- the hero leads with the app as it introduces itself, the same image
+           the App Store listing opens on, then hands over to the screen it is
+           really about. Both frames are portrait, so the band declares a
+           taller ratio (--band-ratio) than a desktop case's 16/9. The marks
+           carry the notes: on a fine pointer the red dot becomes the note
+           (data-cursor); keyboard and touch get the same words as a pill. -->
+      <figure class="case-figure case-shot">
+        <div class="shot-switch" role="group" aria-label="Screen">
+          <button type="button" data-view="hero" aria-pressed="true">HERO</button>
+          <button type="button" data-view="mobile" aria-pressed="false">THE DAY</button>
+        </div>
+        <div class="shot" data-shot style="--band-ratio: 4 / 3">
+          <div class="shot-frame" data-view="hero" style="--shot-ratio: 2251 / 2400">
+            <img src="assets/img/case-poka/hero.jpg" decoding="async"
+                 alt="Meet Poka: here to help you remember your medications. The penguin character in a hat beside a phone showing three doses at 08:30, 20:00 and 23:25, the last one marked take now.">
+          </div>
+          <div class="shot-frame shot-frame--phone" data-view="mobile">
+            <img src="assets/img/case-poka/home-taken.png" decoding="async"
+                 alt="The Poka home screen: a week strip across the top, a streak counter, and today's 22:00 dose of Medication 1 marked taken at 21:32, on time.">
+            <button type="button" class="shot-mark" style="--x: 6%; --y: 0.4%; --w: 11%; --h: 3.4%"
+                    data-cursor="A STREAK TO PROTECT" aria-label="A streak to protect">
+              <span class="shot-tip" aria-hidden="true">A STREAK TO PROTECT</span>
+            </button>
+            <button type="button" class="shot-mark" style="--x: 3%; --y: 4.8%; --w: 93%; --h: 7.2%"
+                    data-cursor="SEVEN DAYS AT A GLANCE" aria-label="Seven days at a glance">
+              <span class="shot-tip" aria-hidden="true">SEVEN DAYS AT A GLANCE</span>
+            </button>
+            <button type="button" class="shot-mark" style="--x: 9%; --y: 21.6%; --w: 82%; --h: 11%"
+                    data-cursor="TAKEN AT 21:32, ON TIME" aria-label="Taken at 21:32, on time">
+              <span class="shot-tip" aria-hidden="true">TAKEN AT 21:32, ON TIME</span>
+            </button>
+            <button type="button" class="shot-mark" style="--x: 42%; --y: 84.7%; --w: 16%; --h: 8.8%"
+                    data-cursor="ADD A MEDICATION" aria-label="Add a medication">
+              <span class="shot-tip" aria-hidden="true">ADD A MEDICATION</span>
+            </button>
+          </div>
+        </div>
+      </figure>
+    </section>
+
+    <!-- THE PROBLEM -->
+    <section class="case-panel" id="problem" data-nav="THE PROBLEM">
+      <h2 class="case-h">AN ALARM YOU LEARN TO IGNORE</h2>
+      <p>Taking medication is a repetition problem, and the people who struggle with it most are the ones repetition serves worst. For someone with ADHD, a reminder competes with everything else that is louder than it. For someone on depression medication, the hard part is not knowing what to do, it is finding a reason to do it today. And prescriptions do not run on round numbers: every other day, twice a week, every six weeks, three times a day but only until the box is empty.</p>
+      <p>A phone alarm is designed to be dismissed. Dismissing it is the whole interaction. After a week the swipe is muscle memory, and the medication it stood for never happened. Every tool my two users had tried failed the same way: not loudly, just gradually, until it was ignored like everything else.</p>
+      <p>This was not a market I spotted. It was my father sorting pills into a weekly box he did not trust, and my friend rediscovering a missed dose at midnight. I wanted to build them something that would still be working in month three.</p>
+    </section>
+
+    <!-- THE BET -->
+    <section class="case-panel" id="bet" data-nav="THE BET">
+      <h2 class="case-h">MAKE IT SOMEONE, NOT SOMETHING</h2>
+      <p>Reminders do not fail technically. They fire on time, every time. They fail socially: nothing about them makes you feel anything when you ignore them. So the bet was to put a character between the user and the schedule. Poka is a small, soft, slightly anxious creature. It nudges you gently when it is time, relaxes when you check off your dose, and hands you a collectible card when you keep showing up. Ignoring an alarm costs nothing. Ignoring someone who is waiting for you does.</p>
+
+      <!-- the character sits beside the words about it, small and quiet -->
+      <div class="case-aside">
+        <div>
+          <blockquote class="case-quote">I'll... I'll do my best. I promise.</blockquote>
+          <p>That is Poka, in the app's own voice. The character is shy and tries hard, which flips the usual dynamic: you are not being managed by a productivity tool, you are letting a small penguin down. The stutter is deliberate. Confidence is easy to ignore. Effort is not.</p>
+          <p>There was a second, quieter reason to bet on character. This was my first full app: I had built front ends before, but never a native app with its own backend, accounts, and payments. Building while learning meant the feature set had to stay small. The craft budget went where a solo builder can actually compete, into the mascot, the motion, and the feel.</p>
+        </div>
+        <figure class="aside-media">
+          <div class="img-slot" data-slot="brand" style="--slot-ratio: 948 / 372">
+            <video src="assets/video/case-poka/brand-splash.mp4" poster="assets/img/case-poka/brand-splash-poster.jpg" muted loop playsinline preload="none"
+                   data-autoplay aria-label="The poka wordmark drawing itself in, letter by letter"></video>
+            <span class="slot-label">VIDEO · WORDMARK</span>
+          </div>
+          <div class="img-slot" data-slot="waving" style="--slot-ratio: 720 / 784">
+            <video src="assets/video/case-poka/poka-waving.mp4" poster="assets/img/case-poka/poka-waving-poster.jpg" muted loop playsinline preload="none"
+                   data-autoplay aria-label="Poka waving hello with one flipper"></video>
+            <span class="slot-label">VIDEO · POKA WAVES</span>
+          </div>
+          <figcaption>The wordmark inks itself in; Poka waves hello. Blobs, not corners.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- RESEARCH -->
+    <section class="case-panel" id="research" data-nav="RESEARCH">
+      <h2 class="case-h">TESTED AT KITCHEN TABLE SCALE</h2>
+      <p>The research plan fit the project: interviews, co-building, and testing with the two people it was for. My father supplied the scheduling reality, prescriptions with intervals no preset covers, and a hard requirement that he could see, at any moment, what was set up and when it would fire. My friend supplied the motivation reality: any app that felt like homework was already deleted. Every build went to their phones first, and every session was a chance to watch a real dose get taken or missed.</p>
+      <blockquote class="case-quote">People ignore alarms. They do not like disappointing someone.</blockquote>
+      <p>The finding that shaped everything was emotional attachment to the mascot. Both users talked about Poka the way you talk about a pet, not a feature. They checked doses off partly so the character would be pleased, and they noticed when it was sad. I had bet on the character; watching two very different users bond with it was the evidence the bet deserved more of the budget, not less.</p>
+      <p>Two users is not a study, and I am not going to pretend it is one. It is depth instead of breadth, the same trade I have defended elsewhere in this portfolio, and for an app built for two named people it was the right one. What it cannot tell you is whether strangers will pay for it. That bill arrives later in this story.</p>
+    </section>
+
+    <!-- THE FLOW -->
+    <section class="case-panel" id="flow" data-nav="THE FLOW">
+      <h2 class="case-h">THE FLOW</h2>
+
+      <div class="case-step">
+        <h3>POKA SPEAKS FIRST</h3>
+        <p>Onboarding opens with the character, not a form. Poka stutters through a hello, explains why it is here, and only then asks you to sign in with Google or Apple. Even the iOS notification prompt stays in character: Allow Poka to poke you? By the time the first form appears, you already know who is asking.</p>
+        <figure class="case-figure case-figure--phones">
+          <div class="img-slot" data-slot="step-1a" style="--slot-ratio: 586 / 1198">
+            <video src="assets/video/case-poka/clip-onboarding.mp4" poster="assets/img/case-poka/clip-onboarding-poster.jpg" muted loop playsinline preload="none"
+                   data-autoplay aria-label="The splash blob morphs into Poka, who introduces itself and leads into sign up"></video>
+            <span class="slot-label">VIDEO · FIRST OPEN</span>
+          </div>
+          <div class="img-slot" data-slot="step-1b" style="--slot-ratio: 1170 / 2391">
+            <img src="assets/img/case-poka/splash.png" loading="lazy" decoding="async"
+                 alt="The splash screen: the poka wordmark, the penguin character, and a single continue button.">
+            <span class="slot-label">IMAGE · SPLASH</span>
+          </div>
+          <figcaption>One button on the first screen. The character does the convincing, not the copy.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-step">
+        <h3>A SCHEDULE SHAPED LIKE THE PRESCRIPTION</h3>
+        <p>Creating a medication is a short interview: name, type, interval, times per day, start date, end date or take forever, and the exact reminder times. The interval list is where my father's prescriptions live: every day, every other day, specific weekdays, every X days, every X weeks, every X months. It ends on a summary you can read like a sentence, so what you set is what you trust.</p>
+        <figure class="case-figure case-figure--phones">
+          <div class="img-slot" data-slot="step-2a" style="--slot-ratio: 586 / 1198">
+            <video src="assets/video/case-poka/clip-create.mp4" poster="assets/img/case-poka/clip-create-poster.jpg" muted loop playsinline preload="none"
+                   data-autoplay aria-label="The full create medication flow at double speed: name, type, interval, times, dates, summary, saved"></video>
+            <span class="slot-label">VIDEO · CREATE FLOW</span>
+          </div>
+          <div class="img-slot" data-slot="step-2b" style="--slot-ratio: 1170 / 2391">
+            <img src="assets/img/case-poka/med-detail.png" loading="lazy" decoding="async"
+                 alt="A medication detail screen: type tablet, interval every day, time 22:00, start date, and no end date, take forever.">
+            <span class="slot-label">IMAGE · MEDICATION DETAIL</span>
+          </div>
+          <figcaption>The whole create flow, shown at double speed. Every answer stays visible and editable afterwards.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-step">
+        <h3>A DAY YOU CAN TRUST</h3>
+        <p>A reminder app earns trust by showing its work. The home screen is the day: each dose under its time, checked or waiting, with the week strip above it for what is coming. The medications tab is the contract: every schedule, spelled out. If a user ever has to wonder whether a reminder is actually set, the app has already failed, so the answer is always one glance away.</p>
+        <figure class="case-figure case-figure--phones">
+          <div class="img-slot" data-slot="step-3a" style="--slot-ratio: 1170 / 2391">
+            <img src="assets/img/case-poka/home-tomorrow.png" loading="lazy" decoding="async"
+                 alt="Tomorrow's schedule: Medication 1 at 22:00, not yet taken, with a today button to jump back.">
+            <span class="slot-label">IMAGE · TOMORROW</span>
+          </div>
+          <div class="img-slot" data-slot="step-3b" style="--slot-ratio: 1170 / 2391">
+            <img src="assets/img/case-poka/meds-list.png" loading="lazy" decoding="async"
+                 alt="The medications list: Medication 1, tablet, every day at 22:00.">
+            <span class="slot-label">IMAGE · MEDICATIONS</span>
+          </div>
+          <figcaption>Past days keep their record, future days show what is coming, and the list states every schedule plainly.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-step">
+        <h3>THE PAYOFF</h3>
+        <p>Checking off a dose is the whole game, so that is where the celebration lives. Poka cheers, the streak grows, and on a good day a blob morphs into a new card. The reward loop pays for adherence, never for screen time: there is nothing to earn by just opening the app.</p>
+        <figure class="case-figure case-figure--phones">
+          <div class="img-slot" data-slot="step-4" style="--slot-ratio: 586 / 1198">
+            <video src="assets/video/case-poka/clip-take.mp4" poster="assets/img/case-poka/clip-take-poster.jpg" muted loop playsinline preload="none"
+                   data-autoplay aria-label="Taking a dose: the take now button, Poka celebrating with confetti, and the Sad Egg card revealing itself"></video>
+            <span class="slot-label">VIDEO · TAKE A DOSE</span>
+          </div>
+          <figcaption>Take the dose, get the party: confetti, a streak boost, and a brand new card.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-step">
+        <h3>A DECK WORTH KEEPING</h3>
+        <p>The cards are Poka's hats, each with a level and a personality of its own. Sad Egg arrives first; Mushroom Mood, Crying Onion, Plant of Patience, and Toast of Triumph wait behind more taken doses. The writing keeps the character's voice, so even the collection nags you kindly.</p>
+        <figure class="case-figure case-figure--phones">
+          <div class="img-slot" data-slot="step-5a" style="--slot-ratio: 586 / 1198">
+            <video src="assets/video/case-poka/clip-collection.mp4" poster="assets/img/case-poka/clip-collection-poster.jpg" muted loop playsinline preload="none"
+                   data-autoplay aria-label="The collection: a grid of card decks, and the Sad Egg card with its own personality text"></video>
+            <span class="slot-label">VIDEO · THE COLLECTION</span>
+          </div>
+          <div class="img-slot" data-slot="step-5b" style="--slot-ratio: 1170 / 2391">
+            <img src="assets/img/case-poka/collection.png" loading="lazy" decoding="async"
+                 alt="The collection screen: Poka's Hats deck with Sad Egg unlocked and Mushroom Mood, Crying Onion, Plant of Patience, and Toast of Triumph still locked.">
+            <span class="slot-label">IMAGE · POKA'S HATS</span>
+          </div>
+          <figcaption>Sad Egg, level 1: "U-um... I'm soft on the outside, chaotic on the inside. D-don't forget your meds, okay?"</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- DESIGN DECISIONS -->
+    <section class="case-panel" id="decisions" data-nav="DECISIONS">
+      <h2 class="case-h">DESIGN DECISIONS</h2>
+      <dl class="case-decisions">
+        <div>
+          <dt>Schedules bend to prescriptions</dt>
+          <dd>The interval system was designed around the worst real prescription I knew, not the average one. Every day is the easy case; every other day, specific weekdays, and every X days, weeks or months are the cases that make people give up on other apps. If the schedule cannot be entered exactly, the reminder is wrong from day one.</dd>
+        </div>
+        <div>
+          <dt>The schedule always shows its work</dt>
+          <dd>Day view, week strip, medication detail: three places where the user can confirm what is set and when it fires. Trust in a reminder app is binary. One dose missed because the app was vague and it gets deleted, so the state of every reminder is always one glance away.</dd>
+        </div>
+        <div>
+          <dt>A character carries the motivation</dt>
+          <dd>Nudges come from someone, not something. Poka is soft, shy, and visibly pleased when you show up, which makes ignoring it feel like letting someone down. That feeling was the retention mechanism the boring alarms lacked.</dd>
+        </div>
+        <div>
+          <dt>Rewards pay for adherence, not attention</dt>
+          <dd>Streaks and cards are earned by checking off doses, nothing else. There is no daily login bonus and nothing to farm by opening the app. The engagement loop and the health outcome are the same loop, on purpose.</dd>
+        </div>
+        <div>
+          <dt>Premium adds Poka, never removes safety</dt>
+          <dd>The free app keeps a complete reminder loop. Premium adds more medications, more daily doses, more card decks, and Rage Mode for the days gentle does not work. Nobody's adherence is held hostage by a paywall.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- THE BUILD -->
+    <section class="case-panel" id="build" data-nav="THE BUILD">
+      <h2 class="case-h">FIRST APP, WHOLE STACK</h2>
+      <p>Designing in Figma was the comfortable part. Everything after it was new: React Native with Expo for the app, Firebase for accounts, data, and push notifications, RevenueCat for subscriptions, and the Apple developer pipeline for provisioning, review, and release. Sign in with Google and Apple, consent flows, account deletion: the unglamorous half of an app turned out to be most of the app.</p>
+      <p>Building while learning set the pace and the scope. Every feature was the first time I had built that kind of feature, so each one cost more than it would cost me today. The discipline that saved the project was refusing to widen the feature set: one medication loop done properly, with the saved effort spent on the character and motion that made the app worth keeping. Eight months later it passed App Store review.</p>
+    </section>
+
+    <!-- THE BUSINESS -->
+    <section class="case-panel" id="business" data-nav="THE BUSINESS">
+      <h2 class="case-h">A COMPANY OF ONE</h2>
+      <p>Poka was also my first company: registering it, pricing a subscription, wiring RevenueCat to the paywall, and writing the privacy policy myself. The goal was deliberately modest. First make the app genuinely work for its two users, then market to see if people would pay for more Poka. The paywall reflects that order: it sells the collection and the extras, while the core reminder loop stays free.</p>
+      <figure class="case-figure case-figure--phones">
+        <div class="img-slot" data-slot="paywall" style="--slot-ratio: 586 / 1198">
+          <video src="assets/video/case-poka/clip-paywall.mp4" poster="assets/img/case-poka/clip-paywall-poster.jpg" muted loop playsinline preload="none"
+                 data-autoplay aria-label="The premium paywall: unlock Poka's full potential, with unlimited medications, all card decks, priority support, and early access"></video>
+          <span class="slot-label">VIDEO · PAYWALL</span>
+        </div>
+        <div class="img-slot" data-slot="settings" style="--slot-ratio: 1170 / 2391">
+          <img src="assets/img/case-poka/settings.png" loading="lazy" decoding="async"
+               alt="The settings screen: a subscription card, account with logout and delete account, and sound settings.">
+          <span class="slot-label">IMAGE · SETTINGS</span>
+        </div>
+        <figcaption>The paywall sells more Poka, not the reminder. Settings stay honest: log out, delete account, done.</figcaption>
+      </figure>
+    </section>
+
+    <!-- LAUNCH & MARKETING -->
+    <section class="case-panel" id="launch" data-nav="LAUNCH">
+      <h2 class="case-h">LAUNCH, AND THE PART I HAD NEVER DONE</h2>
+      <p>The launch itself went cleanly: listing copy, App Store screenshots, and a preview video where Poka introduces itself in its own nervous voice. The marketing after the launch is where my experience ran out. I made character videos and posted where I could, but I had no channel, no audience, and no plan beyond the product being likeable. Design and code got eight months of craft; distribution got the leftovers, and the download numbers said so.</p>
+      <figure class="case-figure case-figure--phones">
+        <div class="img-slot" data-slot="promo" style="--slot-ratio: 720 / 1280">
+          <video src="assets/video/case-poka/marketing.mp4" poster="assets/img/case-poka/marketing-poster.jpg" controls playsinline preload="none"
+                 aria-label="The App Store preview video: Poka introduces itself line by line, then the wordmark and store badges"></video>
+          <span class="slot-label">VIDEO · APP STORE PREVIEW</span>
+        </div>
+        <div class="img-slot" data-slot="appstore" style="--slot-ratio: 1170 / 2391">
+          <img src="assets/img/case-poka/appstore.jpg" loading="lazy" decoding="async"
+               alt="The live App Store listing for Poka reminder: health and fitness category, a 5.0 rating, and the Meet Poka preview screenshots.">
+          <span class="slot-label">IMAGE · APP STORE</span>
+        </div>
+        <figcaption>Live on the App Store. The preview video has sound: Poka speaks for itself.</figcaption>
+      </figure>
+      <p>The screenshot set had one job: say what the app is before anyone reads a word of the description. Poka introduces itself first, then three claims, one screen each, in the order someone decides in. The schedule proves it fits your prescription, the celebration shows what taking a dose feels like, and the locked cards give a reason to come back tomorrow.</p>
+      <figure class="case-figure case-figure--phones" style="--phone-w: 165px">
+        <div class="img-slot" data-slot="store-meet" style="--slot-ratio: 1242 / 2688">
+          <img src="assets/img/case-poka/store-meet.png" loading="lazy" decoding="async"
+               alt="App Store screenshot, Meet Poka: here to help you remember your medications. Poka in its egg hat beside an angled phone with the day's doses.">
+          <span class="slot-label">STORE · MEET POKA</span>
+        </div>
+        <div class="img-slot" data-slot="store-schedules" style="--slot-ratio: 1242 / 2688">
+          <img src="assets/img/case-poka/store-schedules.png" loading="lazy" decoding="async"
+               alt="App Store screenshot, Custom schedules: reminders that fit your routine, over the time picker set to 08:30 during onboarding.">
+          <span class="slot-label">STORE · SCHEDULES</span>
+        </div>
+        <div class="img-slot" data-slot="store-track" style="--slot-ratio: 1242 / 2688">
+          <img src="assets/img/case-poka/store-track.png" loading="lazy" decoding="async"
+               alt="App Store screenshot, Stay on track: Poka helps you keep your routine, over the celebration screen reading you have taken 1 of 2 today.">
+          <span class="slot-label">STORE · STAY ON TRACK</span>
+        </div>
+        <div class="img-slot" data-slot="store-cards" style="--slot-ratio: 1242 / 2688">
+          <img src="assets/img/case-poka/store-cards.png" loading="lazy" decoding="async"
+               alt="App Store screenshot, Collect cards: earn rewards for staying consistent, over the collection with Sad Egg unlocked and four cards still locked.">
+          <span class="slot-label">STORE · COLLECT CARDS</span>
+        </div>
+        <figcaption>The listing set: introduction, schedule, payoff, collection. The promises the app has to keep.</figcaption>
+      </figure>
+      <p>The store was not the only front door, so Poka got a site of its own: the same character, the same blobs, and the two download buttons above everything else. It is written as Poka's own page rather than a product page, which is why the specs are a stat block (swimming speed, melt resistance, medication memory) instead of a feature list. <a class="case-link" href="https://filipkock.github.io/pokareminder.github.io/" target="_blank" rel="noopener">See the site for yourself</a>.</p>
+      <figure class="case-figure">
+        <div class="img-slot" data-slot="marketing-site" style="--slot-ratio: 2000 / 1142">
+          <img src="assets/img/case-poka/marketing-site.jpg" loading="lazy" decoding="async"
+               alt="The Poka marketing site: a Meet Poka hero with App Store and Google Play buttons, and cards for who is Poka, stats, a fun fact, and the app itself.">
+          <span class="slot-label">IMAGE</span>
+        </div>
+        <figcaption>The marketing site: download first, character everywhere else. Poka is 87% water, 13% penguin, 0% okay with you forgetting your meds.</figcaption>
+      </figure>
+    </section>
+
+    <!-- IMPACT -->
+    <section class="case-panel" id="impact" data-nav="IMPACT">
+      <h2 class="case-h">WHAT HAPPENED</h2>
+      <ul class="case-metrics">
+        <li><strong>8</strong><span>months from first sketch to the App Store, everything solo</span></li>
+        <li><strong>5.0</strong><span>App Store rating, from one review, counted honestly</span></li>
+        <li><strong>2</strong><span>users it was built for, and who kept using it</span></li>
+      </ul>
+      <p>The public numbers are small and I will state them plainly: a few dozen downloads, a handful of active users over the following months, no meaningful revenue. The feedback that did come back kept naming one thing, and it was not the scheduling engine. People mentioned Poka: that they liked it, that it was cute, that they felt something when it cheered. The emotional bet was the part strangers noticed too.</p>
+      <p>Against its original goal, the app delivered. It was built for two people with two very different reasons to miss their meds, and both used it, understood their schedules at a glance, and kept their streaks alive. As a business it did not find its market. As a product it found its two users, which is what it was for.</p>
+    </section>
+
+    <!-- REFLECTION -->
+    <section class="case-panel" id="reflection" data-nav="REFLECTION">
+      <h2 class="case-h">WHAT I LEARNED</h2>
+      <p>Building a product and building a business are different jobs, and I only did one of them well. Marketing deserved the same research the product got: before spending eight months building, I should have spent a few weeks finding out whether enough strangers wanted this to pay for it. The product side validated everything with two users before writing code. The business side validated nothing and hoped. If I convert a side project into a company again, traction comes first, then the build.</p>
+      <p>I also learned what a solo bet on craft can and cannot do. Character and motion made people care about a utility app, carried it through App Store review, and earned its only review at five stars. What they could not do is replace distribution. Poka is paused for now, still live, still poking. The lesson is not paused: make people want the thing before you make the thing this good.</p>
+    </section>
+
+    <nav class="case-panel case-next" aria-label="Case navigation">
+      <a href="work.html">ALL PROJECTS</a>
+      <a href="https://filipkock.github.io/pokareminder.github.io/" target="_blank" rel="noopener">POKA'S SITE</a>
+      <a href="mailto:filip.kockendal@gmail.com">GET IN TOUCH</a>
+    </nav>
+  </main>
+</body>
+</html>

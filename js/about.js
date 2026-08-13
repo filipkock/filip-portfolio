@@ -1,6 +1,6 @@
 /* about.js - 03 ABOUT: the artwork as a bio sheet.
  * The bio lives in one large panel cell; the actions (contact, resume,
- * linkedin) are black lattice tiles like the landing's; three fixed photo
+ * linkedin) are black lattice tiles like the landing's; four fixed photo
  * cells reveal an image on hover (placeholders until assets/img/me-0N.jpg
  * exist). All spans are explicit (spanFrac), chosen so lattice snapping
  * cannot make them collide. Inside the panel, the fun-facts list becomes a
@@ -139,14 +139,18 @@
   });
 
   // mirrors the engine's lattice derivation (CELL_TARGET_PX 190, mobile
-  // scale 1.2, stacked row forcing) so narrow spans land on integer rows
+  // scale 1.2, stacked row forcing) so narrow spans land on integer rows.
+  // The height is the SHEET's height, not the window's: on a phone the sheet
+  // grows past the viewport (stageH below) and the page scrolls.
   function lattice() {
-    var w = window.innerWidth, h = window.innerHeight;
+    var w = window.innerWidth, h = host.clientHeight || window.innerHeight;
     var stacked = coarse || w < 700;
     var target = 190 * (stacked ? 1.2 : 1);
     var cols = Math.min(16, Math.max(2, Math.round(w / target)));
     var rows = Math.min(24, Math.max(1, Math.round(h / target)));
-    if (stacked) rows = Math.max(rows, 8);
+    // the engine forces rows >= 2 + navCount*2 when stacked; this page
+    // carries four nav tiles (contact, resume, linkedin, funfact)
+    if (stacked) rows = Math.max(rows, 10);
     return { cols: cols, rows: rows, stacked: stacked };
   }
 
@@ -168,6 +172,13 @@
   // exactly the width of the sheet above it and the two can never drift
   function bioCols(rc) { return Math.max(2, rc - 2); }
 
+  // the deck's band, one row up from the foot of the sheet so it lines up with
+  // the linkedin tile beside it. The bio's height is derived from this (not the
+  // other way round), so the sheet's bottom edge and the deck's top edge are
+  // the same line by construction. The floor of 2 keeps the band clear of the
+  // wordmark row on short windows, where R - 2 would land on the bio itself.
+  function deckRow(R) { return Math.max(2, R - 2); }
+
   // the deck's two shapes, in lattice cells: a small tile that unrolls
   // sideways along its own band - same row, more columns, so opening it never
   // pushes the sheet around. Derived on demand (p5 runs setup asynchronously,
@@ -187,16 +198,18 @@
       // the sheet above it, flush on both edges
       var wide = bioCols(rc);
       return {
-        closed: cells(1, R - 1, wide > 2 ? 2 : 1, 1),
-        open: cells(1, R - 1, wide, 1)
+        closed: cells(1, deckRow(R), wide > 2 ? 2 : 1, 1),
+        open: cells(1, deckRow(R), wide, 1)
       };
     }
     if (L.stacked) {
       // a phone has no width to unroll into, so this band opens upward over
-      // the bio instead - the one place the deck grows vertically
+      // the bio instead - the one place the deck grows vertically. Closed it
+      // sits flush under the bio (row R-7), keeping the artwork row between
+      // itself and the contact band.
       return {
-        closed: { x0: 0, y0: (R - 6) / R, x1: 1, y1: (R - 5) / R },
-        open: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 5) / R }
+        closed: { x0: 0, y0: (R - 7) / R, x1: 1, y1: (R - 6) / R },
+        open: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 6) / R }
       };
     }
     // narrow desktop: half the row, opening across the whole of it
@@ -225,8 +238,9 @@
       // contact spans the two columns above, linkedin sits one column left
       // (never straight under resume - they would read as one button)
       var rc = Math.min(C - 1, Math.max(3, Math.round(C * 0.72)));
-      // the bio ends one row short so the deck tile has its own band below
-      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: cells(1, 1, bioCols(rc), Math.max(1, R - 2)) });
+      // the bio ends where the deck's band starts, two rows short of the foot,
+      // which puts that band level with the linkedin tile across from it
+      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: cells(1, 1, bioCols(rc), Math.max(1, deckRow(R) - 1)) });
       defs.push({
         id: 'funfact', kind: 'nav', labelMax: 5,
         lines: deckOpen ? [] : LINES.funfact,
@@ -238,11 +252,19 @@
       defs.push({ id: 'photo-1', kind: 'photo', spanFrac: { x0: 0.30, y0: 0.00, x1: 0.42, y1: 0.20 } });
       defs.push({ id: 'photo-2', kind: 'photo', spanFrac: { x0: 0.00, y0: 0.30, x1: 0.10, y1: 0.55 } });
       defs.push({ id: 'photo-3', kind: 'photo', spanFrac: { x0: 0.90, y0: 0.86, x1: 1.00, y1: 1.00 } });
+      // the fourth takes the bottom-left corner, diagonally opposite photo-3:
+      // column 0 is outside both the bio's run and the deck's, and the last
+      // row keeps it clear of photo-2 (snapping would otherwise fuse the two
+      // into one domino in the left margin)
+      defs.push({ id: 'photo-4', kind: 'photo', spanFrac: { x0: 0.00, y0: 0.80, x1: 0.10, y1: 1.00 } });
     } else if (L.stacked) {
-      // full-width bands on integer rows with an artwork row between each
-      // (adjacent black bands would fuse: ink borders vanish on ink);
-      // photos are dropped. Engine forces R >= 8 here (3 nav tiles).
-      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 6) / R } });
+      // full-width bands on integer rows, anchored to the foot of the sheet:
+      // funfact R-7, contact R-5, resume R-3, linkedin R-1, with an artwork
+      // row between each pair (adjacent black bands would fuse: ink borders
+      // vanish on ink). Photos are dropped, and the bio takes every row
+      // between the header and the bands - sizeStage grows the sheet until
+      // those rows actually hold its text.
+      defs.push({ id: 'bio', kind: 'text', panel: true, spanFrac: { x0: 0, y0: 1 / R, x1: 1, y1: (R - 7) / R } });
       defs.push({ id: 'contact', kind: 'nav', lines: LINES.contact, spanFrac: { x0: 0, y0: (R - 5) / R, x1: 1, y1: (R - 4) / R } });
       defs.push({ id: 'resume', kind: 'nav', lines: LINES.resume, spanFrac: { x0: 0, y0: (R - 3) / R, x1: 1, y1: (R - 2) / R } });
       defs.push({ id: 'linkedin', kind: 'nav', lines: LINES.linkedin, spanFrac: { x0: 0, y0: (R - 1) / R, x1: 1, y1: 1 } });
@@ -287,6 +309,51 @@
   }
   window.__grid = sketch; // debug handle (console tinkering, tests)
 
+  /* on a phone the fixed sheet cannot hold the bio: instead of clipping the
+     text (or nesting a scrollbar inside the cell), the sheet itself grows
+     past the viewport and the PAGE scrolls. The stage gets an explicit px
+     height sized so the bio's rows fit its text; the engine's own resize
+     observer sees the taller host and rebuilds everything onto it. Height
+     changes converge (one-row tolerance), so build -> size -> rebuild cannot
+     ping-pong. */
+  var stage = host.closest('.stage') || host.parentElement;
+
+  function sizeStage() {
+    var stacked = coarse || window.innerWidth < 700;
+    if (!stacked) {
+      if (stage.style.height) {
+        stage.style.height = '';
+        document.body.classList.remove('stage-scroll');
+      }
+      return;
+    }
+    var body = overlays.bio && overlays.bio.querySelector('.bio-body');
+    if (!body || !body.lastElementChild) return;
+    document.body.classList.add('stage-scroll');
+    // content height, not scrollHeight: bio-body stretches to min-height
+    // 100%, so scrollHeight would ratchet and the sheet could never shrink
+    var pad = parseFloat(getComputedStyle(body).paddingBottom) || 0;
+    var need = body.lastElementChild.getBoundingClientRect().bottom -
+      body.getBoundingClientRect().top + pad + 2;
+    // the bio holds rows 1..R-8 (tileDefs): solve for the sheet height whose
+    // rows give it that room. Iterate because R itself follows the height
+    // (228 = the engine's stacked cell target, 190 * 1.2, forced >= 10 rows
+    // by this page's four nav tiles); growth converges with mild overshoot.
+    var H = Math.max(window.innerHeight, 1);
+    for (var k = 0; k < 6; k++) {
+      var R = Math.max(10, Math.min(24, Math.round(H / 228)));
+      if ((R - 8) * H / R + 1 >= need) break;
+      H = Math.max(window.innerHeight, Math.ceil(need * R / (R - 8)));
+    }
+    if (Math.abs(stage.getBoundingClientRect().height - H) > 8) {
+      stage.style.height = H + 'px';
+    }
+  }
+
+  window.addEventListener('resize', sizeStage);
+  // Satoshi arrives late and reflows the bio: re-measure once it lands
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeStage);
+
   function placeCells(rects) {
     var placed = {};
     rects.forEach(function (r) {
@@ -315,6 +382,7 @@
       }
     }
     document.body.classList.add('tiles-ready');
+    sizeStage(); // the bio is measurable now: grow the sheet if it clips
   }
 
   // action tiles: engine polarity wipe on hover/focus; navigation stays
@@ -350,6 +418,18 @@
         lines: open ? [] : LINES.funfact,
         animateMs: GROW_MS
       });
+      // stacked, the drawer opens upward OVER the bio: the bio overlay would
+      // otherwise keep painting its text across the drawer's ink, and the
+      // fact itself would land above the fold - so the bio steps aside and
+      // the view follows the drawer to its top
+      var covers = lattice().stacked;
+      if (overlays.bio) overlays.bio.classList.toggle('is-covered', open && covers);
+      if (open && covers) {
+        var reducedNow = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(function () {
+          cell.scrollIntoView({ block: 'start', behavior: reducedNow ? 'auto' : 'smooth' });
+        }, GROW_MS);
+      }
       if (open) {
         sketch.setTileHover(null);
         var first = body && body.querySelector('.ff-step');

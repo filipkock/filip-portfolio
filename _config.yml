@@ -1,0 +1,12 @@
+# GitHub Pages build config.
+#
+# The site is plain HTML - no Jekyll templating is used, and no file has
+# front matter, so everything is copied through verbatim. This file exists
+# for one reason: to keep local-only tooling out of the published site.
+#
+# dev/ is the local dev server and scratch pages. They stay in the repo
+# (they are useful on another machine) but are never served.
+exclude:
+  - dev/
+  - README.md
+  - assets/README.md

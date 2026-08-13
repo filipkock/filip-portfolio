@@ -7,6 +7,9 @@
   <meta name="description" content="Case study: a standing research loop that borrowed practitioner expertise to rebuild Desktop workflows on the web, defining feature parity from a real clinical day instead of a feature list.">
   <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,500,700,900&display=swap">
   <link rel="stylesheet" href="css/style.css">
   <script>
     document.documentElement.className += ' js';
@@ -35,7 +38,7 @@
 
   <nav class="case-cell" data-cell="menu" aria-label="Primary">
     <a href="work.html" aria-current="true">01 WORK</a>
-    <a href="art.html">02 ART</a>
+    <a href="art.html">02 SIDE QUESTS</a>
     <a href="about.html">03 ABOUT</a>
   </nav>
 
@@ -47,12 +50,12 @@
     <!-- HERO -->
     <section class="case-panel case-hero" id="hero" data-nav="INTRO">
       <h1>CONTINUOUS USER RESEARCH</h1>
-      <p class="case-sub">Borrowing practitioner expertise to rebuild, on the web, a Desktop day none of us had worked.</p>
+      <p class="case-sub">Borrowing practitioner expertise to rebuild a desktop application on the web.</p>
       <dl class="case-facts">
-        <div><dt>ROLE</dt><dd>Senior product designer, financial workflows lead</dd></div>
-        <div><dt>TEAM</dt><dd>Co-owned with Sandra, PM support from Ninon and Christian</dd></div>
+        <div><dt>ROLE</dt><dd>Product designer and session lead</dd></div>
+        <div><dt>TEAM</dt><dd>Me, with support from PM and designers</dd></div>
         <div><dt>CADENCE</dt><dd>A two week cycle, still running</dd></div>
-        <div><dt>CONTEXT</dt><dd>Unified Platform migration</dd></div>
+        <div><dt>CONTEXT</dt><dd>Desktop to web application migration</dd></div>
       </dl>
       <p class="case-lede">Nordhealth was rebuilding therapy workflows from legacy Desktop products as a web platform, then moving customers onto it. None of us had spent a working day inside those products, and our feedback channels only told us how people felt about what had already shipped. Feature parity is easy to promise and hard to define, so we asked the people who knew, every two weeks, before we built.</p>
 
@@ -73,7 +76,7 @@
     <!-- DISCOVERY -->
     <section class="case-panel" id="discovery" data-nav="DISCOVERY">
       <h2 class="case-h">TWO PRACTITIONERS, ON PURPOSE</h2>
-      <p>We ran recurring sessions with two practitioners whose days look nothing alike: Andre, a physiotherapist, and Eyvind, a psychologist. Each cycle took our live questions to them: what we were about to build, what had just shipped, and which Desktop behaviour we did not understand well enough to replace.</p>
+      <p>We ran recurring sessions with two practitioners whose days look nothing alike: a physiotherapist, and a psychologist. Each cycle took our live questions to them: what we were about to build, what had just shipped, and which Desktop behaviour we did not understand well enough to replace.</p>
       <p>The goal was never statistical representation. It was continuity. The same two people every cycle let us watch confidence move: whether a workflow that confused them in March had settled by May.</p>
       <blockquote class="case-quote">We knew the platform. They knew the day.</blockquote>
       <p>Neither argued about moving to the web. Confidence moved on specifics: a shortcut that no longer existed, a field that had moved, a task that now took four clicks instead of one. None of that shows up in a feature list, and all of it is obvious within thirty seconds of watching someone work.</p>
@@ -84,8 +87,9 @@
       <h2 class="case-h">A RHYTHM, NOT A STUDY</h2>
       <p>A one-off study gives you a snapshot, and a rebuild is not a snapshot. Work arrives in waves, so a session in March cannot answer the question that turns up in May. We designed a rhythm instead, and protected half of it for thinking.</p>
 
-      <!-- VISUALISATION: the two week rhythm, drawn as lattice cells -->
-      <figure class="case-figure">
+      <!-- VISUALISATION: the two week rhythm, drawn as lattice cells. Inset
+           rather than bleeding: it is type, so it reads with the prose -->
+      <figure class="case-figure case-figure--inset">
         <!-- decorative: the paragraph below states the same rhythm in prose,
              so the diagram stays out of the accessibility tree -->
         <div class="cadence" aria-hidden="true">
@@ -112,7 +116,7 @@
         <figcaption>Week A runs. Week B is not prep time, it is processing time: the reason findings reach a decision while it is still a decision.</figcaption>
       </figure>
 
-      <p>In week A the team picks the most urgent questions from the backlog. Sandra and I prepare lightweight material, share it in advance, and run the sessions later that week, each leading our own domain. Week B is synthesis in Dovetail, a short summary to product and design, follow-ups in Slack, and new questions back into the backlog.</p>
+      <p>In week A the team picks the most urgent questions from the backlog. I prepare lightweight material, share it in advance, and run the sessions later that week, each leading our own domain. Week B is synthesis in Dovetail, a short summary to product and design, follow-ups in Slack, and new questions back into the backlog.</p>
     </section>
 
     <!-- THE LOOP -->
@@ -122,27 +126,27 @@
       <!-- VISUALISATION: six steps, the last returning to the first -->
       <ol class="loop">
         <li class="loop-step">
-          <h3><span class="idx">01</span> CAPTURE UNCERTAINTY</h3>
+          <h3>01. CAPTURE UNCERTAINTY</h3>
           <p>Topics arrive from support tickets, onboarding surveys, PostHog, previous sessions, roadmap gaps in Linear, and CS or sales conversations.</p>
         </li>
         <li class="loop-step">
-          <h3><span class="idx">02</span> PRIORITISE THE BACKLOG</h3>
+          <h3>02. PRIORITISE THE BACKLOG</h3>
           <p>Every other Monday the team picks one to three topics by urgency and migration risk. Anyone can add to the list.</p>
         </li>
         <li class="loop-step">
-          <h3><span class="idx">03</span> PREPARE LIGHTLY</h3>
+          <h3>03. PREPARE LIGHTLY</h3>
           <p>Focused prompts, a prototype, or a staging task, depending on what the question needs. Never a script.</p>
         </li>
         <li class="loop-step">
-          <h3><span class="idx">04</span> SIT WITH PRACTITIONERS</h3>
+          <h3>04. SIT WITH PRACTITIONERS</h3>
           <p>Andre and Eyvind walk their real workflows, react to designs, test builds, and say what has annoyed them since last time.</p>
         </li>
         <li class="loop-step">
-          <h3><span class="idx">05</span> SYNTHESISE AND SHARE</h3>
+          <h3>05. SYNTHESISE AND SHARE</h3>
           <p>Analysis in Dovetail, then a short summary to product and design. Decision support, not research theatre.</p>
         </li>
         <li class="loop-step">
-          <h3><span class="idx">06</span> FEED THE NEXT CYCLE</h3>
+          <h3>06.   FEED THE NEXT CYCLE</h3>
           <p>Clarifications continue in Slack. New questions become backlog topics, and the loop turns again.</p>
         </li>
         <li class="loop-return" aria-hidden="true"><span>BACK TO 01, EVERY TWO WEEKS</span></li>
@@ -190,10 +194,6 @@
           <dd>Anyone can add a topic the moment uncertainty appears. Choosing one to three per cycle keeps sessions aimed at what is live, instead of a plan written weeks ago.</dd>
         </div>
         <div>
-          <dt>Domain ownership, shared view</dt>
-          <dd>Sandra led clinical workflows, I led financial ones, each of us owning prep, facilitation, and synthesis in our area. Splitting the depth kept the sessions sharp while the whole team still saw one user journey.</dd>
-        </div>
-        <div>
           <dt>Processing time is part of the system</dt>
           <dd>Week B exists so synthesis is not something that happens if there is time. It is why findings land while product and migration decisions are still open.</dd>
         </div>
@@ -233,7 +233,7 @@
 
     <nav class="case-panel case-next" aria-label="Case navigation">
       <a href="work.html">ALL PROJECTS</a>
-      <a href="mailto:hello@example.com">GET IN TOUCH</a>
+      <a href="mailto:filip.kockendal@gmail.com">GET IN TOUCH</a>
     </nav>
   </main>
 </body>

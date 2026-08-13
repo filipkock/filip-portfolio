@@ -7,6 +7,9 @@
   <meta name="description" content="Product design projects by Filip Kockendal: healthcare software, design systems, and clinical workflow UX.">
   <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,500,700,900&display=swap">
   <link rel="stylesheet" href="css/style.css">
   <script>
     document.documentElement.className += ' js';
@@ -29,50 +32,131 @@
     <div id="grid-host" class="grid-host" aria-hidden="true"></div>
 
     <header class="grid-cell-overlay" data-cell="wordmark">
-      <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
-      <h1 class="tagline label">01 WORK · 6 PROJECTS</h1>
+      <h1 class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></h1>
+      <p class="tagline label">01 WORK · 5 PROJECTS</p>
     </header>
 
     <div class="grid-cell-overlay" data-cell="menu">
       <nav aria-label="Primary">
         <a href="work.html" aria-current="page">01 WORK</a>
-        <a href="art.html">02 ART</a>
+        <a href="art.html">02 SIDE QUESTS</a>
         <a href="about.html">03 ABOUT</a>
       </nav>
     </div>
 
     <section class="grid-cell-overlay cell-list" data-cell="list" aria-label="Projects">
+      <!-- the three hero tiles are authored as self-contained 538x403 pages,
+           edge to edge on their own ground and already 4:3, so the frame takes
+           each one whole and simply scales it: no crop, no band, no seam. -->
       <a class="w-row" href="case-ai-journal.html" data-seed="1101" data-variant="quadtree"
+         data-embed="assets/video/hero/Nora Live Transcription.html"
+         data-embed-size="538x403" data-embed-rect="0,0,538,403"
+         data-embed-fit="cover" data-embed-bg="#eff0fb"
          data-desc="An embedded AI scribe that drafts clinical notes from session audio: 1,500 notes a day, 500+ paying clinics."
-         data-tags="PRODUCT · AI · 0→1 · 2025">
+         data-tags="WEB APP · AI · CLINICAL WORKFLOWS">
         <span class="idx">P-01</span>
         <h2>AI JOURNALING ASSISTANT</h2>
         <span class="year">2025</span>
       </a>
       <a class="w-row" href="case-continuous-research.html" data-seed="1102" data-variant="flow"
+         data-embed="assets/video/hero/Continuous Research Hero.html"
+         data-embed-size="538x403" data-embed-rect="0,0,538,403"
+         data-embed-fit="cover" data-embed-bg="#ffffff"
          data-desc="A standing research loop that borrowed practitioner expertise to define feature parity before we built, not after."
-         data-tags="RESEARCH · SERVICE DESIGN · MIGRATION · 2025">
+         data-tags="RESEARCH · USER INTERVIEWS · MIGRATION">
         <span class="idx">P-02</span>
         <h2>CONTINUOUS USER RESEARCH</h2>
         <span class="year">2025</span>
       </a>
+      <a class="w-row" href="case-poka-reminder.html" data-seed="1107" data-variant="field"
+         data-video="assets/video/case-poka/onboarding-4x3.mp4"
+         data-reveal="assets/video/case-poka/card-reveal-4x3.mp4"
+         data-desc="A medication reminder with a mascot you do not want to let down. Research, design, code, and an App Store launch, solo."
+         data-tags="iOS · SOLO FOUNDER">
+        <span class="idx">P-03</span>
+        <h2>POKA REMINDER</h2>
+        <span class="year">2025</span>
+      </a>
+
+      <!-- P-04 and P-05 have no case page yet. The badge in the row says so
+           up front; clicking the row only previews it (plus a toast under JS),
+           never opens mail. The contact link lives in the preview pane's
+           content (data-mail carries the address), in the toast that a click
+           raises, and in the note under the title - which is the fallback for
+           both, so it shows only without JS or on a failed engine. Every row
+           reads as one line otherwise, narrow screens included. -->
+      <div class="w-row w-row--ask" role="button" tabindex="0"
+         data-mail="mailto:filip.kockendal@gmail.com?subject=Helfo%20settlements"
+         data-embed="assets/video/hero/Helfo hero animation.html"
+         data-embed-size="538x403" data-embed-rect="0,0,538,403"
+         data-embed-fit="cover" data-embed-bg="#eaeef0"
+         data-desc="A revenue-critical reimbursement workflow for Norwegian clinics: validate, create, sign, and send Helfo settlements over EDI and Helsenett. Research and design end to end, sole designer."
+         data-link="https://www.helfo.no/om-helfo/om-helfo/about-helfo"
+         data-link-label="What Helfo is →"
+         data-tags="WEB APP · RESEARCH · FINANCIAL WORKFLOWS">
+        <span class="idx">P-04</span>
+        <h2>HELFO SETTLEMENTS <span class="w-badge badge">WIP</span></h2>
+        <span class="year">2024</span>
+        <p class="w-note">The workflow Norwegian clinics get paid through: validate, create, sign, and send reimbursement settlements over EDI and Helsenett, on the web. Research and design end to end, sole designer.
+          <a class="w-ask" href="https://www.helfo.no/om-helfo/om-helfo/about-helfo" target="_blank" rel="noopener">What Helfo is →</a>
+          <a class="w-ask" href="mailto:filip.kockendal@gmail.com?subject=Helfo%20settlements">No case page yet. Write to me about it →</a>
+        </p>
+      </div>
+
+      <div class="w-row w-row--ask" role="button" tabindex="0"
+         data-mail="mailto:filip.kockendal@gmail.com?subject=Nord%20Design%20System%20adoption"
+         data-seed="1113" data-variant="blocks"
+         data-embed="assets/video/hero/Modernisation Hero (standalone).html"
+         data-embed-size="538x403" data-embed-rect="0,0,538,403"
+         data-embed-fit="cover" data-embed-bg="#f6f8f8"
+         data-desc="EasyPractice joined Nordhealth, which already had a design system of its own. I planned and built the adoption so our workflows could move onto one language instead of two."
+         data-link="https://nordhealth.design/"
+         data-link-label="View the design system →"
+         data-tags="DESIGN SYSTEM · FRONT-END · MIGRATION">
+        <span class="idx">P-05</span>
+        <h2>NORD DESIGN SYSTEM ADOPTION <span class="w-badge badge">WIP</span></h2>
+        <span class="year">2024</span>
+        <p class="w-note">EasyPractice joined Nordhealth, which already had a design system of its own (nordhealth.design). I did the design planning and the development that let our workflows move onto it one consistent, maintainable language instead of two. 
+          <a class="w-ask" href="https://nordhealth.design/" target="_blank" rel="noopener">View the design system →</a>
+          <a class="w-ask" href="mailto:filip.kockendal@gmail.com?subject=Nord%20Design%20System%20adoption">No case page yet. Write to me about it →</a>
+        </p>
+      </div>
+
+      <p class="w-more label">More projects coming soon</p>
     </section>
 
+    <!-- the previewed project's own shot sits in the thumb, filling it; a
+         project with no shot yet (or one that fails to load) falls back to the
+         generative card underneath. data-hero names a still; data-video a
+         short muted clip that loops in the shot's place. A row can also name
+         a data-reveal clip: it plays over the shot the first time that
+         project is previewed, and the shot is there when it clears. The
+         pv-info text carries the same project, so both are decorative to
+         assistive tech. -->
     <aside class="grid-cell-overlay cell-preview" data-cell="preview">
-      <div class="pv-thumb" id="pv-canvas" aria-hidden="true"></div>
+      <!-- data-embed rows mount a scaled iframe here (js/work.js) -->
+      <div class="pv-thumb" id="pv-thumb" aria-hidden="true">
+        <div class="pv-card" id="pv-canvas"></div>
+        <img class="pv-hero" id="pv-hero" alt="" decoding="async" hidden>
+        <video class="pv-hero-clip" id="pv-clip" muted loop playsinline preload="metadata" hidden></video>
+        <video class="pv-reveal" id="pv-reveal" muted playsinline preload="auto" hidden></video>
+      </div>
       <div class="pv-info" aria-live="polite">
         <p class="idx" id="pv-idx"></p>
         <h2 id="pv-title"></h2>
         <p class="desc" id="pv-desc"></p>
-        <p class="tags label" id="pv-tags"></p>
+        <!-- a project can point at something outside the site: what it is,
+             or the thing itself (data-link on the row) -->
+        <a class="pv-link" id="pv-link" target="_blank" rel="noopener" hidden></a>
+        <p class="tags" id="pv-tags"></p>
       </div>
     </aside>
 
     <footer class="grid-cell-overlay" data-cell="contact">
       <nav aria-label="Contact">
-        <a href="mailto:hello@example.com">EMAIL</a>
-        <a href="https://github.com/" rel="me">GITHUB</a>
-        <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
+        <a href="mailto:filip.kockendal@gmail.com">EMAIL</a>
+        <a href="https://github.com/filipkock?tab=overview&from=2026-08-01&to=2026-08-07" rel="me">GITHUB</a>
+        <a href="https://www.instagram.com/itsfilee/" rel="me">INSTAGRAM</a>
       </nav>
     </footer>
   </main>

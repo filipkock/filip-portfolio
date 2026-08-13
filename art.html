@@ -3,117 +3,144 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>02 ART · FILIP KOCKENDAL</title>
-  <meta name="description" content="Generative art by Filip Kockendal: parametric grids, quadtree subdivision, dither fields. Black and white, plotter-friendly.">
-  <meta name="theme-color" content="#ecebe7">
+  <title>02 SIDE QUESTS · FILIP KOCKENDAL</title>
+  <meta name="description" content="Side quests by Filip Kockendal: generative art, posters, and other experiments hiding inside the lattice. Hover to find them.">
+  <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,500,700,900&display=swap">
   <link rel="stylesheet" href="css/style.css">
   <script>
     document.documentElement.className += ' js';
-    // not mold-aware yet: consume the transition flag so it cannot go stale
-    try { sessionStorage.removeItem('grid-mold'); } catch (e) { /* fine */ }
+    // arriving from a mold exit: start black, the engine retreats it.
+    // The timeout is the last-resort un-hide if scripts stall.
+    try {
+      if (sessionStorage.getItem('grid-mold') === '1') {
+        document.documentElement.className += ' arriving';
+        setTimeout(function () { document.documentElement.classList.remove('arriving'); }, 1500);
+      }
+    } catch (e) { /* private mode */ }
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   <script defer src="js/grid-engine.js"></script>
-  <script defer src="js/site.js"></script>
+  <script defer src="js/art.js"></script>
   <script defer src="js/interactions.js"></script>
 </head>
 <body class="page-art">
-  <header class="site-head">
-    <a class="wordmark" href="index.html">FILIP KOCKENDAL</a>
-    <nav aria-label="Primary">
-      <a href="work.html"><span class="idx">01</span> WORK</a>
-      <a href="art.html" aria-current="page"><span class="idx">02</span> ART</a>
-      <a href="about.html"><span class="idx">03</span> ABOUT</a>
-    </nav>
-  </header>
+  <main class="stage">
+    <div id="grid-host" class="grid-host" aria-hidden="true"></div>
 
-  <div class="head-strip" aria-hidden="true">
-    <div data-sketch="strip" data-seed="403"></div>
-  </div>
+    <header class="grid-cell-overlay" data-cell="wordmark">
+      <h1 class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></h1>
+      <p class="tagline label">02 SIDE QUESTS</p>
+    </header>
 
-  <main class="wrap">
-    <div class="title-row">
-      <h1>02 ART</h1>
-      <div class="tag-row" role="group" aria-label="Filter by tag">
-        <button data-tag="all" aria-pressed="true">ALL</button>
-        <button data-tag="quadtree" aria-pressed="false">QUADTREE</button>
-        <button data-tag="dither" aria-pressed="false">DITHER</button>
-        <button data-tag="flow" aria-pressed="false">FLOW</button>
-        <button data-tag="field" aria-pressed="false">FIELD</button>
-      </div>
+    <div class="grid-cell-overlay" data-cell="menu">
+      <nav aria-label="Primary">
+        <a href="work.html">01 WORK</a>
+        <a href="art.html" aria-current="page">02 SIDE QUESTS</a>
+        <a href="about.html">03 ABOUT</a>
+      </nav>
     </div>
 
-    <div class="hairline-grid art-grid">
-      <figure class="art-cell" data-tags="quadtree field">
-        <div class="thumb" data-sketch="card" data-seed="7301" data-variant="quadtree" role="img" aria-label="Generative study: recursive quadtree cascade along a noise boundary, black ink on paper"></div>
-        <figcaption>A-01 · EDGE CASCADE · SEED 7301</figcaption>
-      </figure>
+    <!-- THE SPOTS: side quests hiding in the artwork, the about page's
+         photo-cell pattern. Hover reveals the piece and the red cursor dot
+         becomes its caption (data-cursor); a crop tick marks each cell.
 
-      <figure class="art-cell" data-tags="dither">
-        <div class="thumb" data-sketch="card" data-seed="7302" data-variant="dither" role="img" aria-label="Generative study: checkerboard dither field, black ink on paper"></div>
-        <figcaption>A-02 · DITHER FIELD I · SEED 7302</figcaption>
-      </figure>
+         Each spot is one overlay div + one <a> pointing at where the piece
+         lives (Instagram, a shop, a repo). Clicking opens it in a new tab,
+         and js/interactions.js appends a ↗ to the caption to say so.
 
-      <figure class="art-cell" data-tags="flow">
-        <div class="thumb" data-sketch="card" data-seed="7303" data-variant="flow" role="img" aria-label="Generative study: diagonally sheared grid flow, black ink on paper"></div>
-        <figcaption>A-03 · SHEAR STUDY · SEED 7303</figcaption>
-      </figure>
+         To fill in a placeholder:
+         1. drop the image into assets/img/art/ and add inside .photo-reveal:
+              <img src="assets/img/art/a-01.jpg" alt="" loading="lazy" style="--crop: 35%">
+            (--crop = vertical anchor of the cover-crop, tune per image)
+            or, for a clip, a <video> with a poster beside it in assets/img/art/:
+              <video src="assets/video/side-quests/a-01.mp4"
+                     poster="assets/img/art/a-01-poster.jpg"
+                     muted loop playsinline preload="none" style="--crop: 50%"></video>
+            js/art.js plays it on hover; add data-sound if it should be heard
+            (the browser only allows that once the reader has clicked once).
+            Web-size the file first: these live at a few hundred KB, not tens
+            of MB, and export to a DIFFERENT filename than the source - .mp4
+            and .MP4 are the same file on a Mac, and ffmpeg will eat the input.
+         2. write the real data-cursor caption (this is the tooltip)
+         3. for an <a> spot, set the real href + aria-label
+         4. new spots also need a lattice span in js/art.js (SPOTS list)  -->
 
-      <figure class="art-cell" data-tags="quadtree">
-        <div class="thumb" data-sketch="card" data-seed="7304" data-variant="quadtree" role="img" aria-label="Generative study: nested square subdivision, black ink on paper"></div>
-        <figcaption>A-04 · QUADTREE NO. 4 · SEED 7304</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="field flow">
-        <div class="thumb" data-sketch="card" data-seed="7305" data-variant="field" role="img" aria-label="Generative study: smoke-like lattice of filled cells, black ink on paper"></div>
-        <figcaption>A-05 · SMOKE LATTICE · SEED 7305</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="dither field">
-        <div class="thumb" data-sketch="card" data-seed="7306" data-variant="dither" role="img" aria-label="Generative study: drifting checker dither bands, black ink on paper"></div>
-        <figcaption>A-06 · CHECKER DRIFT · SEED 7306</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="quadtree">
-        <div class="thumb" data-sketch="card" data-seed="7307" data-variant="blocks" role="img" aria-label="Generative study: coarse solid block islands on a fine grid, black ink on paper"></div>
-        <figcaption>A-07 · BLOCK ISLANDS · SEED 7307</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="flow">
-        <div class="thumb" data-sketch="card" data-seed="7308" data-variant="flow" role="img" aria-label="Generative study: elongated diagonal flow field, black ink on paper"></div>
-        <figcaption>A-08 · MERIDIAN · SEED 7308</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="dither">
-        <div class="thumb" data-sketch="card" data-seed="7309" data-variant="dither" role="img" aria-label="Generative study: dense dither field with solid cores, black ink on paper"></div>
-        <figcaption>A-09 · DITHER FIELD II · SEED 7309</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="field">
-        <div class="thumb" data-sketch="card" data-seed="7310" data-variant="field" role="img" aria-label="Generative study: terrain-like slice of banded cells, black ink on paper"></div>
-        <figcaption>A-10 · TERRAIN SLICE · SEED 7310</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="quadtree">
-        <div class="thumb" data-sketch="card" data-seed="7311" data-variant="quadtree" role="img" aria-label="Generative study: nested squares at five depths, black ink on paper"></div>
-        <figcaption>A-11 · NESTED SQUARES · SEED 7311</figcaption>
-      </figure>
-
-      <figure class="art-cell" data-tags="field dither">
-        <div class="thumb" data-sketch="card" data-seed="7312" data-variant="blocks" role="img" aria-label="Generative study: decaying signal blocks fading into empty grid, black ink on paper"></div>
-        <figcaption>A-12 · SIGNAL DECAY · SEED 7312</figcaption>
-      </figure>
+    <div class="grid-cell-overlay photo-overlay" data-cell="art-1">
+      <a class="photo-cell" href="https://www.instagram.com/itsfilee/p/DZhTkobADn7/" target="_blank" rel="noopener"
+         data-cursor="Progress of my first marble sculpture"
+         aria-label="A-01, progress of my first marble sculpture, opens in a new tab">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">A-01</span>
+          <img src="assets/img/art/marble.jpg" alt="" loading="lazy" style="--crop: 35%">
+        </span>
+      </a>
     </div>
+
+    <div class="grid-cell-overlay photo-overlay" data-cell="art-2">
+      <a class="photo-cell" href="https://www.instagram.com/itsfilee/p/DZhTc1PAN5A/?img_index=2" target="_blank" rel="noopener"
+         data-cursor="Playing around with p5.js"
+         aria-label="A-02, playing around with p5.js, opens in a new tab">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">A-02</span>
+          <video src="assets/video/side-quests/flower-reveal-web.mp4"
+                 poster="assets/img/art/flower-reveal-poster.jpg"
+                 muted loop playsinline preload="none" style="--crop: 50%"></video>
+        </span>
+      </a>
+    </div>
+
+    <div class="grid-cell-overlay photo-overlay" data-cell="art-3">
+      <a class="photo-cell" href="https://www.instagram.com/itsfilee/p/DZhTc1PAN5A/?img_index=1" target="_blank" rel="noopener"
+         data-cursor="Noise, drawn in ASCII"
+         aria-label="A-03, noise drawn in ASCII, opens in a new tab">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">A-03</span>
+          <video src="assets/video/side-quests/noise-web.mp4"
+                 poster="assets/img/art/noise-poster.jpg"
+                 muted loop playsinline preload="none" style="--crop: 50%"></video>
+        </span>
+      </a>
+    </div>
+
+    <!-- the big spot, and one of the two that carry sound: the clip tries for
+         sound on hover, and the click belongs to the link (see js/art.js) -->
+    <div class="grid-cell-overlay photo-overlay" data-cell="art-4">
+      <a class="photo-cell" href="https://www.instagram.com/itsfilee/reel/DZi4PWqsl4Y/" target="_blank" rel="noopener"
+         data-cursor="An oscillator, built in p5.js"
+         aria-label="A-04, an oscillator built in p5.js, opens in a new tab">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">A-04</span>
+          <video src="assets/video/side-quests/p5-oscillator-lite.mp4"
+                 poster="assets/img/art/p5-oscillator-poster.jpg"
+                 data-sound muted loop playsinline preload="none" style="--crop: 50%"></video>
+        </span>
+      </a>
+    </div>
+
+    <div class="grid-cell-overlay photo-overlay" data-cell="art-5">
+      <a class="photo-cell" href="https://www.instagram.com/itsfilee/reel/DQOq1aSjIP5/" target="_blank" rel="noopener"
+         data-cursor="Here we go"
+         aria-label="A-05, here we go, opens in a new tab">
+        <span class="photo-reveal" aria-hidden="true">
+          <span class="ph-label">A-05</span>
+          <video src="assets/video/side-quests/here-we-go-web.mp4"
+                 poster="assets/img/art/here-we-go-poster.jpg"
+                 data-sound muted loop playsinline preload="none" style="--crop: 50%"></video>
+        </span>
+      </a>
+    </div>
+
+    <footer class="grid-cell-overlay" data-cell="contact">
+      <nav aria-label="Contact">
+        <a href="mailto:filip.kockendal@gmail.com">EMAIL</a>
+        <a href="https://github.com/filipkock?tab=overview&from=2026-08-01&to=2026-08-07" rel="me">GITHUB</a>
+        <a href="https://www.instagram.com/itsfilee/" rel="me">INSTAGRAM</a>
+      </nav>
+    </footer>
   </main>
-
-  <footer class="site-foot">
-    <p>© 2026 FILIP KOCKENDAL</p>
-    <nav aria-label="Contact">
-      <a href="mailto:hello@example.com">EMAIL</a>
-      <a href="https://github.com/" rel="me">GITHUB</a>
-      <a href="https://instagram.com/" rel="me">INSTAGRAM</a>
-    </nav>
-  </footer>
 </body>
 </html>

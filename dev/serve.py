@@ -13,7 +13,9 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8137
+    # an argument wins, then PORT from the environment (how the preview
+    # harness hands out a free port), then the usual one
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.environ.get('PORT') or 8137)
     if len(sys.argv) > 2:
         os.chdir(sys.argv[2])
     print('serving %s on http://localhost:%d (no-cache)' % (os.getcwd(), port))

@@ -29,13 +29,15 @@ about.html                     bio panel, action tiles, fun-fact drawer
 art.html                       generative art gallery (tag-filterable)
 case-ai-journal.html           P-01 case study
 case-continuous-research.html  P-02 case study
+cv.html                        the boring sheet: one page, no engine, no JS
+cv.svg                         the same sheet as vector, for pasting into Figma
 css/style.css                  the single shared stylesheet
 js/grid-engine.js              the generative engine (window.createGridSketch)
 js/landing.js                  landing: tile links, mold page exits
 js/work.js                     work page: row wipes, preview, case links
 js/about.js                    about page: cells, photo hovers, fact drawer
 js/case.js                     case pages: paper channel, section index
-js/interactions.js             shared: red dot cursor, hover sound + toggle
+js/interactions.js             shared: red dot cursor, sound + motion switches
 js/site.js                     art page: header strips, thumbs, tag filter
 assets/                        img, video, fonts (some slots still empty)
 dev/engine-test.html           engine playground: seeds, modes, HUD
@@ -62,9 +64,72 @@ dev/serve.py                   the no-cache server used by Run, above
   path in the markup, and falls back to a checker placeholder until that file
   exists. Still missing: `assets/img/case-research/backlog.png`, and the
   invoice example in P-02 carries a visible TO CONFIRM line.
+- Case study hero: one `.shot-frame` per screen inside `[data-shot]`, one
+  `.shot-switch` button per frame (matched on `data-view`), and the first
+  frame in the markup is the one the page opens with. P-01 runs HERO /
+  DESKTOP / MOBILE. A wide frame that is not the band's 16/9 declares its own
+  `--shot-ratio` inline, so it sits narrower instead of being cropped; a phone
+  frame adds `shot-frame--phone`. Marks are placed in image percentages, so
+  they need no attention when the band resizes. Without JS every frame shows.
+- Work page previews: a row's `data-hero` is the shot shown in the preview
+  cell while that project is hovered or focused, filling the cell (it crops -
+  a preview is a glance, not a figure). Drop the attribute and the project
+  previews as its generative card instead, which is also what happens if the
+  file is missing. The other rows' shots are warmed once the page is idle, so
+  moving down the list swaps straight from cache.
+- A row can also carry `data-reveal`, a short clip that plays over its shot
+  the first time that project is previewed, once per visit. P-03 uses its card
+  reveal: ink gathers, swells and clears, and the shot is there when it goes.
+  Skipped under reduced motion, and if the clip stalls or autoplay is refused
+  the shot is simply shown.
+- P-02 has no product screen to show, so its hero is drawn:
+  `assets/img/case-research/loop.svg` is the two week cadence in the site's own
+  language (hairline grid, ink sessions, hatched synthesis, the accent red
+  loop), authored at 4/3 so it fills the preview cell exactly.
 - Sound and cursor live in `js/interactions.js`. Hovering the artwork sounds
   one note per lattice cell entered, pitched by cell size; the toggle sits in
   the wordmark cell and remembers its state. `--accent` in the tokens is the
   cursor red, the only colour on the site.
+- The motion switch sits beside the sound one and freezes the artwork into a
+  still image: the field stops drifting, the pointer stops rippling, and the
+  sketches leave their animation loops. The flag is `window.gridMotion` in
+  `js/grid-engine.js` (remembered, read before the first frame), so a paused
+  visit never animates in and then stops. It is hidden when the OS already
+  asks for reduced motion, which is the same still state.
 - Composition tunables live in the `TUNE` block at the top of
   `js/grid-engine.js`.
+- `cv.html` is the deliberately dull sibling of the site: the same tokens
+  (paper, ink, the mono chrome voice, the one accent red) with the grid,
+  the engine and every script taken out. A4 at 96dpi, one page, prints to
+  PDF as it stands. `cv.svg` is that sheet as vector for Figma: every line
+  of copy is its own `<text>` node, since SVG import has no text wrapping,
+  and the `<g id>` names become the Figma layer names. Edit copy in both,
+  or treat the SVG as a one-way export and design onward in Figma.
+
+## Mobile
+
+The sheets simplify rather than shrink on a phone:
+
+- Chrome splits the top row: wordmark left, menu stacked down the right edge
+  (the engine gives corner text cells one column each when two share a row on
+  a narrow lattice). Case pages wrap their flush-row menu to a second
+  right-aligned line instead.
+- The sound switch does not exist on touch: the sound is played by hovering
+  the artwork, and touch cannot hover. The motion switch remains.
+- Work: header row, then the project list (scrolls internally, rows never
+  shrink), contact on the last row. The preview pane is desktop-only; the WIP
+  rows carry their own notes instead.
+- About: the sheet grows past the viewport and the page scrolls it -
+  `js/about.js` sizes the stage so the bio's rows hold the whole text, and
+  anchors funfact / contact / resume / linkedin to the foot with an artwork
+  row between each. The fun-fact drawer opens upward over the bio (which
+  steps aside while covered).
+- Side quests: the spots arrive revealed - the hover hunt has no hover on
+  touch, and empty cells read as broken rather than hidden.
+- Case studies: without a lattice channel (phones, small tablets) the chrome
+  becomes the same top row the artwork pages have - wordmark cell left, menu
+  cell right, one lattice row tall (--lat-ch), a hairline between them - and
+  it scrolls away with the page. The document runs full width flush beneath
+  it, no artwork in the margins. The section index keeps its fixed bar at
+  the foot. On wide screens the fixed chrome and the centered channel are
+  unchanged.

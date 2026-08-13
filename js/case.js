@@ -141,17 +141,12 @@
     var C = columns(L);
     root.setProperty('--doc-x', Math.round(C.start * L.cw) + 'px');
     root.setProperty('--doc-w', Math.round(C.span * L.cw) + 'px');
-    // clear the chrome: a full lattice row when it is canvas-drawn cells.
-    // The fallback row is measured, not assumed - anything added to it (the
-    // sound switch, a second line) would otherwise sit over the document.
-    var top = Math.round(L.ch);
-    if (!C.channel) {
-      var wm = overlays.wordmark, mn = overlays.menu;
-      var h = 0;
-      if (wm) h = Math.max(h, wm.getBoundingClientRect().height);
-      if (mn) h = Math.max(h, mn.getBoundingClientRect().height);
-      top = Math.ceil(h) + 12;
-    }
+    // clear the chrome: one full lattice row either way - canvas-drawn
+    // cells when there is a channel, the CSS fallback row (sized by
+    // --lat-ch below) when there is not, so the header is the same row
+    // the artwork pages have. Flush in fallback mode: the document's first
+    // hairline merges with the header's.
+    var top = C.channel ? Math.round(L.ch) : Math.max(0, Math.round(L.ch) - 1);
     root.setProperty('--doc-top', top + 'px');
     root.setProperty('--lat-ch', Math.round(L.ch) + 'px');
     document.body.classList.toggle('has-channel', C.channel);
@@ -182,11 +177,12 @@
     try { sketch.setTileHeight('index', h); } catch (e) { /* no-op */ }
   }
 
-  /* ---- the hero: one screen at a time, desktop or phone ---------------
-     The switch swaps which frame is mounted; the band holds its height, so
-     nothing below it moves. The marks need no script of their own: the red
-     cursor dot reads their data-cursor, and CSS shows the pill to whoever
-     has no dot. Without JS the switch is hidden and both screens stack.  */
+  /* ---- the hero: one screen at a time -------------------------------
+     The switch swaps which frame is mounted, however many a page authors;
+     the band holds its height, so nothing below it moves. The marks need no
+     script of their own: the red cursor dot reads their data-cursor, and CSS
+     shows the pill to whoever has no dot. Without JS the switch is hidden
+     and the screens simply stack.                                        */
   (function heroShot() {
     var shot = document.querySelector('[data-shot]');
     var group = document.querySelector('.shot-switch');
@@ -208,12 +204,18 @@
       b.addEventListener('click', function () { show(b.dataset.view); });
     });
 
-    show('desktop'); // authored with both mounted, so no-JS reads them both
+    // authored with every frame mounted, so no-JS reads them all; the first
+    // one in the markup is the one this page leads with
+    show(frames[0].dataset.view);
   })();
 
-  /* ---- clips play only while on screen -------------------------------
+  /* ---- clips play while on screen, and stop when you ask --------------
      Four silent loops running at once is wasted work and a distraction;
      each one starts when it scrolls into view and pauses when it leaves.
+     Clicking one holds it still so a detail can be read, and that choice
+     outranks the observer: scrolling away and back will not restart what
+     you stopped. Clicking again hands it back. The red pointer says which
+     of the two a click will do.
      Under reduced motion they stay paused and keep their poster.        */
   (function inViewClips() {
     var clips = [].slice.call(document.querySelectorAll('video[data-autoplay]'));
@@ -222,10 +224,38 @@
       clips.forEach(function (v) { v.setAttribute('controls', ''); });
       return;
     }
+
+    // held = stopped by hand. The flag is what the observer checks, so a
+    // clip the reader stopped stays stopped however the page scrolls.
+    function mark(v) {
+      v.dataset.cursor = v.dataset.held ? 'PLAY' : 'PAUSE';
+    }
+
+    function toggle(v, ev) {
+      if (v.dataset.held) {
+        delete v.dataset.held;
+        var p = v.play();
+        if (p && p.catch) p.catch(function () { /* stays on its poster */ });
+      } else {
+        v.dataset.held = 'on';
+        v.pause();
+      }
+      mark(v);
+      // the pointer pill reads data-cursor on pointermove, so nudge one out
+      // at the same spot rather than leave the old word under a still cursor
+      if (ev && typeof window.PointerEvent === 'function') {
+        v.dispatchEvent(new PointerEvent('pointermove', {
+          bubbles: true, pointerType: 'mouse',
+          clientX: ev.clientX, clientY: ev.clientY
+        }));
+      }
+    }
+
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         var v = e.target;
         if (e.isIntersecting) {
+          if (v.dataset.held) return; // stopped by hand: leave it alone
           if (v.preload === 'none') v.preload = 'auto';
           var p = v.play();
           if (p && p.catch) p.catch(function () { v.setAttribute('controls', ''); });
@@ -234,7 +264,18 @@
         }
       });
     }, { threshold: 0.35 });
-    clips.forEach(function (v) { io.observe(v); });
+
+    clips.forEach(function (v) {
+      mark(v);
+      v.tabIndex = 0; // a video drawn without controls is not focusable
+      v.addEventListener('click', function (ev) { toggle(v, ev); });
+      v.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        ev.preventDefault(); // space would scroll the page out from under it
+        toggle(v);
+      });
+      io.observe(v);
+    });
   })();
 
   /* ---- media slots: real files when present, placeholder when not ----- */

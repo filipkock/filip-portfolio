@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CV · FILIP KOCKENDAL</title>
+  <meta name="description" content="One page CV for Filip Kockendal, product designer and creative coder.">
+  <meta name="theme-color" content="#fafafa">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,700&display=swap">
+  <!-- Deliberately self-contained: no style.css, no engine, no script. The
+       whole point of this sheet is that it is the boring one. Tokens are
+       copied from css/style.css so the two stay recognisably related. -->
+  <style>
+    :root {
+      --paper: #fafafa;
+      --ink: #111111;
+      --ink-head: #050505;
+      --ink-body: #3b3b3b;
+      --gray-1: #e4e4e4;
+      --gray-2: #9c9c9c;
+      --gray-3: #5c5c5c;
+      --accent: #d71921; /* the pointer red, used exactly once */
+      --font-sans: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --track-wide: 0.18em;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    ul { list-style: none; }
+    a { color: inherit; }
+
+    body {
+      background: var(--gray-1);
+      color: var(--ink-body);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      line-height: 1.55;
+      padding: 2rem 1rem;
+    }
+
+    /* one sheet, A4 at 96dpi, the same frame the SVG carries */
+    .sheet {
+      width: 794px;
+      min-height: 1123px;
+      margin: 0 auto;
+      padding: 64px 64px 56px;
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* the chrome voice: mono, letterspaced, quiet */
+    .label {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: var(--track-wide);
+      text-transform: uppercase;
+      color: var(--gray-2);
+    }
+
+    /* header ------------------------------------------------------------- */
+    .cv-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 2rem;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .cv-name {
+      font-size: 27px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--ink-head);
+      display: flex;
+      align-items: baseline; /* the square's bottom lands on the baseline */
+      gap: 10px;
+    }
+
+    /* the pointer, at rest after the name, reading as a full stop */
+    .cv-name::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+    }
+
+    .cv-role {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: var(--track-wide);
+      text-transform: uppercase;
+      color: var(--gray-3);
+      margin-top: 6px;
+    }
+
+    .cv-contact {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      line-height: 1.45;
+      text-align: right;
+      color: var(--ink-body);
+    }
+    .cv-contact a { text-decoration: none; }
+    .cv-contact a:hover { text-decoration: underline; }
+
+    /* sections: mono label left, content right ---------------------------- */
+    .cv-section {
+      display: grid;
+      grid-template-columns: 144px 1fr;
+      gap: 0 0;
+      padding: 30px 0 26px;
+      border-bottom: 1px solid var(--gray-1);
+    }
+    .cv-section:last-of-type { border-bottom: 0; }
+
+    .cv-section > .label { padding-top: 2px; }
+
+    .entry + .entry { margin-top: 24px; }
+
+    .entry-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .entry-role {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--ink-head);
+    }
+
+    .entry-date {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-3);
+      white-space: nowrap;
+    }
+
+    .entry-meta {
+      font-size: 10.5px;
+      color: var(--gray-3);
+      margin-top: 1px;
+    }
+
+    .entry-points { margin-top: 8px; }
+    .entry-points li {
+      position: relative;
+      padding-left: 16px;
+    }
+    /* a hairline for a bullet, the site's only mark */
+    .entry-points li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 8px;
+      height: 1px;
+      background: var(--gray-2);
+    }
+    .entry-points li + li { margin-top: 4px; }
+
+    /* projects: the index numbers are the clearest nod to the site --------- */
+    .proj-row {
+      display: grid;
+      grid-template-columns: 42px 220px 1fr auto;
+      align-items: baseline;
+      gap: 0 0;
+      padding: 1px 0;
+    }
+    .proj-idx {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--gray-2);
+    }
+    .proj-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--ink-head);
+    }
+    .proj-tags {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.08em;
+      color: var(--gray-2);
+    }
+    .proj-year {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.12em;
+      color: var(--gray-3);
+      text-align: right;
+    }
+
+    /* skills: sub-label, then the list ------------------------------------ */
+    .skill-row {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      align-items: baseline;
+      padding: 1px 0;
+    }
+    .skill-row + .skill-row { margin-top: 3px; }
+
+    /* an unknown the sheet states rather than invents */
+    .todo { color: var(--gray-2); }
+
+    /* foot ---------------------------------------------------------------- */
+    .cv-foot {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--gray-1);
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: var(--track-wide);
+      text-transform: uppercase;
+      color: var(--gray-2);
+    }
+
+    @media print {
+      @page { size: A4; margin: 0; }
+      body { background: var(--paper); padding: 0; }
+      .sheet { width: auto; min-height: 100vh; margin: 0; }
+    }
+
+    /* phones: the two columns become one, the sheet stops being a sheet */
+    @media (max-width: 860px) {
+      body { padding: 0; background: var(--paper); }
+      .sheet { width: 100%; min-height: 0; padding: 2rem 1.25rem 3rem; }
+      .cv-head { flex-direction: column; gap: 1rem; }
+      .cv-contact { text-align: left; }
+      .cv-section { grid-template-columns: 1fr; gap: 10px; }
+      .proj-row { grid-template-columns: 38px 1fr auto; }
+      .proj-tags { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+
+    <header class="cv-head">
+      <div>
+        <h1 class="cv-name">Filip Kockendal</h1>
+        <p class="cv-role">Product designer + creative coder</p>
+      </div>
+      <div class="cv-contact">
+        <a href="mailto:filip.kockendal@gmail.com">filip.kockendal@gmail.com</a><br>
+        <a href="https://github.com/filipkock" rel="me">github.com/filipkock</a><br>
+        <a href="https://www.linkedin.com/in/filip-lee-k-aa4b15225/" rel="me">linkedin.com/in/filip-lee-k-aa4b15225</a>
+      </div>
+    </header>
+
+    <section class="cv-section">
+      <h2 class="label">Profile</h2>
+      <p>Product designer working on clinical, financial and AI workflows for practitioners
+        across the Nordics. Comfortable owning research through to a shipped interface, and
+        comfortable in the front-end code that carries it. Creative coding and generative
+        systems on the side.</p>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="label">Experience</h2>
+      <div>
+        <article class="entry">
+          <div class="entry-top">
+            <h3 class="entry-role">Product designer</h3>
+            <span class="entry-date"><span class="todo">[year]</span> to present</span>
+          </div>
+          <p class="entry-meta">Nordhealth. Healthcare software for clinics across the Nordics</p>
+          <ul class="entry-points">
+            <li>Software for clinicians, mainly therapists and physiotherapists. One of four
+              designers in the business unit, one of ten across the company. Work spans clinical
+              workflows, finance and AI initiatives, plus maintaining the shared design system.</li>
+            <li>Design lead on an embedded AI scribe that drafts clinical notes from session audio:
+              500+ paying clinics, 1,600 hours of use a day, around 20 minutes saved per session.</li>
+            <li>Sole designer on Helfo settlements, the reimbursement workflow Norwegian clinics get
+              paid through: validation, creation, signing and sending over EDI and Helsenett.</li>
+            <li>Built a two week continuous research loop with practitioners, still running, that
+              defines feature parity before build instead of after it.</li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-top">
+            <h3 class="entry-role">UX/UI designer and front-end developer</h3>
+            <span class="entry-date"><span class="todo">[year] to [year]</span></span>
+          </div>
+          <p class="entry-meta">EasyPractice. Calendar and scheduling software, Denmark</p>
+          <ul class="entry-points">
+            <li>Sole designer, covering UX, UI and front-end development.</li>
+            <li>Supported the migration of users from a desktop application to a web app, making
+              sure the workflows they relied on still worked in the new product.</li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-top">
+            <h3 class="entry-role">Founder and sole designer</h3>
+            <span class="entry-date">2025</span>
+          </div>
+          <p class="entry-meta">Poka Reminder, iOS</p>
+          <ul class="entry-points">
+            <li>Medication reminder built alone, first sketch to App Store in eight months:
+              research, design, React Native, and the store listing.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="label">Projects</h2>
+      <div>
+        <div class="proj-row">
+          <span class="proj-idx">P-01</span>
+          <span class="proj-name">AI journaling assistant</span>
+          <span class="proj-tags">Web app · AI · Clinical workflows</span>
+          <span class="proj-year">2025</span>
+        </div>
+        <div class="proj-row">
+          <span class="proj-idx">P-02</span>
+          <span class="proj-name">Continuous user research</span>
+          <span class="proj-tags">Research · Interviews · Migration</span>
+          <span class="proj-year">2025</span>
+        </div>
+        <div class="proj-row">
+          <span class="proj-idx">P-03</span>
+          <span class="proj-name">Poka Reminder</span>
+          <span class="proj-tags">iOS · Solo founder</span>
+          <span class="proj-year">2025</span>
+        </div>
+        <div class="proj-row">
+          <span class="proj-idx">P-04</span>
+          <span class="proj-name">Helfo settlements</span>
+          <span class="proj-tags">Web app · Financial workflows</span>
+          <span class="proj-year">2024</span>
+        </div>
+        <div class="proj-row">
+          <span class="proj-idx">P-05</span>
+          <span class="proj-name">Nord design system adoption</span>
+          <span class="proj-tags">Design system · Front-end</span>
+          <span class="proj-year">2024</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="label">Skills</h2>
+      <div>
+        <div class="skill-row">
+          <span class="label">Design</span>
+          <span>Product design, user research, interaction design, design systems, prototyping</span>
+        </div>
+        <div class="skill-row">
+          <span class="label">Code</span>
+          <span>HTML, CSS, JavaScript, Lit web components, React Native, p5.js, Git</span>
+        </div>
+        <div class="skill-row">
+          <span class="label">Tools</span>
+          <span>Figma, Dovetail, Notion, Linear, Xcode</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="label">Education</h2>
+      <article class="entry">
+        <div class="entry-top">
+          <h3 class="entry-role todo">[Degree]</h3>
+          <span class="entry-date todo">[year] to [year]</span>
+        </div>
+        <p class="entry-meta todo">[Institution], [city]</p>
+      </article>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="label">Also</h2>
+      <p>Guitar, and one day the contrabass. Generative plotter art in black and white.
+        Act 3, Scene 1 of Hamlet, by heart.</p>
+    </section>
+
+    <footer class="cv-foot">
+      <span>Filip Kockendal · Curriculum vitae</span>
+      <span>1 / 1</span>
+    </footer>
+
+  </main>
+</body>
+</html>

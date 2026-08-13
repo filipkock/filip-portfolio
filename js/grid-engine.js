@@ -25,6 +25,12 @@
  *             regenerate(seed?), setDrift(mult), setDebug(bool),
  *             setFieldView(bool), destroy, p }
  *
+ *   window.gridMotion = { paused(), set(bool) }
+ *     One switch for every live sketch on the page, remembered across visits.
+ *     Paused reads exactly like prefers-reduced-motion: the field stops
+ *     drifting, the pointer stops rippling, and the sketches leave their
+ *     animation loops, so the artwork is a still image.
+ *
  * Design notes:
  *   - The composition is a uniform lattice with seeded merges; nav/text tiles
  *     ARE lattice spans, so chrome sits inside the artwork, never on top.
@@ -41,6 +47,30 @@
   'use strict';
 
   /* ------------------------------------------------------------------ *
+   * 0. motion switch - page-wide, remembered                            *
+   * ------------------------------------------------------------------ *
+   * Visitors can freeze the artwork (the switch next to the sound one).
+   * The flag lives here rather than in the toggle's script because a
+   * sketch has to know before its first frame: read late, the page would
+   * animate in and then stop. Each live sketch registers a listener.     */
+  var MOTION_KEY = 'grid-motion';
+  var PAUSED = false;
+  var listeners = [];
+
+  try { PAUSED = localStorage.getItem(MOTION_KEY) === 'off'; } catch (e) { /* private mode */ }
+
+  window.gridMotion = {
+    paused: function () { return PAUSED; },
+    set: function (on) {
+      on = !!on;
+      if (on === PAUSED) return;
+      PAUSED = on;
+      try { localStorage.setItem(MOTION_KEY, on ? 'off' : 'on'); } catch (e) { /* fine */ }
+      for (var i = 0; i < listeners.length; i++) listeners[i]();
+    }
+  };
+
+  /* ------------------------------------------------------------------ *
    * 1. TUNE - every constant that shapes the composition.               *
    * ------------------------------------------------------------------ */
   var TUNE = {
@@ -48,6 +78,7 @@
     PAPER: '#fafafa',
     INK: '#111111',
     PANEL: '#ffffff',         // content panels lift slightly off the field
+    ACCENT: '#d71921',        // keep in step with --accent in css/style.css
     STROKE_PX: 1,
 
     // lattice
@@ -375,10 +406,20 @@
       }
     }
 
+    // how many auto-placed text cells share each corner row: when two do
+    // (wordmark tl + menu tr) on a lattice too narrow for two 2-col spans,
+    // they take one column each, or a phone paints the menu exactly over
+    // the wordmark. A lone cell keeps the full 2-col span.
+    var textTop = 0, textBottom = 0;
+    for (var tc = 0; tc < textDefs.length; tc++) {
+      var atc = textDefs[tc].at || (textDefs[tc].id === 'contact' ? 'bl' : 'tl');
+      if (atc === 'bl' || atc === 'br') textBottom++; else textTop++;
+    }
     for (var t = 0; t < textDefs.length; t++) {
       var def = textDefs[t];
       var at = def.at || (def.id === 'contact' ? 'bl' : 'tl');
-      var span = Math.min(2, cols);
+      var crowded = (at === 'bl' || at === 'br') ? textBottom > 1 : textTop > 1;
+      var span = (cols >= 4 || !crowded) ? Math.min(2, cols) : 1;
       var tc0 = (at === 'tr' || at === 'br') ? cols - span : 0;
       var tr0 = (at === 'bl' || at === 'br') ? rows - 1 : 0;
       tiles.push(makeTile(def, tc0, tr0, span, 1, cw, ch));
@@ -507,7 +548,9 @@
 
     var tooDeep = n.depth + 1 > maxDepth;
     var stillNeeded = !tooDeep && (cross > -T.H_SPLIT_EXIT || n.depth < hoverDepth);
-    if (!stillNeeded && S.nowMs - n.lastSplitChangeMs > T.SPLIT_MIN_DWELL_MS) {
+    // initialPass resolves to the exact steady state at once: no dwell, no
+    // tween. Used on build, and when the motion switch freezes the sheet.
+    if (!stillNeeded && (S.initialPass || S.nowMs - n.lastSplitChangeMs > T.SPLIT_MIN_DWELL_MS)) {
       n.children = null;
       n.lastSplitChangeMs = S.nowMs;
       classifyLeafStyle(n, vc, S);
@@ -608,6 +651,34 @@
     var c = 0;
     for (var i = 0; i < text.length; i++) c += text[i] === ' ' ? 4 : 6;
     return c - 1;
+  }
+
+  // the same face for the HTML chrome: a label rendered as an inline SVG,
+  // one unit per pixel, fill left to currentColor so hover and
+  // aria-current states keep painting it. Returns null when the text needs
+  // a glyph the face lacks - the caller keeps its plain text then.
+  function pixelWordSVG(text) {
+    var t = String(text).toUpperCase();
+    var d = '';
+    var cx = 0;
+    for (var i = 0; i < t.length; i++) {
+      var ch = t[i];
+      if (ch === ' ') { cx += 4; continue; }
+      var g = PIXEL_FONT[ch];
+      if (!g) return null;
+      for (var row = 0; row < 7; row++) {
+        for (var col = 0; col < 5; col++) {
+          if (g[row].charCodeAt(col) === 88) { // 'X'
+            d += 'M' + (cx + col) + ' ' + row + 'h1v1h-1z';
+          }
+        }
+      }
+      cx += 6;
+    }
+    if (!d) return null;
+    return '<svg class="px-word" viewBox="0 0 ' + Math.max(1, cx - 1) + ' 7"' +
+      ' shape-rendering="crispEdges" aria-hidden="true" focusable="false">' +
+      '<path fill="currentColor" d="' + d + '"/></svg>';
   }
 
   // every 'on' pixel picks its color from which side of the wipe edge it
@@ -768,10 +839,13 @@
     }
     if (tile.kind === 'photo') {
       // a quiet cell holding a photo: paper + outline + a crop-mark tick
-      // in the corner as the only hint that it responds to hover
+      // in the corner as the only hint that it responds to hover. The tick
+      // is accent red - the pointer's own colour, so the mark reads as
+      // something the cursor can act on rather than more lattice.
       p.stroke(C.ink);
       p.fill(C.paper);
       p.rect(r.x, r.y, r.w, r.h);
+      p.stroke(C.accent);
       p.line(r.x + 6, r.y + r.h - 6, r.x + 14, r.y + r.h - 6);
       p.line(r.x + 6, r.y + r.h - 14, r.x + 6, r.y + r.h - 6);
       return;
@@ -783,7 +857,9 @@
     if (e > 0.001) { p.fill(C.paper); p.rect(r.x, r.y, r.w * e, r.h); }
     if (e < 0.999) { p.fill(C.ink); p.rect(edge, r.y, r.x + r.w - edge, r.h); }
     p.noFill();
-    p.stroke(C.ink);
+    // the frame reddens with the wipe: ink at rest, the pointer's own accent
+    // once the tile has turned over, so the hover reads as a live edge
+    p.stroke(e > 0.001 ? p.lerpColor(C.ink, C.accent, e) : C.ink);
     p.rect(r.x, r.y, r.w, r.h);
 
     if (!tile.lines.length) return;
@@ -951,7 +1027,7 @@
       reducedMotion: !!opts.reducedMotion,
       touch: !!opts.touch,
       density: opts.density === 'low' ? 'low' : 'default',
-      buildIn: !!opts.buildIn && !opts.reducedMotion,
+      buildIn: !!opts.buildIn && !opts.reducedMotion && !PAUSED,
       debug: !!opts.debug,
       fieldView: false,
       driftMult: 1,
@@ -971,6 +1047,11 @@
       dead: false,
       p: null
     };
+
+    // still: nothing may move, whether the visitor asked the OS or the switch
+    function still() {
+      return S.reducedMotion || PAUSED;
+    }
 
     function envProfile(w) {
       var small = mode !== 'card' && w < tune.MOBILE_MAX_W;
@@ -1044,11 +1125,13 @@
       updateTree(S);
       S.initialPass = false;
 
-      S.buildProgress = S.buildIn ? 0 : 1;
+      // a rebuild while frozen must land on the finished sheet: with no loop
+      // running there are no frames to carry a build-in to 1
+      S.buildProgress = (S.buildIn && !still()) ? 0 : 1;
 
       // arriving from a mold exit: start fully consumed and retreat.
       // Only on the first build - resize rebuilds must not replay it.
-      if (opts.arrive && !S.reducedMotion && !S.arrivedOnce && w > 2) {
+      if (opts.arrive && !still() && !S.arrivedOnce && w > 2) {
         S.arrivedOnce = true;
         S.buildProgress = 1;
         S.trans = {
@@ -1118,9 +1201,12 @@
         p.pixelDensity(Math.min(tune.PIXEL_DENSITY_CAP, window.devicePixelRatio || 1));
         var renderer = p.createCanvas(Math.max(2, container.clientWidth), Math.max(2, container.clientHeight));
         renderer.elt.setAttribute('aria-hidden', 'true'); // hosts carry semantics
-        S.col = { paper: p.color(tune.PAPER), ink: p.color(tune.INK), panel: p.color(tune.PANEL) };
+        S.col = {
+          paper: p.color(tune.PAPER), ink: p.color(tune.INK),
+          panel: p.color(tune.PANEL), accent: p.color(tune.ACCENT)
+        };
         build(p);
-        if (S.animate === true && !S.reducedMotion) {
+        if (S.animate === true && !still()) {
           S.loopWanted = true;
           S.looping = true;
         } else {
@@ -1144,7 +1230,7 @@
 
         // time evolution
         if (mode === 'card') {
-          if (S.cardHover && !S.reducedMotion) {
+          if (S.cardHover && !still()) {
             S.field.advance(dt * S.driftMult);
           } else {
             var t = S.field.getT();
@@ -1154,12 +1240,12 @@
               S.field.setT(t);
             }
           }
-        } else if (S.animate === true && !S.reducedMotion) {
+        } else if (S.animate === true && !still()) {
           S.field.advance(dt * S.driftMult);
         }
 
         // ambient pointer (window-level tracking; overlays cannot block it)
-        S.pointerOn = S.interactive && !S.reducedMotion && !S.touch && S.pointerSeen &&
+        S.pointerOn = S.interactive && !still() && !S.touch && S.pointerSeen &&
           p.mouseX >= 0 && p.mouseY >= 0 && p.mouseX <= p.width && p.mouseY <= p.height;
         S.px = p.mouseX;
         S.py = p.mouseY;
@@ -1170,7 +1256,7 @@
           var tl = S.tiles[i];
           if (tl.kind !== 'nav') continue;
           var tt = tl.hovered ? 1 : 0;
-          if (S.reducedMotion) {
+          if (still()) {
             tl.hoverT = tt;
           } else if (tl.hoverT !== tt) {
             var step = dt / tune.TILE_HOVER_EASE_MS;
@@ -1236,6 +1322,51 @@
       S.resizeTimer = setTimeout(rebuildToContainer, tune.RESIZE_DEBOUNCE_MS);
     }
 
+    /* the page-wide switch flipped. Freezing snaps rather than eases: with
+       the loop stopped there are no frames to decay a ripple, so the hover
+       energy and any running tween are settled by hand, then painted once. */
+    function onMotion() {
+      if (S.dead || !S.p) return;
+      if (still()) {
+        S.loopWanted = false;
+        S.looping = false;
+        S.p.noLoop();
+        S.pointerOn = false;
+        S.cardHover = false;
+        dropEnergy(S.roots);
+        var moved = false;
+        for (var i = 0; i < S.tiles.length; i++) {
+          var t = S.tiles[i];
+          t.hoverT = t.hovered ? 1 : 0;
+          if (t.anim) { t.rect = t.anim.to; t.anim = null; moved = true; }
+        }
+        S.buildProgress = 1;
+        // the tree still holds hover splits and mid-flight style tweens:
+        // resolve both to their steady state, then paint that one frame
+        S.nowMs = S.p.millis();
+        S.dt = 16;
+        S.initialPass = true;
+        updateTree(S);
+        S.initialPass = false;
+        S.p.redraw();
+        if (moved) fireTiles();
+      } else if (S.animate === true) {
+        S.loopWanted = true;
+        S.looping = true;
+        if (!S.hidden) S.p.loop();
+      } else {
+        safeRedraw();
+      }
+    }
+    listeners.push(onMotion);
+
+    function dropEnergy(nodes) {
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].energy = 0;
+        if (nodes[i].children) dropEnergy(nodes[i].children);
+      }
+    }
+
     function onVisibility() {
       if (S.dead) return;
       S.hidden = document.hidden;
@@ -1287,7 +1418,7 @@
           };
           tile.span = { c0: c0, r0: r0, cs: c1 - c0, rs: r1 - r0 };
           var ms = opts.animateMs | 0;
-          if (ms > 0 && !S.reducedMotion) {
+          if (ms > 0 && !still()) {
             tile.anim = { from: tile.rect, to: next, t: 0, ms: ms };
           } else {
             tile.rect = next;
@@ -1295,8 +1426,8 @@
             fireTiles();
           }
         }
-        if (!S.looping && !S.hidden) { S.looping = true; S.p.loop(); }
-        if (S.reducedMotion || S.animate === false) safeRedraw();
+        if (!still() && !S.looping && !S.hidden) { S.looping = true; S.p.loop(); }
+        if (still() || S.animate === false) safeRedraw();
       },
 
       // paint a cell shorter than its span: a list that hugs its content
@@ -1322,14 +1453,14 @@
           var hov = S.tiles[i].id === id;
           if (S.tiles[i].hovered !== hov) { S.tiles[i].hovered = hov; changed = true; }
         }
-        // a state change must paint even under reducedMotion/noLoop
-        if (changed && (S.reducedMotion || S.animate === false)) safeRedraw();
+        // a state change must paint even under reduced motion / paused / noLoop
+        if (changed && (still() || S.animate === false)) safeRedraw();
       },
 
       setHover: function (on) {
         if (S.dead || S.animate !== 'hover') return;
         S.cardHover = !!on;
-        if (!S.hidden && !S.looping && S.p) {
+        if (!S.hidden && !S.looping && S.p && !still()) {
           S.looping = true;
           S.p.loop(); // drawFrame stops itself once settled
         }
@@ -1361,7 +1492,7 @@
       // the callback fires immediately
       sweepOut: function (origin, onDone) {
         if (typeof origin === 'function') { onDone = origin; origin = null; }
-        if (S.dead || S.reducedMotion || S.hidden || !S.p) {
+        if (S.dead || still() || S.hidden || !S.p) {
           if (onDone) onDone();
           return;
         }
@@ -1405,6 +1536,8 @@
         clearTimeout(S.sweepTimer);
         clearTimeout(S.arriveTimer);
         if (ro) ro.disconnect();
+        var li = listeners.indexOf(onMotion);
+        if (li !== -1) listeners.splice(li, 1);
         document.removeEventListener('visibilitychange', onVisibility);
         instance.remove();
         S.p = null;
@@ -1415,4 +1548,5 @@
   }
 
   window.createGridSketch = createGridSketch;
+  window.pixelWordSVG = pixelWordSVG;
 })();

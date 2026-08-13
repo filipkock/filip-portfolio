@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"
+     role="img" aria-labelledby="orbit-title">
+  <title id="orbit-title">The research loop turning: interview, prototype test, observation and follow-up, each one lighting as the cycle reaches it</title>
+
+  <!-- P-02's hero, the orbit: the same motion as the Nord component export in
+       assets/img/Continuous user research hero animation, redrawn in the site's
+       own language so it sits with loop.svg and the generative cards - paper
+       ground, ink hub, one accent red for the pulse that travels the ring.
+       Authored at 4/3 so it fills the work page's preview cell exactly. Line
+       weights are 3-4px because this is read at a third of its size.
+
+       CSS animation (not SMIL) so it still runs inside <img>, which renders
+       SVG in secure animated mode: declarative animation plays, script does
+       not. The orbit period is one custom property, and the four nodes are
+       negative-delayed off it so each lights exactly as the pulse arrives. -->
+
+  <style>
+    svg { --orbit: 12s; }
+
+    /* transform-box: fill-box makes scale() pivot on each shape's own centre,
+       so the nodes and ripples grow in place rather than off toward 0,0 */
+    .node, .ripple { transform-box: fill-box; transform-origin: center; }
+
+    .ring   { animation: dash var(--orbit) linear infinite; }
+    .ripple { animation: ripple calc(var(--orbit) / 3) linear infinite; }
+    .node   { animation: node var(--orbit) linear infinite; }
+    .pulse  { animation: spin var(--orbit) linear infinite;
+              transform-origin: 600px 555px; }
+
+    /* the pulse starts at the top node and travels clockwise, so a node sits
+       at (1 - fraction) of the way through its own cycle when the pulse
+       arrives: right at 3s, bottom at 6s, left at 9s */
+    .ripple-b { animation-delay: calc(var(--orbit) / -6); }
+    .node-r   { animation-delay: calc(var(--orbit) * -0.75); }
+    .node-b   { animation-delay: calc(var(--orbit) * -0.5); }
+    .node-l   { animation-delay: calc(var(--orbit) * -0.25); }
+
+    @keyframes spin   { to { transform: rotate(360deg); } }
+    @keyframes dash   { to { stroke-dashoffset: -60; } }
+    @keyframes ripple {
+      0%   { transform: scale(1);   opacity: .35; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    @keyframes node {
+      0%, 100% { transform: scale(1);    fill: #ffffff; }
+      3%       { transform: scale(1.55); fill: #111111; }
+      18%      { transform: scale(1);    fill: #ffffff; }
+    }
+
+    /* the composition has to hold up standing still: with motion off the
+       pulse rests on the first node and nothing is mid-fade */
+    @media (prefers-reduced-motion: reduce) {
+      .ring, .ripple, .node, .pulse { animation: none; }
+      .ripple { opacity: .18; }
+    }
+  </style>
+
+  <rect width="1200" height="900" fill="#fafafa"/>
+
+  <!-- concrete names before the generic: a standalone SVG is rendered by
+       whatever opens it, and ui-monospace is a CSS keyword some renderers
+       do not know, which would drop this to a sans fallback -->
+  <g font-family="'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
+     font-weight="500">
+
+    <text x="80" y="150" font-size="80" letter-spacing="5" fill="#111111">THE LOOP NEVER STOPS</text>
+    <text x="84" y="205" font-size="30" letter-spacing="4" fill="#5c5c5c">FOUR TOUCHPOINTS, RUNNING EVERY CYCLE</text>
+
+    <!-- the track the pulse runs on -->
+    <circle class="ring" cx="600" cy="555" r="240" fill="none"
+            stroke="#e4e4e4" stroke-width="3" stroke-dasharray="8 12"/>
+
+    <!-- the hub sending each cycle outward -->
+    <circle class="ripple" cx="600" cy="555" r="95" fill="none" stroke="#111111" stroke-width="3"/>
+    <circle class="ripple ripple-b" cx="600" cy="555" r="95" fill="none" stroke="#111111" stroke-width="3"/>
+
+    <circle cx="600" cy="555" r="95" fill="#111111"/>
+    <g transform="translate(552.4, 515.9) scale(1.7)" fill="none"
+       stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="28" cy="16" r="7.5"/>
+      <path d="M 16.5 38 c 0 -6.4 5.1 -11 11.5 -11 s 11.5 4.6 11.5 11"/>
+      <g opacity=".55">
+        <circle cx="10" cy="20" r="5.5"/>
+        <path d="M 2.5 37 c 0 -5 3.4 -8.5 7.5 -8.5"/>
+        <circle cx="46" cy="20" r="5.5"/>
+        <path d="M 53.5 37 c 0 -5 -3.4 -8.5 -7.5 -8.5"/>
+      </g>
+    </g>
+
+    <!-- the four recurring touchpoints, clockwise from the top -->
+    <circle class="node"        cx="600" cy="315" r="16" fill="#ffffff" stroke="#111111" stroke-width="3"/>
+    <circle class="node node-r" cx="840" cy="555" r="16" fill="#ffffff" stroke="#111111" stroke-width="3"/>
+    <circle class="node node-b" cx="600" cy="795" r="16" fill="#ffffff" stroke="#111111" stroke-width="3"/>
+    <circle class="node node-l" cx="360" cy="555" r="16" fill="#ffffff" stroke="#111111" stroke-width="3"/>
+
+    <g font-size="26" letter-spacing="3" fill="#5c5c5c">
+      <text x="600" y="275" text-anchor="middle">INTERVIEW</text>
+      <text x="878" y="564">PROTOTYPE TEST</text>
+      <text x="600" y="851" text-anchor="middle">OBSERVATION</text>
+      <text x="322" y="564" text-anchor="end">FOLLOW-UP</text>
+    </g>
+
+    <!-- the one accent in the palette, carrying the cycle around the ring -->
+    <g class="pulse">
+      <circle cx="600" cy="315" r="20" fill="#d71921" opacity=".14"/>
+      <circle cx="600" cy="315" r="11" fill="#d71921"/>
+    </g>
+
+  </g>
+</svg>

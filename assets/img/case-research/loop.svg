@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"
+     role="img" aria-labelledby="loop-title">
+  <title id="loop-title">The research cadence: a two week cycle of sessions and synthesis, and the loop turning again</title>
+
+  <!-- P-02's hero: the cadence the project actually is, drawn in the site's
+       own language - hairline grid, ink for the sessions, the engine's hatch
+       for the processing half, and the one accent red for the loop. Authored
+       at 4/3 so it fills the work page's preview cell exactly. Line weights
+       are 3-4px because this is read at a third of its size. -->
+
+  <defs>
+    <!-- the same 45 degree hatch the .cadence cells use, scaled for this size -->
+    <pattern id="hatch" width="18" height="18" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="18" height="18" fill="#ffffff"/>
+      <rect width="6" height="18" fill="#e4e4e4"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="900" fill="#fafafa"/>
+
+  <!-- concrete names before the generic: a standalone SVG is rendered by
+       whatever opens it, and ui-monospace is a CSS keyword some renderers
+       do not know, which would drop this to a sans fallback -->
+  <g font-family="'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
+     font-weight="500">
+
+    <text x="80" y="190" font-size="100" letter-spacing="6" fill="#111111">EVERY TWO WEEKS</text>
+    <text x="84" y="252" font-size="32" letter-spacing="4" fill="#5c5c5c">THE SAME TWO PRACTITIONERS, EVERY CYCLE</text>
+
+    <!-- day heads, aligned to the columns below -->
+    <g font-size="26" letter-spacing="3" fill="#5c5c5c" text-anchor="middle">
+      <text x="335" y="358">MON</text>
+      <text x="509" y="358">TUE</text>
+      <text x="683" y="358">WED</text>
+      <text x="857" y="358">THU</text>
+      <text x="1031" y="358">FRI</text>
+    </g>
+
+    <!-- the grid: one ink rectangle with the cells laid over it, so every
+         division is a single hairline, exactly like .hairline-grid -->
+    <rect x="80" y="380" width="1040" height="304" fill="#111111"/>
+
+    <!-- week A: sessions run, solid ink -->
+    <rect x="84" y="384" width="162" height="146" fill="#ffffff"/>
+    <rect x="250" y="384" width="170" height="146" fill="#111111"/>
+    <rect x="424" y="384" width="170" height="146" fill="#111111"/>
+    <rect x="598" y="384" width="170" height="146" fill="#ffffff"/>
+    <rect x="772" y="384" width="170" height="146" fill="#111111"/>
+    <rect x="946" y="384" width="170" height="146" fill="#111111"/>
+
+    <!-- week B: synthesis, the hatch -->
+    <rect x="84" y="534" width="162" height="146" fill="#ffffff"/>
+    <rect x="250" y="534" width="170" height="146" fill="url(#hatch)"/>
+    <rect x="424" y="534" width="170" height="146" fill="url(#hatch)"/>
+    <rect x="598" y="534" width="170" height="146" fill="url(#hatch)"/>
+    <rect x="772" y="534" width="170" height="146" fill="url(#hatch)"/>
+    <rect x="946" y="534" width="170" height="146" fill="#ffffff"/>
+
+    <g font-size="26" letter-spacing="6" fill="#111111">
+      <text x="104" y="466">WEEK A</text>
+      <text x="104" y="616">WEEK B</text>
+    </g>
+
+    <g font-size="22" letter-spacing="2" text-anchor="middle">
+      <text x="335" y="465" fill="#fafafa">PLAN</text>
+      <text x="509" y="465" fill="#fafafa">FINALISE</text>
+      <text x="857" y="465" fill="#fafafa">SESSIONS</text>
+      <text x="1031" y="465" fill="#fafafa">SESSIONS</text>
+
+      <text x="335" y="615" fill="#111111">SYNTHESIS</text>
+      <text x="509" y="615" fill="#111111">SHARE OUT</text>
+      <text x="683" y="615" fill="#111111">FOLLOW UP</text>
+      <text x="857" y="615" fill="#111111">BACKLOG</text>
+    </g>
+
+    <!-- the loop: out of week B, around, and back into week A -->
+    <path d="M1120 607 H1158 V800 H62 V457 H70"
+          fill="none" stroke="#d71921" stroke-width="5"/>
+    <path d="M70 445 L92 457 L70 469 Z" fill="#d71921"/>
+    <text x="610" y="776" font-size="28" letter-spacing="4" fill="#d71921" text-anchor="middle">AND THE LOOP TURNS AGAIN</text>
+  </g>
+</svg>
