@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HELFO SETTLEMENTS · FILIP KOCKENDAL</title>
+  <meta name="description" content="Case study: the workflow Norwegian clinics get paid through. Prepare, validate, sign and send reimbursement settlements to Helfo, and handle what comes back rejected.">
+  <meta name="theme-color" content="#fafafa">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,500,700,900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    document.documentElement.className += ' js';
+    // arriving from a mold exit: start black, the engine retreats it.
+    // The timeout is the last-resort un-hide if scripts stall.
+    try {
+      if (sessionStorage.getItem('grid-mold') === '1') {
+        document.documentElement.className += ' arriving';
+        setTimeout(function () { document.documentElement.classList.remove('arriving'); }, 1500);
+      }
+    } catch (e) { /* private mode */ }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script defer src="js/grid-engine.js"></script>
+  <script defer src="js/case.js"></script>
+  <script defer src="js/interactions.js"></script>
+</head>
+<body class="page-case">
+  <!-- the living lattice sits behind the document; content scrolls over it -->
+  <div id="grid-host" class="case-bg" aria-hidden="true"></div>
+
+  <!-- chrome and index are engine lattice cells (js/case.js places them
+       from onTiles), held fixed so they stay put as the document scrolls -->
+  <header class="case-cell" data-cell="wordmark">
+    <p class="wordmark"><a href="index.html">FILIP KOCKENDAL</a></p>
+    <p class="tagline label">P-02 · CASE STUDY</p>
+  </header>
+
+  <nav class="case-cell" data-cell="menu" aria-label="Primary">
+    <a href="work.html" aria-current="true">01 WORK</a>
+    <a href="art.html">02 SIDE QUESTS</a>
+    <a href="about.html">03 ABOUT</a>
+  </nav>
+
+  <!-- section list built by js/case.js from [data-nav] panels -->
+  <nav class="case-cell case-index" data-cell="index" id="case-index" aria-label="On this page"></nav>
+
+  <main class="case-doc">
+
+    <!-- HEADER / HERO -->
+    <section class="case-panel case-hero" id="hero" data-nav="INTRO">
+      <h1>HELFO SETTLEMENTS</h1>
+      <p class="case-sub">Treat the patient. Then actually get paid for it.</p>
+      <dl class="case-facts">
+        <div><dt>ROLE</dt><dd>Product designer, sole designer on it</dd></div>
+        <div><dt>TEAM</dt><dd>Me, a product manager, two developers</dd></div>
+        <div><dt>TIMELINE</dt><dd>3 weeks design, 5 months build, ongoing</dd></div>
+        <div><dt>PLATFORM</dt><dd>Web app</dd></div>
+      </dl>
+      <p class="case-lede">A large part of a Norwegian clinic's income arrives from Helfo, the public body that reimburses treatment. The claim has to be right or the money does not come. I designed the whole path it travels: preparing an appointment so it can be claimed, batching a period into a settlement, validating it, signing and submitting it, and fixing whatever comes back rejected. It was also one of the workflows holding users on an old desktop product, so getting it right was what let them move.</p>
+      <figure class="case-figure">
+        <div class="img-slot" data-slot="hero" style="--slot-ratio: 2914 / 1808">
+          <img src="assets/img/helfo/Create-settlement-validations.png" decoding="async"
+               alt="A settlement detail view marked ready to sign, with key figures for user, date range, sendable and total appointments, and sendable and total reimbursement. Tabs split 47 appointments into errors, warnings, ready and ready with warnings, and the table below shows each client with a status of ready, info, warning or error.">
+          <span class="slot-label">IMAGE · VALIDATION</span>
+        </div>
+        <figcaption>The step the whole flow earns its keep on: every appointment checked against the rules Helfo would reject it for, while the person who was in the room can still fix it.</figcaption>
+      </figure>
+    </section>
+
+    <!-- THE PROBLEM -->
+    <section class="case-panel" id="problem" data-nav="THE PROBLEM">
+      <h2 class="case-h">THE MONEY IS THE FEATURE</h2>
+      <p>A claim to <a class="case-link" href="https://www.helfo.no/om-helfo/om-helfo/about-helfo" target="_blank" rel="noopener">Helfo</a> carries tariff codes, patient deductibles, eligibility rules, and a set of validation requirements. Any one of them can stop the payment. The clinic does not find out at the moment of treatment either. They find out later, when the settlement comes back rejected or the amount that arrives is not the amount they earned.</p>
+      <p>The people doing this work are treating patients all day. Claim admin happens in the gaps between appointments and at the end of a period, when everyone is already tired. Nobody wants a claims tool. They want the money to arrive without having to think about it.</p>
+      <p>On the business side the same failures cost us directly. A rejected or delayed claim becomes a support conversation, a late payment, and a clinic with less reason to trust the product with its income. This is the part of the system where trust is not a soft metric: the money is real, the actions are not reversible, and being vague about either is the fastest way to lose a customer.</p>
+    </section>
+
+    <!-- DISCOVERY & INSIGHT -->
+    <section class="case-panel" id="discovery" data-nav="DISCOVERY">
+      <h2 class="case-h">DISCOVERY &amp; INSIGHT</h2>
+      <p>Discovery ran three ways at once: interviews with clinics doing settlements today, internal knowledge interviews with the people who already carried the domain, support, finance, and developers who had lived with the old workflow, and a look at how competing systems handled the same claim.</p>
+      <blockquote class="case-quote">They do not want to understand Helfo. They want to be paid for the work they already did.</blockquote>
+      <p>The insight that shaped the design was that the goal is not a correct claim, it is money received, with as little disruption to the working day as possible. Which meant the whole thing had to read as one clear line: validate, send, confirm it arrived. If a user cannot see where in that line they are, they assume the worst and open a support ticket, which is exactly the outcome we were trying to design away.</p>
+      <p>The second finding was about where the effort should sit. Claim work spread across a whole period is invisible. Claim work saved up for period end is a wall. So the daily flow had to stay light enough to survive a busy clinic, while still carrying enough information that the end of the month was a short job instead of an investigation.</p>
+    </section>
+
+    <!-- THE APPROACH -->
+    <section class="case-panel" id="approach" data-nav="THE APPROACH">
+      <h2 class="case-h">CORRECTNESS FIRST, COMFORT AFTER</h2>
+      <p>Users were mid-migration and the deadline was not ours to move, so there had to be an MVP. That set the order of the work plainly: everything required for the money to actually arrive was in scope, and a good deal of the experience around it was not. Where those two competed, correctness won. It is not the trade I would want to make on every project, but on this one a beautiful flow that pays a clinic the wrong amount is worse than a plain flow that pays them correctly.</p>
+      <p>So I designed two things at once. A short-term version that was simple enough to ship and safe enough to migrate onto, and a long-term direction to walk toward in pieces once people were actually on it. Naming the long version early mattered more than it sounds: it kept the cuts honest, because we could point at where each one was going to be repaid instead of pretending it was fine.</p>
+      <p>That is still how it runs. The workflow has been improved continuously since release, and the direction we drew during those three weeks is still the direction.</p>
+    </section>
+
+    <!-- THE SOLUTION / USER JOURNEY -->
+    <section class="case-panel" id="flow" data-nav="THE FLOW">
+      <h2 class="case-h">THE FLOW</h2>
+      <p>Six stages, mapped before anything was designed: what the user does at each one, what they are trying to accomplish, how it feels, where it hurts, and what we could do about it. The pain points row is what set the priorities, and the stages below are the same six, in order.</p>
+      <figure class="case-figure">
+        <div class="img-slot" data-slot="journey" style="--slot-ratio: 3266 / 1272">
+          <img src="assets/img/helfo/helfo-journey.png" loading="lazy" decoding="async"
+               alt="The settlement journey mapped as a grid: six stages across the top, preparation, settlement creation, validation, submission, Helfo response and handling rejections, against rows for user actions, goals and experiences, feelings and thoughts, pain points, and opportunities.">
+          <span class="slot-label">IMAGE · THE JOURNEY</span>
+        </div>
+        <figcaption>The journey map the work was planned against. Every stage below is a column in it.</figcaption>
+      </figure>
+
+      <div class="case-step">
+        <h3>PREPARATION, ALL PERIOD LONG</h3>
+        <p>A claim starts at the appointment. Documenting it while the patient is still fresh in mind is what makes the settlement possible later, so this step is spread thin across the whole period and kept as light as the clinical day allows. The reimbursement details live next to the appointment itself: the tariff code, the rates claimed, and a note, right where the practitioner already is.</p>
+        <div class="img-slot" data-slot="step-1" style="--slot-ratio: 2880 / 1800">
+          <img src="assets/img/helfo/calendar-prep.png" loading="lazy" decoding="async"
+               alt="The calendar with a patient panel open beside it. A past appointment is expanded to show the payer split between other payers, Helfo and the client, then Helfo rates with the code for a child under sixteen, the rates claimed and a note, and below that an error reading no diagnosis added with three issues to show.">
+          <span class="slot-label">IMAGE · PREPARATION</span>
+        </div>
+      </div>
+
+      <div class="case-step">
+        <h3>ONE PERIOD, ONE SETTLEMENT</h3>
+        <p>At the end of a period the appointments are gathered into a single batch: the settlement. One object to check, sign and send, instead of a pile of individual claims to keep track of. It lands in the queue shown at the top of this page, where its progress and status are the first things visible.</p>
+        <div class="img-slot" data-slot="step-2" style="--slot-ratio: 2914 / 1808">
+          <img src="assets/img/helfo/Create-settlement-queue.png" loading="lazy" decoding="async"
+               alt="A settlement detail view marked ready to sign, with key figures for user, date range, sendable and total appointments, and sendable and total reimbursement. Tabs split 47 appointments into errors, warnings, ready and ready with warnings, and the table below shows each client with a status of ready, info, warning or error.">
+          <span class="slot-label">IMAGE · THE SETTLEMENT</span>
+        </div>
+      </div>
+
+      <div class="case-step">
+        <h3>FAIL IT HERE, NOT AT HELFO</h3>
+        <p>Validation is the step that earns the whole flow. Every appointment in the settlement is checked against the rules that Helfo would reject it for, while it can still be fixed by the person who knows what happened in the room. The settlement opens on its key figures, how much is sendable against how much is blocked, then splits the appointments by what is wrong with them: errors, warnings, ready, and ready with warnings. Errors are excluded from the batch until they are dealt with, so what gets signed is what can actually be paid.</p>
+        <div class="img-slot" data-slot="step-3" style="--slot-ratio: 2914 / 1808">
+          <img src="assets/img/helfo/Create-settlement-validations.png" loading="lazy" decoding="async"
+               alt="A settlement detail view marked ready to sign, with key figures for user, date range, sendable and total appointments, and sendable and total reimbursement. Tabs split 47 appointments into errors, warnings, ready and ready with warnings, and the table below shows each client with a status of ready, info, warning or error.">
+          <span class="slot-label">IMAGE · VALIDATION</span>
+        </div>
+      </div>
+
+      <div class="case-step">
+        <h3>SIGN AND SEND</h3>
+        <p>Submitting is the irreversible moment, so it is the one place in the flow that slows down on purpose. What is being sent, for which period, and what it is worth, all stated before the signature rather than after it. Once it is signed the settlement moves to sent and says plainly that it is waiting, because the honest answer at that point is that nothing has happened yet.</p>
+        <div class="img-slot" data-slot="step-4" style="--slot-ratio: 2880 / 1800">
+          <img src="assets/img/helfo/Create-settlement-awaiting.png" loading="lazy" decoding="async"
+               alt="The sent tab: submitted settlements listed by user and date sent, each marked awaiting response, with appointment counts, reimbursement and deductible amounts.">
+          <span class="slot-label">IMAGE · SUBMISSION</span>
+        </div>
+      </div>
+
+      <div class="case-step">
+        <h3>WHAT HELFO SAID BACK</h3>
+        <p>A submitted settlement is not a finished one. The response comes back acknowledged, partially rejected, rejected, or failed to send, and until the user can see which, they have no idea whether they are getting paid. So the state of every settlement is on the front of it, next to what was claimed and what was actually paid. Partially rejected is the state that matters most: the money arrived, but not all of it, and that is easy to miss and expensive to miss.</p>
+        <div class="img-slot" data-slot="step-5" style="--slot-ratio: 2880 / 1800">
+          <img src="assets/img/helfo/Create-settlement-response.png" loading="lazy" decoding="async"
+               alt="The received tab: each settlement with its reimbursement, deductible and paid amounts, and a status of failed to send, acknowledged, partially rejected or rejected.">
+          <span class="slot-label">IMAGE · HELFO RESPONSE</span>
+        </div>
+      </div>
+
+      <div class="case-step">
+        <h3>A REJECTION IS A JOB, NOT AN ERROR</h3>
+        <p>Rejections and payment errors are where the money is actually won or lost, and they arrive after the work is done and the attention has moved on. A rejection points back at the appointment that caused it, so the fix happens there, where the error is stated plainly and what is missing can be added.</p>
+        <p>Then the corrected work goes around the same loop again: back into a settlement, validated, signed, and sent a second time. Nothing about the second pass is a separate flow, and that is deliberate. The path to recovering the money is the path the user already knows, so a rejection costs them a repeat rather than a new thing to learn.</p>
+        <div class="img-slot" data-slot="step-6" style="--slot-ratio: 2880 / 1800">
+          <img src="assets/img/helfo/Create-settlement-queue.png" loading="lazy" decoding="async"
+               alt="Back in the settlements queue, where a corrected settlement is created and sent again. One row has failed with three of four appointments blocked, and the header carries credit and correct alongside create new settlement.">
+          <span class="slot-label">IMAGE · BACK THROUGH THE QUEUE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DESIGN DECISIONS -->
+    <section class="case-panel" id="decisions" data-nav="DECISIONS">
+      <h2 class="case-h">DESIGN DECISIONS</h2>
+      <dl class="case-decisions">
+        <div>
+          <dt>Light every day, short at the end</dt>
+          <dd>The daily step is deliberately small, because it competes with patients. The trade is that it has to carry enough for period end to stay a short, boring job. Moving effort earlier is the only way to make the wall at the end of the month disappear.</dd>
+        </div>
+        <div>
+          <dt>Validate before Helfo does</dt>
+          <dd>Every rule we could check ourselves is checked while the user can still act on it. A rejection caught in the product costs a minute. The same rejection caught by Helfo costs a payment cycle and a support conversation.</dd>
+        </div>
+        <div>
+          <dt>Never leave them guessing</dt>
+          <dd>Because it is money, uncertainty is the expensive failure. Every settlement states where it stands and what was actually paid, so the user never has to ask where their money is. A silent state means they assume the worst and call support.</dd>
+        </div>
+        <div>
+          <dt>Two directions, on purpose</dt>
+          <dd>A short-term version simple enough to migrate onto, and a long-term direction to build toward in chunks. Designing both meant every cut had a named place it would come back, which is what kept the MVP from quietly becoming the final product.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- IMPACT & RESULTS -->
+    <section class="case-panel" id="impact" data-nav="IMPACT">
+      <h2 class="case-h">IMPACT</h2>
+      <ul class="case-metrics">
+        <li><strong>3,055</strong><span>users unblocked for migration off the desktop product</span></li>
+        <li><strong>66%</strong><span>of respondents rated the flows 6 or 7 out of 7</span></li>
+        <li><strong>5.6</strong><span>customer effort score out of 7, across the flows</span></li>
+      </ul>
+      <p>No target metric was set for this project, so these are the numbers we measured rather than a bar we agreed to clear. I would rather say that than dress them up.</p>
+      <p>The migration number is the one that mattered to the business. Helfo and claims were among the blockers keeping roughly three thousand users on an old desktop setup, so unblocking them retired Citrix licence cost and moved those clinics onto a modern web product at the same time.</p>
+    </section>
+
+    <!-- REFLECTION -->
+    <section class="case-panel" id="reflection" data-nav="REFLECTION">
+      <h2 class="case-h">WHAT I LEARNED</h2>
+      <p>The hard part of a project this size was not the screens, it was the number of parties who each held a piece of the truth: product, developers, support, the people who knew the domain from years of doing it, and Helfo's own rules sitting outside all of it. What worked was treating internal knowledge as research rather than as background chatter. Several rules we would have shipped wrong were caught in those conversations, not in user interviews.</p>
+      <p>The other lesson was about the domain itself. Designing for money is not designing for care. Users have less patience, expect every state to be spelled out, and cannot undo what they submit. When a payment does not arrive it is not an inconvenience, it is their business. That raises the cost of vagueness in a way I had not felt as sharply on clinical work.</p>
+      <p>What is next is the long-term direction we drew and then cut down: better validation, fewer places where the user has to navigate away and back to finish one thing, and steadily repaying the experience we traded to make the deadline. It is still being improved, which is the honest state of it.</p>
+    </section>
+
+    <nav class="case-panel case-next" aria-label="Case navigation">
+      <a href="work.html">← ALL PROJECTS</a>
+      <a href="mailto:filip.kockendal@gmail.com">GET IN TOUCH →</a>
+    </nav>
+  </main>
+</body>
+</html>

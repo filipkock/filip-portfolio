@@ -145,24 +145,98 @@
     if (embedOn) fitEmbed(embedOn);
   }
 
-  /* The frame is 4:3 and has to fit the cell on both axes. CSS cannot express
-     that here: an explicit height is needed to reserve room for the words, but
-     that height then beats aspect-ratio the moment max-width clamps a tall
-     cell, and the frame quietly stops being 4:3. An embed set to cover a
-     box that is no longer its own shape spills out of the sides, so the size
-     is worked out here instead, from whichever axis runs out first. */
-  var THUMB_SHARE = 0.62; // of the cell's height, at most
+  /* The frame takes the cell's full width, always.
+
+     It used to take 62% of the cell's height and derive its width from that,
+     which left paper down both sides of the shot and shrank the rule beneath
+     it to a stub floating in the middle of the tile. How much paper depended
+     on the shape the lattice happened to give the cell, so the same page read
+     as deliberate on one screen and as broken on the next. The 62% was also
+     just a guess: the column below usually needs far less, and the shot was
+     giving up width for room nothing was using.
+
+     So width is fixed at the cell's, the words below are measured rather than
+     guessed, and the ratio is what gives way. */
+
+  /* The box a layer actually gets: border and padding off, and fractional.
+     clientWidth/clientHeight round to whole CSS pixels, and the lattice hands
+     out fractional cells - so on most screens, and under any browser zoom,
+     that rounding is exactly the hair of misfit that shows up as a seam down
+     one edge of an embed. */
+  function innerBox(el) {
+    var b = el.getBoundingClientRect();
+    var cs = getComputedStyle(el);
+    return {
+      w:
+        b.width -
+        parseFloat(cs.borderLeftWidth) -
+        parseFloat(cs.borderRightWidth) -
+        parseFloat(cs.paddingLeft) -
+        parseFloat(cs.paddingRight),
+      h:
+        b.height -
+        parseFloat(cs.borderTopWidth) -
+        parseFloat(cs.borderBottomWidth) -
+        parseFloat(cs.paddingTop) -
+        parseFloat(cs.paddingBottom)
+    };
+  }
+
+  // down to a whole device pixel, so the frame's own edges never land mid
+  // pixel and get painted as a soft grey line the embed cannot reach
+  function snapDown(v) {
+    var q = 1 / (window.devicePixelRatio || 1);
+    return Math.floor(v / q + 1e-6) * q;
+  }
+
+  /* What the column under the shot cannot give up: its padding, every part of
+     it that is flex: none - the index, the title, the link, the tags - and one
+     line of the description, which is the only part built to scroll. Measured
+     rather than assumed, so editing the markup below cannot silently start
+     pushing the tags out of the cell. Heights here depend on the column's
+     width, which the shot never changes, so there is no circularity. */
+  function infoFloor() {
+    var info = document.querySelector(".cell-preview .pv-info");
+    if (!info) return 0;
+    var cs = getComputedStyle(info);
+    var floor = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    var kids = info.children;
+    for (var i = 0; i < kids.length; i++) {
+      var k = kids[i];
+      if (k.hidden || !k.getClientRects().length) continue;
+      var kcs = getComputedStyle(k);
+      floor += parseFloat(kcs.marginTop) || 0;
+      floor += k.classList.contains("desc")
+        ? parseFloat(kcs.lineHeight) || 18
+        : k.getBoundingClientRect().height;
+    }
+    return floor;
+  }
 
   function sizeThumb() {
     var thumb = document.getElementById("pv-thumb");
     var cell = document.querySelector(".cell-preview");
     if (!thumb || !cell) return;
-    var cw = cell.clientWidth;
-    var ch = cell.clientHeight;
-    if (!cw || !ch) return;
-    var w = Math.min(cw, Math.round(((ch * THUMB_SHARE) * 4) / 3));
-    thumb.style.width = w + "px";
-    thumb.style.height = Math.round((w * 3) / 4) + "px";
+    var avail = innerBox(cell);
+    if (avail.w < 1 || avail.h < 1) return;
+    /* aspect-ratio and an explicit height both describe the border box, so the
+       hairline under the frame was eating a pixel out of the 4:3 the embed is
+       fitted against - the embed covered the border box and its bottom row sat
+       behind the rule. Size the visible box and add the border back on top. */
+    var cs = getComputedStyle(thumb);
+    var bx =
+      parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+    var by =
+      parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    var w = snapDown(avail.w - bx);
+    // 4:3 when the words leave room for it, shorter when they do not, and
+    // never so short that the shot stops being the point of the cell
+    var room = avail.h - by - infoFloor();
+    var h = snapDown(
+      Math.max(Math.min((w * 3) / 4, room), (avail.h - by) * 0.3)
+    );
+    thumb.style.width = w + bx + "px";
+    thumb.style.height = h + by + "px";
   }
 
   /* ---- preview ------------------------------------------------------ */
@@ -224,20 +298,41 @@
 
   function fitEmbed(el) {
     if (el.fluid) return; // the page is given the box and sizes itself to it
-    var box = pvThumb.getBoundingClientRect();
+    // the box the iframe is actually laid out in, not the border box around it
+    var box = innerBox(pvThumb);
     // an unplaced cell measures a sliver rather than a clean zero, and fitting
     // to that bakes in a scale of almost nothing: wait for a real box
-    if (box.width < 24 || box.height < 24) return;
+    if (box.w < 24 || box.h < 24) return;
     var r = el.rect;
-    var s =
-      el.fitMode === "contain"
-        ? Math.min(box.width / r.w, box.height / r.h)
-        : Math.max(box.width / r.w, box.height / r.h);
+    /* Cover fills the frame by cropping, which is right while the frame is
+       close to the page's own shape. On a wide, short cell the words below can
+       leave a frame far off that shape, and filling it would cut the
+       composition in half - so past a sixth out, the frame letterboxes
+       instead. That costs nothing to look at: data-embed-bg puts the page's
+       own ground behind the frame, so the margin is the same colour as the
+       edge of the page it sits beside. */
+    var boxRatio = box.w / box.h;
+    var pageRatio = r.w / r.h;
+    var contain =
+      el.fitMode === "contain" ||
+      boxRatio > pageRatio * 1.17 ||
+      boxRatio < pageRatio / 1.17;
+    /* Cover has to leave no seam at any size. The frame's box, the scale and
+       the device pixel grid are all fractional, so a scale that covers the box
+       exactly can still land a fraction of a pixel inside the clip on one
+       edge. Fitting to a box one device pixel larger puts that edge under
+       overflow: hidden instead, where it costs nothing. Contain is the
+       opposite promise - the whole composition survives - so it never
+       overshoots. */
+    var bleed = contain ? 0 : 1 / (window.devicePixelRatio || 1);
+    var s = contain
+      ? Math.min(box.w / r.w, box.h / r.h)
+      : Math.max((box.w + bleed) / r.w, (box.h + bleed) / r.h);
     el.style.transform =
       "translate(" +
-      (box.width / 2 - s * (r.x + r.w / 2)) +
+      (box.w / 2 - s * (r.x + r.w / 2)) +
       "px," +
-      (box.height / 2 - s * (r.y + r.h / 2)) +
+      (box.h / 2 - s * (r.y + r.h / 2)) +
       "px) scale(" +
       s +
       ")";
@@ -305,6 +400,28 @@
       if (embedOn) fitEmbed(embedOn);
     });
   }
+
+  /* Both the snap grid and the cover bleed are measured in device pixels, and
+     dragging the window to a screen of another density changes those without
+     changing a single CSS size - so the observer above never fires. Watch the
+     resolution itself. Browser zoom already comes through as a resize, since
+     it changes the viewport the lattice is built from. */
+  function watchPixelRatio() {
+    if (!window.matchMedia) return;
+    var mq = window.matchMedia(
+      "(resolution: " + (window.devicePixelRatio || 1) + "dppx)"
+    );
+    var onChange = function () {
+      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
+      else mq.removeListener(onChange);
+      sizeThumb();
+      if (embedOn) fitEmbed(embedOn);
+      watchPixelRatio(); // the query names the old ratio: ask again for the new
+    };
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  }
+  watchPixelRatio();
 
   /* the reveal: a project can hand the preview a short clip to play over its
      shot (data-reveal). Poka's is its card reveal - ink blobs that gather,
@@ -391,6 +508,9 @@
     var hero = row.dataset.hero || "";
     var vid = row.dataset.video || "";
     var clip = row.dataset.reveal || "";
+    // the column above is this row's words now, so the room it leaves has
+    // changed: re-derive the frame before anything is fitted into it
+    sizeThumb();
     // a live page stands in for every other layer: no shot, no clip, no card
     showEmbed(row);
     if (row.dataset.embed) {

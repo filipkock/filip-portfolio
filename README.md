@@ -28,7 +28,9 @@ work.html                      project index: rows plus a live preview cell
 about.html                     bio panel, action tiles, fun-fact drawer
 art.html                       generative art gallery (tag-filterable)
 case-ai-journal.html           P-01 case study
-case-continuous-research.html  P-02 case study
+case-continuous-research.html  P-04 case study
+case-helfo-settlements.html    P-02 case study
+case-poka-reminder.html        P-03 case study
 cv.html                        the boring sheet: one page, no engine, no JS
 cv.svg                         the same sheet as vector, for pasting into Figma
 css/style.css                  the single shared stylesheet
@@ -63,7 +65,7 @@ dev/serve.py                   the no-cache server used by Run, above
 - Case study media: each `.img-slot` holds a real `<img>` or `<video>` at the
   path in the markup, and falls back to a checker placeholder until that file
   exists. Still missing: `assets/img/case-research/backlog.png`, and the
-  invoice example in P-02 carries a visible TO CONFIRM line.
+  invoice example in P-04 carries a visible TO CONFIRM line.
 - Case study hero: one `.shot-frame` per screen inside `[data-shot]`, one
   `.shot-switch` button per frame (matched on `data-view`), and the first
   frame in the markup is the one the page opens with. P-01 runs HERO /
@@ -82,7 +84,7 @@ dev/serve.py                   the no-cache server used by Run, above
   reveal: ink gathers, swells and clears, and the shot is there when it goes.
   Skipped under reduced motion, and if the clip stalls or autoplay is refused
   the shot is simply shown.
-- P-02 has no product screen to show, so its hero is drawn:
+- P-04 has no product screen to show, so its hero is drawn:
   `assets/img/case-research/loop.svg` is the two week cadence in the site's own
   language (hairline grid, ink sessions, hatched synthesis, the accent red
   loop), authored at 4/3 so it fills the preview cell exactly.

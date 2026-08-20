@@ -738,8 +738,10 @@ html.engine-failed .w-row .w-badge {
   overflow: hidden;
   /* 4:3 always, so every embed is framed against one known ratio instead of a
      box that reshapes with the window. sizeThumb() in js/work.js writes the
-     real pixel size, fitting the cell on both axes; these are the values that
-     hold until it runs. Centred, since it is often narrower than the cell. */
+     real pixel size, fitting the cell on both axes and landing the edges on
+     whole device pixels; it sizes the box inside this border, so the ratio it
+     writes is truer than the one here. These values hold until it runs.
+     Centred, since it is often narrower than the cell. */
   aspect-ratio: 4 / 3;
   flex: none;
   align-self: center;
@@ -804,7 +806,10 @@ html.engine-failed .w-row .w-badge {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  overflow: hidden;
+  /* the description giving way is the first answer to a short cell; this is
+     the last one. Once even the shrunk column does not fit, the panel
+     scrolls rather than clipping the link and tags out of reach. */
+  overflow-y: auto;
   padding: var(--space-3);
 }
 
@@ -817,10 +822,29 @@ html.engine-failed .w-row .w-badge {
    instead of stretching the column to push the tags down */
 .cell-preview .pv-info .desc {
   flex: 0 1 auto;
-  min-height: 0;
+  /* two whole lines before it starts scrolling. Without a floor the flex
+     shrink can land the box on a fraction of a line and slice the last one
+     through the middle, which reads as broken text rather than as more of
+     it; the panel above scrolls when even two lines will not fit. The
+     leading is named here so the floor cannot drift from the line it counts. */
+  --desc-leading: 1.55;
+  line-height: var(--desc-leading);
+  min-height: calc(2 * var(--desc-leading) * var(--text-s));
   overflow-y: auto;
   margin-top: var(--space-2);
   font-size: var(--text-s);
+}
+
+/* when one of these panes does scroll, its bar is ink on nothing rather than
+   the platform's grey. Left as an overlay bar deliberately: it costs the
+   layout no gutter, and the lattice is drawn to the pixel.
+   (Chrome honours these standard properties and ignores ::-webkit-scrollbar
+   whenever they are set, so there is no point pairing them with one.) */
+.cell-list,
+.cell-preview .pv-info,
+.cell-preview .pv-info .desc {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink) transparent;
 }
 
 /* a reference out of the sheet: plain text, underlined, inverting under the
@@ -2284,6 +2308,14 @@ html.js .shot-switch {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+/* the panel's stacking margin is for a column of blocks, and this panel is
+   one row: left on, it drops every link but the first by a step, so the three
+   sit at three heights. The gap already spaces them, in both axes, so the
+   wrapped phone layout loses nothing. */
+.case-next > * + * {
+  margin-top: 0;
 }
 
 .case-next a {

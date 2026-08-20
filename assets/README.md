@@ -72,7 +72,7 @@ previews as its generative card instead.
 | Path | What it is |
 |---|---|
 | `img/case-ai/nora-hero.jpg` | P-01: the assistant mid-draft |
-| `img/case-research/loop.svg` | P-02: the two week cadence, drawn in the site's language - the project has no product screen of its own |
+| `img/case-research/loop.svg` | P-04: the two week cadence, drawn in the site's language - the project has no product screen of its own |
 | `img/case-poka/hero.jpg` | P-03: Meet Poka, the mascot and the schedule |
 | `video/case-poka/card-reveal.mp4` | P-03 `data-reveal`: plays over the shot once per visit, and the shot is there when it clears |
 
