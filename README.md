@@ -31,8 +31,6 @@ case-ai-journal.html           P-01 case study
 case-continuous-research.html  P-04 case study
 case-helfo-settlements.html    P-02 case study
 case-poka-reminder.html        P-03 case study
-cv.html                        the boring sheet: one page, no engine, no JS
-cv.svg                         the same sheet as vector, for pasting into Figma
 css/style.css                  the single shared stylesheet
 js/grid-engine.js              the generative engine (window.createGridSketch)
 js/landing.js                  landing: tile links, mold page exits
@@ -100,13 +98,8 @@ dev/serve.py                   the no-cache server used by Run, above
   asks for reduced motion, which is the same still state.
 - Composition tunables live in the `TUNE` block at the top of
   `js/grid-engine.js`.
-- `cv.html` is the deliberately dull sibling of the site: the same tokens
-  (paper, ink, the mono chrome voice, the one accent red) with the grid,
-  the engine and every script taken out. A4 at 96dpi, one page, prints to
-  PDF as it stands. `cv.svg` is that sheet as vector for Figma: every line
-  of copy is its own `<text>` node, since SVG import has no text wrapping,
-  and the `<g id>` names become the Figma layer names. Edit copy in both,
-  or treat the SVG as a one-way export and design onward in Figma.
+- The CV lives only as `assets/Resume Filip - 2026.pdf`, linked from the
+  RESUME tile on the about page. There is no HTML sheet for it any more.
 
 ## Mobile
 
